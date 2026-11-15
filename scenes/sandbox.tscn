@@ -1,0 +1,101 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scenes/sandbox.gd" id="1_r5tyk"]
+[ext_resource type="Script" path="res://rendering/pixelated_view.gd" id="2_2d2mb"]
+[ext_resource type="MeshLibrary" path="res://scenes/dungeon_tiles.tres" id="3_g7mfh"]
+[ext_resource type="PackedScene" path="res://assets/kenney/kenney_mini-dungeon/Models/GLB format/column.glb" id="4_8b5lh"]
+[ext_resource type="PackedScene" path="res://assets/kenney/kenney_mini-dungeon/Models/GLB format/barrel.glb" id="5_hc7ve"]
+[ext_resource type="PackedScene" path="res://assets/kenney/kenney_mini-dungeon/Models/GLB format/chest.glb" id="6_vvfch"]
+[ext_resource type="PackedScene" path="res://assets/kenney/kenney_mini-dungeon/Models/GLB format/pot.glb" id="7_yc6dp"]
+[ext_resource type="PackedScene" path="res://assets/kenney/kenney_mini-dungeon/Models/GLB format/rocks.glb" id="8_ritfc"]
+[ext_resource type="PackedScene" path="res://assets/kenney/kenney_mini-dungeon/Models/GLB format/table.glb" id="9_y7qgn"]
+[ext_resource type="PackedScene" path="res://assets/kenney/kenney_mini-dungeon/Models/GLB format/stones.glb" id="10_f4qvn"]
+[ext_resource type="PackedScene" path="res://characters/standee/standee.tscn" id="11_qjjs2"]
+[ext_resource type="SpriteFrames" path="res://characters/standee/frames/adventurer.tres" id="13_ubo0v"]
+[ext_resource type="SpriteFrames" path="res://characters/standee/frames/zombie.tres" id="14_r0eph"]
+
+[sub_resource type="Environment" id="Environment_dugpm"]
+background_mode = 1
+background_color = Color(0.08, 0.07, 0.1, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.6, 0.6, 0.7, 1)
+ambient_light_energy = 0.6
+
+[node name="Sandbox" type="Node" unique_id=2138759999]
+script = ExtResource("1_r5tyk")
+
+[node name="PixelatedView" type="SubViewportContainer" parent="." unique_id=1689867640]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+stretch = true
+script = ExtResource("2_2d2mb")
+
+[node name="SubViewport" type="SubViewport" parent="PixelatedView" unique_id=2110600729]
+
+[node name="World" type="Node3D" parent="PixelatedView/SubViewport" unique_id=122488929]
+
+[node name="Sun" type="DirectionalLight3D" parent="PixelatedView/SubViewport/World" unique_id=587866993]
+transform = Transform3D(0.34202015, 0.7198463, -0.6040228, 0, 0.64278764, 0.76604444, 0.9396926, -0.26200265, 0.21984632, 0, 0, 0)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="PixelatedView/SubViewport/World" unique_id=1776298479]
+environment = SubResource("Environment_dugpm")
+
+[node name="Camera" type="Camera3D" parent="PixelatedView/SubViewport/World" unique_id=1078422878]
+transform = Transform3D(0.70710677, -0.4055798, 0.579228, 0, 0.81915206, 0.57357645, -0.70710677, -0.4055798, 0.579228, 11.584559, 11.471529, 11.584559)
+projection = 1
+size = 6.0
+
+[node name="Dungeon" type="GridMap" parent="PixelatedView/SubViewport/World" unique_id=2089857684]
+mesh_library = ExtResource("3_g7mfh")
+cell_size = Vector3(1, 1, 1)
+cell_center_y = false
+data = {
+"cells": PackedInt32Array(65530, 65530, 2, 65530, 65531, 2, 65530, 65532, 2, 65530, 65533, 2, 65530, 65534, 2, 65530, 65535, 2, 65530, 0, 2, 65530, 1, 2, 65530, 2, 2, 65530, 3, 2, 65530, 4, 2, 65530, 5, 2, 65530, 6, 2, 65531, 65530, 2, 65531, 65531, 1, 65531, 65532, 0, 65531, 65533, 0, 65531, 65534, 0, 65531, 65535, 0, 65531, 0, 1, 65531, 1, 0, 65531, 2, 0, 65531, 3, 0, 65531, 4, 0, 65531, 5, 1, 65531, 6, 3, 65532, 65530, 2, 65532, 65531, 0, 65532, 65532, 1, 65532, 65533, 0, 65532, 65534, 0, 65532, 65535, 0, 65532, 0, 0, 65532, 1, 1, 65532, 2, 0, 65532, 3, 0, 65532, 4, 0, 65532, 5, 0, 65532, 6, 3, 65533, 65530, 2, 65533, 65531, 0, 65533, 65532, 0, 65533, 65533, 1, 65533, 65534, 0, 65533, 65535, 0, 65533, 0, 0, 65533, 1, 0, 65533, 2, 1, 65533, 3, 0, 65533, 4, 0, 65533, 5, 0, 65533, 6, 3, 65534, 65530, 2, 65534, 65531, 0, 65534, 65532, 0, 65534, 65533, 0, 65534, 65534, 1, 65534, 65535, 0, 65534, 0, 0, 65534, 1, 0, 65534, 2, 0, 65534, 3, 1, 65534, 4, 0, 65534, 5, 0, 65534, 6, 3, 65535, 65530, 2, 65535, 65531, 0, 65535, 65532, 0, 65535, 65533, 0, 65535, 65534, 0, 65535, 65535, 1, 65535, 0, 0, 65535, 1, 0, 65535, 2, 0, 65535, 3, 0, 65535, 4, 1, 65535, 5, 0, 65535, 6, 3, 0, 65530, 2, 0, 65531, 1, 0, 65532, 0, 0, 65533, 0, 0, 65534, 0, 0, 65535, 0, 0, 0, 1, 0, 1, 0, 0, 2, 0, 0, 3, 0, 0, 4, 0, 0, 5, 1, 0, 6, 3, 1, 65530, 2, 1, 65531, 0, 1, 65532, 1, 1, 65533, 0, 1, 65534, 0, 1, 65535, 0, 1, 0, 0, 1, 1, 1, 1, 2, 0, 1, 3, 0, 1, 4, 0, 1, 5, 0, 1, 6, 3, 2, 65530, 2, 2, 65531, 0, 2, 65532, 0, 2, 65533, 1, 2, 65534, 0, 2, 65535, 0, 2, 0, 0, 2, 1, 0, 2, 2, 1, 2, 3, 0, 2, 4, 0, 2, 5, 0, 2, 6, 3, 3, 65530, 2, 3, 65531, 0, 3, 65532, 0, 3, 65533, 0, 3, 65534, 1, 3, 65535, 0, 3, 0, 0, 3, 1, 0, 3, 2, 0, 3, 3, 1, 3, 4, 0, 3, 5, 0, 3, 6, 3, 4, 65530, 2, 4, 65531, 0, 4, 65532, 0, 4, 65533, 0, 4, 65534, 0, 4, 65535, 1, 4, 0, 0, 4, 1, 0, 4, 2, 0, 4, 3, 0, 4, 4, 1, 4, 5, 0, 4, 6, 3, 5, 65530, 2, 5, 65531, 1, 5, 65532, 0, 5, 65533, 0, 5, 65534, 0, 5, 65535, 0, 5, 0, 1, 5, 1, 0, 5, 2, 0, 5, 3, 0, 5, 4, 0, 5, 5, 1, 5, 6, 3, 6, 65530, 2, 6, 65531, 3, 6, 65532, 3, 6, 65533, 3, 6, 65534, 3, 6, 65535, 3, 6, 0, 3, 6, 1, 3, 6, 2, 3, 6, 3, 3, 6, 4, 3, 6, 5, 3, 6, 6, 3)
+}
+
+[node name="Props" type="Node3D" parent="PixelatedView/SubViewport/World" unique_id=1565899750]
+
+[node name="Column" type="Node3D" parent="PixelatedView/SubViewport/World/Props" unique_id=1403923967 instance=ExtResource("4_8b5lh")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, -3)
+
+[node name="Column2" type="Node3D" parent="PixelatedView/SubViewport/World/Props" unique_id=964708899 instance=ExtResource("4_8b5lh")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 3)
+
+[node name="Barrel" type="Node3D" parent="PixelatedView/SubViewport/World/Props" unique_id=1477778049 instance=ExtResource("5_hc7ve")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, -4)
+
+[node name="Barrel2" type="Node3D" parent="PixelatedView/SubViewport/World/Props" unique_id=1210260769 instance=ExtResource("5_hc7ve")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, -5)
+
+[node name="Chest" type="Node3D" parent="PixelatedView/SubViewport/World/Props" unique_id=1665295867 instance=ExtResource("6_vvfch")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -5)
+
+[node name="Pot" type="Node3D" parent="PixelatedView/SubViewport/World/Props" unique_id=671771482 instance=ExtResource("7_yc6dp")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, -5)
+
+[node name="Rocks" type="Node3D" parent="PixelatedView/SubViewport/World/Props" unique_id=698705208 instance=ExtResource("8_ritfc")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, 2)
+
+[node name="Table" type="Node3D" parent="PixelatedView/SubViewport/World/Props" unique_id=1162177404 instance=ExtResource("9_y7qgn")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 2)
+
+[node name="Stones" type="Node3D" parent="PixelatedView/SubViewport/World/Props" unique_id=1355999517 instance=ExtResource("10_f4qvn")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, -2)
+
+[node name="Player" type="Node3D" parent="PixelatedView/SubViewport/World" unique_id=1861459470]
+
+[node name="Standee" type="Node3D" parent="PixelatedView/SubViewport/World/Player" unique_id=580293237 instance=ExtResource("11_qjjs2")]
+frames = ExtResource("13_ubo0v")
+
+[node name="Zombie" type="Node3D" parent="PixelatedView/SubViewport/World" unique_id=1428405492]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, -2)
+
+[node name="Standee" type="Node3D" parent="PixelatedView/SubViewport/World/Zombie" unique_id=1681790588 instance=ExtResource("11_qjjs2")]
+frames = ExtResource("14_r0eph")
+
+[node name="Zombie2" type="Node3D" parent="PixelatedView/SubViewport/World" unique_id=523571849]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, 3)
+
+[node name="Standee" type="Node3D" parent="PixelatedView/SubViewport/World/Zombie2" unique_id=76418715 instance=ExtResource("11_qjjs2")]
+frames = ExtResource("14_r0eph")
