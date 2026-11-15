@@ -1,6 +1,6 @@
-[gd_resource type="MeshLibrary" format=4]
+[gd_resource type="MeshLibrary" format=4 uid="uid://d0x1kj10na74x"]
 
-[ext_resource type="Texture2D" path="res://assets/kenney/kenney_mini-dungeon/Models/GLB format/Textures/colormap.png" id="1_lq5rp"]
+[ext_resource type="Texture2D" uid="uid://ri47k2avgqy4" path="res://assets/kenney/kenney_mini-dungeon/Models/GLB format/Textures/colormap.png" id="1_lq5rp"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4i43m"]
 resource_name = "colormap"
