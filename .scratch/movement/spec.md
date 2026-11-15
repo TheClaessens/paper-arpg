@@ -1,8 +1,8 @@
 # Movement
 
-Status: ready-for-agent
+Status: ready-for-human
 
-README step 1, basic movement only. Blink, Leap and other movement abilities wait until abilities are designed. Agreed in a grilling session on 2026-11-15.
+README step 1, basic movement only. Built; waiting on the developer's controller pass. Blink, Leap and other movement abilities wait until abilities are designed. Agreed in a grilling session on 2026-11-15.
 
 ## Requirements
 
@@ -52,8 +52,11 @@ README step 1, basic movement only. Blink, Leap and other movement abilities wai
 - **Running into a wall plays `idle`.** Once the velocity is zero, the walk stops.
 - **`safe_margin` 0.02 on Character bodies.** The default 0.001 let the capsule wedge into a gap exactly its width (wall to rocks, 0.5) and stay stuck. With 0.02 it stops at the gap instead. Enemies get the same margin in step 2.
 - **`sandbox.gd` deleted.** With `anim` gone it had nothing left.
+- **`collisions` console command.** Added during the build to inspect the new shapes. It toggles collision shape drawing without reloading the scene. Shapes are drawn opaque pink (`debug/shapes/collision/shape_color`).
+- **The console pauses the game while open.** Typing moved the player, because it reads the keyboard directly. Closing restores whatever pause state the game had before.
 
 ## Open
 
+- Controller pass: check that up is up the screen, the walk/idle switch and the 0.2 deadzone.
 - Tune speed, acceleration and deceleration with the developer.
-- Judge pixel shimmer on screen once the camera moves.
+- Pixel shimmer: not noticed on a keyboard pass. Revisit only if it shows up.
