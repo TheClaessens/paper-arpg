@@ -50,6 +50,16 @@ README step 2, movement behaviour of basic Enemies only. Agreed in a grilling se
 - **Editor-baked navmesh.** No code. Upgrade path: runtime baking, chunked per room on a background thread, once levels are generated. Only the level changes; Enemies don't.
 - **Crowding is decided by eye.** Ship with collision and avoidance (RVO) both on, then compare both / collision only (layer mask) / avoidance only (`avoidance_enabled`) in the hall and corridor. Record the outcome here.
 
+## Decisions made during the build
+
+- **The level layout is generated from floor rectangles.** Walls fill every cell next to a floor. A wall is half height when it stands between a floor and the camera (which looks from +x +z), so it never hides what is behind it. This rule reproduces the old room exactly.
+- **The navmesh lives in `scenes/sandbox_navmesh.tres`.** A separate file keeps baked data out of `sandbox.tscn`'s diff. The editor's Bake button writes to it.
+- **The navmesh parses meshes and collision shapes both.** Floor tiles have no collision, so meshes give the walkable floor; collision boxes make sure every prop and wall blocks, whatever its mesh looks like. Baking meshes needs the GPU: bake in the editor or a windowed run, never `--headless`, which bakes no floor.
+- **Navigation cell size 0.1, cell height 0.1** (navmesh and project setting, which must match). At the default 0.25, an agent radius of 0.3 rounds up to 0.5 and closes one-tile corridors.
+- **The floor bakes at y 0.2,** not 0: heights round up to the cell height. Enemies only use the path's direction on the ground, so it doesn't matter.
+- **Wall and prop tops bake as islands.** Nothing can reach them; they show up in the `nav` drawing only.
+- **The chest moved** out of the start room's new north doorway.
+
 ## Later
 
 - Pack Aggro: one Enemy noticing the player wakes its neighbours.
