@@ -57,6 +57,7 @@ README step 1, basic movement only. Built; waiting on the developer's controller
 
 ## Open
 
-- Controller pass: check that up is up the screen, the walk/idle switch and the 0.2 deadzone.
+- Controller pass: done 2026-11-16, works fine.
 - Tune speed, acceleration and deceleration with the developer.
 - Pixel shimmer: not noticed on a keyboard pass. Revisit only if it shows up.
+- Up and down feel slower than left and right (controller pass, 2026-11-16). World speed is the same; the camera's 35° pitch shows ground depth at sin 35° ≈ 0.57 of its length on screen. Options: accept it, compensate speed along the depth axis (world speed then varies by direction), or steepen the camera (changes the ADR 0001 look).

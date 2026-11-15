@@ -1,0 +1,40 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://characters/enemy/enemy.gd" id="1_enemy"]
+[ext_resource type="PackedScene" path="res://characters/standee/standee.tscn" id="2_standee"]
+[ext_resource type="SpriteFrames" path="res://characters/standee/frames/zombie.tres" id="3_frames"]
+[ext_resource type="Script" path="res://characters/movement.gd" id="4_movement"]
+[ext_resource type="PackedScene" path="res://characters/aggro/aggro.tscn" id="5_aggro"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
+radius = 0.25
+height = 1.0
+
+[node name="Zombie" type="CharacterBody3D" unique_id=1938276001]
+collision_layer = 4
+collision_mask = 7
+motion_mode = 1
+safe_margin = 0.02
+script = ExtResource("1_enemy")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1938276002]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("CapsuleShape3D_body")
+
+[node name="Standee" parent="." unique_id=1938276003 instance=ExtResource("2_standee")]
+frames = ExtResource("3_frames")
+
+[node name="Movement" type="Node" parent="." unique_id=1938276004]
+script = ExtResource("4_movement")
+speed = 2.5
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="." unique_id=1938276005]
+path_desired_distance = 0.1
+path_height_offset = 0.2
+avoidance_enabled = true
+target_desired_distance = 0.5
+height = 1.0
+radius = 0.3
+neighbor_distance = 3.0
+
+[node name="Aggro" parent="." unique_id=1938276006 instance=ExtResource("5_aggro")]

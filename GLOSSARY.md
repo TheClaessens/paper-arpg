@@ -15,3 +15,15 @@ _Avoid_: Actor, entity, unit
 **Blob shadow**:
 The soft dark ellipse on the ground beneath a Standee that grounds it in the world.
 _Avoid_: Drop shadow, shadow decal
+
+**Enemy**:
+A Character hostile to the player. Later Enemies come in kinds (such as elites and bosses) and rarities.
+_Avoid_: Monster, mob, creep
+
+**Aggro**:
+The state of an Enemy that has noticed the player and chases them. Once an Enemy is aggroed, it stays aggroed.
+_Avoid_: Alert, agitated, hostile
+
+**Aggro radius**:
+The distance from an Enemy within which the player draws its Aggro.
+_Avoid_: Detection range, sight radius
