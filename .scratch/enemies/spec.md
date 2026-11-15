@@ -2,7 +2,7 @@
 
 Status: ready-for-human
 
-README step 2, movement behaviour of basic Enemies only. Agreed in a grilling session on 2026-11-16. Built; waiting on the developer's look at crowding and the corridor finding below. Step 1's open items (controller pass, tuning, shimmer) stay open: controller testing happens after this step.
+README step 2, movement behaviour of basic Enemies only. Agreed in a grilling session on 2026-11-16. Built; functional test passed 2026-11-16. Crowding setup still to pick. Step 1's open items (controller pass, tuning, shimmer) stay open: controller testing happens after this step.
 
 ## Requirements
 
@@ -25,13 +25,13 @@ README step 2, movement behaviour of basic Enemies only. Agreed in a grilling se
 5. **`Enemy` script** (`characters/enemy/enemy.gd`, `class_name Enemy`, a `CharacterBody3D`, floating motion mode, `safe_margin` 0.02 as for the player).
    - Before Aggro: stands still on `idle`. No wandering.
    - On `aggroed`: chases the target. Each physics frame it sets the agent's target to the player, takes the direction to the agent's next path point, runs it through `Movement.next_velocity()`, and sends the result through the agent's avoidance (`velocity_computed`) before `move_and_slide()`. The same code works with avoidance on or off.
-   - **Reach:** stops at `reach` 1.0 from the player and chases again only past `resume` 1.3 (both `@export`). While stopped it plays `idle` and faces the player.
+   - **Reach:** stops at `reach_distance` 1.0 from the player and chases again only past `resume_distance` 1.3 (both `@export`). While stopped it plays `idle` and faces the player.
    - Plays `walk` and faces its velocity while moving.
    - The reach/resume rule is a small pure function with a GUT test in `tests/test_enemy.gd`.
 6. **Zombie** `characters/enemy/zombie.tscn`: an `Enemy` root with a capsule, the Standee (zombie frames), `Movement` (speed 2.5), `NavigationAgent3D` and `Aggro`.
-7. **Placement.** Hand-placed in `sandbox.tscn`: a pack of 5 in the hall, single zombies in the corridor and the detour room. The old bare-`Node3D` zombies are replaced.
+7. **Placement.** Hand-placed in `sandbox.tscn`: a pack of 5 in the hall, single zombies in the dead-end corridor and the detour room. The old bare-`Node3D` zombies are replaced.
 8. **Console commands.**
-   - `aggro` toggles every Enemy's Aggro ring.
+   - `aggro` toggles every Enemy's Aggro ring. `Aggro` registers it.
    - `nav` toggles every agent's current path.
 
 ## Commits
@@ -62,6 +62,7 @@ README step 2, movement behaviour of basic Enemies only. Agreed in a grilling se
 - **`Aggro` is a scene,** `characters/aggro/aggro.tscn`: the `Area3D` with its `Sphere` and `Ring`. Both resources are local to the scene, so each Enemy's radius is its own.
 - **The ring is a thin `TorusMesh`,** unshaded, lying flat 0.02 above the floor.
 - **One static `Aggro.rings_visible`** drives every ring. The `aggro` command flips it, and Enemies placed later pick it up too.
+- **`Aggro` registers the `aggro` command,** not the Console: systems add their own commands. The first Aggro to arrive registers it, with a static callback, so `help` lists it only once an Enemy exists.
 - **The Aggro test uses real physics:** bodies on the `player` and `enemy` layers step into the sphere. It checks the layer mask and the radius, not just the signal code.
 - **Grid cells span `[x, x+1]`,** not `x ± 0.5`. Commit 1 placed the wall rocks flush with the wall; commit 3 moves them (and the wall barrels) half a tile out, so the 0.5 gap exists.
 - **Without avoidance the Enemy moves itself.** With `avoidance_enabled` off the agent never emits `velocity_computed`, so the Enemy calls its own handler (the pattern from Godot's docs).
@@ -70,6 +71,9 @@ README step 2, movement behaviour of basic Enemies only. Agreed in a grilling se
 - **The agent's `max_speed` follows `Movement.speed`,** set in `_ready`, so the speed is tuned in one place.
 - **A standing Enemy skips `move_and_slide()`.** Run with zero velocity it still pushes the Enemy out of everything pressing into it, and a pack arriving behind shoved the first arrivals onto the player (0.5 instead of reach 1.0).
 - **`avoidance_priority` 1.0 while within reach, 0.5 while chasing.** Avoidance is reciprocal: a standing Enemy stepped aside for arrivals and drifted onto the player. An agent ignores agents of lower priority, so chasers now walk around the ones standing.
+- **The target is set only while chasing,** not every frame: a standing Enemy has no path to follow.
+- **`nav` reaches only the agents present when it runs.** Enemies added later don't show paths until it's toggled again. Fine while Enemies are hand-placed.
+- **The one-tile corridor is a dead end off the hall,** at x 18. It first doubled as the detour route, so its idle zombie blocked the detour zombie for good (see Findings).
 - **`nav` draws paths only.** The navmesh draws only when navigation debugging is on from launch (Debug > Visible Navigation in the editor, or `--debug-navigation`); scripts can't switch it.
 
 ## Findings
@@ -80,8 +84,9 @@ Measured in headless runs with the player standing still. Positions after 6 s, d
   - *Both on (shipped):* the first three stop at reach (0.95–0.97). The other two queue behind them at 1.43 and do not walk round to the player's free sides.
   - *Collision only:* the same, with the back two grinding at 1.3–1.8.
   - *Avoidance only:* the same as both on; with collision off they could overlap but don't here.
-- **An idle Enemy blocks a one-tile corridor in every setup.** The detour zombie stops behind the corridor zombie for good. Two bodies can't pass in a one-tile corridor, and avoidance won't push them through. Pack Aggro would fix it (the blocker would chase too); so would wider corridors.
-- **The detour works:** the detour zombie notices the player through the wall, walks 27.8 for a 5.4 straight line and stops at 0.97 (with the corridor zombie moved aside).
+- **An idle Enemy blocks a one-tile corridor in every setup.** Two bodies can't pass in a one-tile corridor, and avoidance won't push them through. Seen when the corridor was also the detour route; the corridor is now a dead end of its own. Level design should keep idle Enemies out of corridors others path through, until pack Aggro (the blocker would chase too).
+- **The detour works:** the detour zombie notices the player through the wall, walks 27.8 for a 5.4 straight line and stops at 0.97.
+- **The corridor zombie** walks out of its dead end to a player at the corridor mouth and stops at 0.97.
 
 ## Later
 
@@ -94,4 +99,3 @@ Measured in headless runs with the player standing still. Positions after 6 s, d
 ## Open
 
 - Crowding: watch the pack with each setup (`avoidance_enabled` on the zombie's NavigationAgent3D; Enemy-to-Enemy collision is mask bit 3) and pick one.
-- The one-tile-corridor jam: accept, widen corridors, or pull pack Aggro forward.

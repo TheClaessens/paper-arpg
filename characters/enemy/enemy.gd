@@ -4,10 +4,10 @@ extends CharacterBody3D
 ## the player, then chases them along the navmesh for good, stopping within reach.
 
 ## Stops chasing this close to the target, in world units.
-@export var reach := 1.0
-## Chases again once the target is this far away. Larger than `reach`, so a small step by
-## the player doesn't flick the Enemy between walking and standing.
-@export var resume := 1.3
+@export var reach_distance := 1.0
+## Chases again once the target is this far away. Larger than `reach_distance`, so a small
+## step by the player doesn't flick the Enemy between walking and standing.
+@export var resume_distance := 1.3
 
 var _target: Node3D
 var _chasing := false
@@ -25,7 +25,7 @@ func _ready() -> void:
 
 ## Whether to chase a target `distance` away, given whether the Enemy is chasing now.
 func should_chase(chasing: bool, distance: float) -> bool:
-	return distance > (reach if chasing else resume)
+	return distance > (reach_distance if chasing else resume_distance)
 
 
 func _physics_process(delta: float) -> void:
