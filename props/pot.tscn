@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://cibbl4p7w8ec0"]
+
+[ext_resource type="PackedScene" uid="uid://c8ljslfebb6e7" path="res://assets/kenney/kenney_mini-dungeon/Models/GLB format/pot.glb" id="1_model"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_pot"]
+size = Vector3(0.6, 0.43, 0.41)
+
+[node name="Pot" type="StaticBody3D" unique_id=339283696]
+
+[node name="Model" parent="." unique_id=339283697 instance=ExtResource("1_model")]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=339283698]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.215, 0)
+shape = SubResource("BoxShape3D_pot")
