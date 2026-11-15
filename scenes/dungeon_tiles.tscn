@@ -1,0 +1,19 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://assets/kenney/kenney_mini-dungeon/Models/GLB format/floor.glb" id="1_sww02"]
+[ext_resource type="PackedScene" path="res://assets/kenney/kenney_mini-dungeon/Models/GLB format/floor-detail.glb" id="2_gw4hx"]
+[ext_resource type="PackedScene" path="res://assets/kenney/kenney_mini-dungeon/Models/GLB format/wall.glb" id="3_26wss"]
+[ext_resource type="PackedScene" path="res://assets/kenney/kenney_mini-dungeon/Models/GLB format/wall-half.glb" id="4_utefp"]
+
+[node name="DungeonTiles" type="Node3D" unique_id=1921147512]
+
+[node name="floor" type="Node3D" parent="." unique_id=1016285983 instance=ExtResource("1_sww02")]
+
+[node name="floor-detail" type="Node3D" parent="." unique_id=2019921402 instance=ExtResource("2_gw4hx")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0)
+
+[node name="wall" type="Node3D" parent="." unique_id=1180786028 instance=ExtResource("3_26wss")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 0)
+
+[node name="wall-half" type="Node3D" parent="." unique_id=1227838756 instance=ExtResource("4_utefp")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 0)

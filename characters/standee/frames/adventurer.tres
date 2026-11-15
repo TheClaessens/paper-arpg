@@ -1,0 +1,51 @@
+[gd_resource type="SpriteFrames" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_toon-characters/Male adventurer/PNG/Poses/character_maleAdventurer_idle.png" id="1_i674v"]
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_toon-characters/Male adventurer/PNG/Poses/character_maleAdventurer_walk0.png" id="2_xcoe6"]
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_toon-characters/Male adventurer/PNG/Poses/character_maleAdventurer_walk1.png" id="3_lva5m"]
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_toon-characters/Male adventurer/PNG/Poses/character_maleAdventurer_walk2.png" id="4_r3ryr"]
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_toon-characters/Male adventurer/PNG/Poses/character_maleAdventurer_walk3.png" id="5_juw4t"]
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_toon-characters/Male adventurer/PNG/Poses/character_maleAdventurer_walk4.png" id="6_132hu"]
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_toon-characters/Male adventurer/PNG/Poses/character_maleAdventurer_walk5.png" id="7_slhfh"]
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_toon-characters/Male adventurer/PNG/Poses/character_maleAdventurer_walk6.png" id="8_rojbi"]
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_toon-characters/Male adventurer/PNG/Poses/character_maleAdventurer_walk7.png" id="9_u8rju"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_i674v")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_xcoe6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_lva5m")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_r3ryr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_juw4t")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_132hu")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_slhfh")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_rojbi")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_u8rju")
+}],
+"loop": 1,
+"name": &"walk",
+"speed": 12.0
+}]

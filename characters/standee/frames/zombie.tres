@@ -1,0 +1,51 @@
+[gd_resource type="SpriteFrames" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_toon-characters/Zombie/PNG/Poses/character_zombie_idle.png" id="1_ar4lx"]
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_toon-characters/Zombie/PNG/Poses/character_zombie_walk0.png" id="2_41l65"]
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_toon-characters/Zombie/PNG/Poses/character_zombie_walk1.png" id="3_fnxgu"]
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_toon-characters/Zombie/PNG/Poses/character_zombie_walk2.png" id="4_e0cof"]
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_toon-characters/Zombie/PNG/Poses/character_zombie_walk3.png" id="5_ye33s"]
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_toon-characters/Zombie/PNG/Poses/character_zombie_walk4.png" id="6_syvov"]
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_toon-characters/Zombie/PNG/Poses/character_zombie_walk5.png" id="7_08n3r"]
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_toon-characters/Zombie/PNG/Poses/character_zombie_walk6.png" id="8_i76rw"]
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_toon-characters/Zombie/PNG/Poses/character_zombie_walk7.png" id="9_jqj67"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_ar4lx")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_41l65")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_fnxgu")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_e0cof")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_ye33s")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_syvov")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_08n3r")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_i76rw")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_jqj67")
+}],
+"loop": 1,
+"name": &"walk",
+"speed": 12.0
+}]
