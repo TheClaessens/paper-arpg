@@ -3,6 +3,8 @@ extends GutTest
 # Assertions compare dynamic values (settings, shader parameters), which are Variant by design.
 @warning_ignore_start("unsafe_call_argument")
 
+const ConsoleScene := preload("res://autoloads/console/console.tscn")
+
 var console: DevConsole
 var settings: GameSettings
 
@@ -53,3 +55,26 @@ func test_set_reports_bad_input() -> void:
 func test_get_and_settings_show_values() -> void:
 	assert_eq(console.execute("get pixelated"), "pixelated = true")
 	assert_string_contains(console.execute("settings"), "pixelated = true")
+
+
+func test_open_console_pauses_game_and_closing_restores_it() -> void:
+	var open_console: DevConsole = add_child_autofree(ConsoleScene.instantiate())
+	var toggle := InputEventKey.new()
+	toggle.pressed = true
+	toggle.physical_keycode = KEY_QUOTELEFT
+	open_console._input(toggle)
+	assert_true(get_tree().paused, "open console pauses the game")
+	open_console._input(toggle)
+	assert_false(get_tree().paused, "closing unpauses a game that was running")
+
+
+func test_closing_console_keeps_game_paused_if_it_was() -> void:
+	var open_console: DevConsole = add_child_autofree(ConsoleScene.instantiate())
+	var toggle := InputEventKey.new()
+	toggle.pressed = true
+	toggle.physical_keycode = KEY_QUOTELEFT
+	get_tree().paused = true
+	open_console._input(toggle)
+	open_console._input(toggle)
+	assert_true(get_tree().paused, "a game paused before opening stays paused")
+	get_tree().paused = false

@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://b7lxromdaqgee"]
+
+[ext_resource type="Script" path="res://characters/player/player.gd" id="1_player"]
+[ext_resource type="PackedScene" path="res://characters/standee/standee.tscn" id="2_standee"]
+[ext_resource type="SpriteFrames" path="res://characters/standee/frames/adventurer.tres" id="3_frames"]
+[ext_resource type="Script" path="res://characters/movement.gd" id="4_movement"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
+radius = 0.25
+height = 1.0
+
+[node name="Player" type="CharacterBody3D" unique_id=656968988]
+motion_mode = 1
+safe_margin = 0.02
+script = ExtResource("1_player")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=656968989]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("CapsuleShape3D_body")
+
+[node name="Standee" parent="." unique_id=656968990 instance=ExtResource("2_standee")]
+frames = ExtResource("3_frames")
+
+[node name="Movement" type="Node" parent="." unique_id=656968991]
+script = ExtResource("4_movement")

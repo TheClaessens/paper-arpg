@@ -1,17 +1,16 @@
 [gd_scene format=3 uid="uid://dju5kanhrsbts"]
 
-[ext_resource type="Script" uid="uid://donwqlt24yjxa" path="res://scenes/sandbox.gd" id="1_r5tyk"]
 [ext_resource type="Script" uid="uid://cx1p31vvnlago" path="res://rendering/pixelated_view.gd" id="2_2d2mb"]
 [ext_resource type="MeshLibrary" uid="uid://d0x1kj10na74x" path="res://scenes/dungeon_tiles.tres" id="3_g7mfh"]
-[ext_resource type="PackedScene" uid="uid://c1t72bg0jtlls" path="res://assets/kenney/kenney_mini-dungeon/Models/GLB format/column.glb" id="4_8b5lh"]
-[ext_resource type="PackedScene" uid="uid://dekuhrhc2sjeh" path="res://assets/kenney/kenney_mini-dungeon/Models/GLB format/barrel.glb" id="5_hc7ve"]
-[ext_resource type="PackedScene" uid="uid://col7bd32pffub" path="res://assets/kenney/kenney_mini-dungeon/Models/GLB format/chest.glb" id="6_vvfch"]
-[ext_resource type="PackedScene" uid="uid://c8ljslfebb6e7" path="res://assets/kenney/kenney_mini-dungeon/Models/GLB format/pot.glb" id="7_yc6dp"]
-[ext_resource type="PackedScene" uid="uid://d21v10wl52km8" path="res://assets/kenney/kenney_mini-dungeon/Models/GLB format/rocks.glb" id="8_ritfc"]
-[ext_resource type="PackedScene" uid="uid://b0u7d51qunqlq" path="res://assets/kenney/kenney_mini-dungeon/Models/GLB format/table.glb" id="9_y7qgn"]
-[ext_resource type="PackedScene" uid="uid://bv6iodt6mti0n" path="res://assets/kenney/kenney_mini-dungeon/Models/GLB format/stones.glb" id="10_f4qvn"]
+[ext_resource type="PackedScene" uid="uid://buf16dele7mol" path="res://props/column.tscn" id="4_8b5lh"]
+[ext_resource type="PackedScene" uid="uid://dgh0xyja6whnh" path="res://props/barrel.tscn" id="5_hc7ve"]
+[ext_resource type="PackedScene" uid="uid://j7yjctk8hcq2" path="res://props/chest.tscn" id="6_vvfch"]
+[ext_resource type="PackedScene" uid="uid://cibbl4p7w8ec0" path="res://props/pot.tscn" id="7_yc6dp"]
+[ext_resource type="PackedScene" uid="uid://ljeaketqpotb" path="res://props/rocks.tscn" id="8_ritfc"]
+[ext_resource type="PackedScene" uid="uid://3cr8gu01tmg6" path="res://props/table.tscn" id="9_y7qgn"]
+[ext_resource type="PackedScene" uid="uid://cgoetoa6kv3y3" path="res://props/stones.tscn" id="10_f4qvn"]
 [ext_resource type="PackedScene" path="res://characters/standee/standee.tscn" id="11_qjjs2"]
-[ext_resource type="SpriteFrames" path="res://characters/standee/frames/adventurer.tres" id="13_ubo0v"]
+[ext_resource type="PackedScene" uid="uid://b7lxromdaqgee" path="res://characters/player/player.tscn" id="12_player"]
 [ext_resource type="SpriteFrames" path="res://characters/standee/frames/zombie.tres" id="14_r0eph"]
 
 [sub_resource type="Environment" id="Environment_dugpm"]
@@ -22,7 +21,6 @@ ambient_light_color = Color(0.6, 0.6, 0.7, 1)
 ambient_light_energy = 0.6
 
 [node name="Sandbox" type="Node" unique_id=2138759999]
-script = ExtResource("1_r5tyk")
 
 [node name="PixelatedView" type="SubViewportContainer" parent="." unique_id=1689867640]
 anchors_preset = 15
@@ -43,11 +41,6 @@ transform = Transform3D(0.34202015, 0.7198463, -0.6040228, 0, 0.64278764, 0.7660
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="PixelatedView/SubViewport/World" unique_id=1776298479]
 environment = SubResource("Environment_dugpm")
-
-[node name="Camera" type="Camera3D" parent="PixelatedView/SubViewport/World" unique_id=1078422878]
-transform = Transform3D(0.70710677, -0.4055798, 0.579228, 0, 0.81915206, 0.57357645, -0.70710677, -0.4055798, 0.579228, 11.584559, 11.471529, 11.584559)
-projection = 1
-size = 6.0
 
 [node name="Dungeon" type="GridMap" parent="PixelatedView/SubViewport/World" unique_id=2089857684]
 mesh_library = ExtResource("3_g7mfh")
@@ -86,10 +79,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 2)
 [node name="Stones" parent="PixelatedView/SubViewport/World/Props" unique_id=1355999517 instance=ExtResource("10_f4qvn")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, -2)
 
-[node name="Player" type="Node3D" parent="PixelatedView/SubViewport/World" unique_id=1861459470]
+[node name="Player" parent="PixelatedView/SubViewport/World" unique_id=1861459470 instance=ExtResource("12_player")]
 
-[node name="Standee" parent="PixelatedView/SubViewport/World/Player" unique_id=580293237 instance=ExtResource("11_qjjs2")]
-frames = ExtResource("13_ubo0v")
+[node name="Camera" type="Camera3D" parent="PixelatedView/SubViewport/World/Player" unique_id=1078422878]
+transform = Transform3D(0.70710677, -0.4055798, 0.579228, 0, 0.81915206, 0.57357645, -0.70710677, -0.4055798, 0.579228, 11.584559, 11.471529, 11.584559)
+projection = 1
+size = 6.0
 
 [node name="Zombie" type="Node3D" parent="PixelatedView/SubViewport/World" unique_id=1428405492]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, -2)

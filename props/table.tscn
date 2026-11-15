@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://3cr8gu01tmg6"]
+
+[ext_resource type="PackedScene" uid="uid://b0u7d51qunqlq" path="res://assets/kenney/kenney_mini-dungeon/Models/GLB format/table.glb" id="1_model"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_table"]
+size = Vector3(0.875, 0.31, 0.65)
+
+[node name="Table" type="StaticBody3D" unique_id=973794520]
+
+[node name="Model" parent="." unique_id=973794521 instance=ExtResource("1_model")]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=973794522]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.155, 0)
+shape = SubResource("BoxShape3D_table")
