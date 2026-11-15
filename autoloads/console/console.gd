@@ -30,6 +30,7 @@ func _init() -> void:
 	register(&"set", _cmd_set, "set <setting> <value>: change a setting.")
 	register(&"collisions", _cmd_collisions, "Toggle drawing collision shapes.")
 	register(&"aggro", _cmd_aggro, "Toggle drawing every Enemy's Aggro radius.")
+	register(&"nav", _cmd_nav, "Toggle drawing every Enemy's path. Navmesh: Debug > Visible Navigation.")
 
 
 func _ready() -> void:
@@ -162,6 +163,16 @@ func _cmd_collisions(_args: PackedStringArray) -> String:
 func _cmd_aggro(_args: PackedStringArray) -> String:
 	Aggro.rings_visible = not Aggro.rings_visible
 	return "aggro %s" % ("on" if Aggro.rings_visible else "off")
+
+
+## Only the paths: the navmesh itself draws only when navigation debugging is on from launch
+## (editor: Debug > Visible Navigation, or --debug-navigation), and scripts can't switch it.
+func _cmd_nav(_args: PackedStringArray) -> String:
+	var on := not NavigationServer3D.get_debug_enabled()
+	NavigationServer3D.set_debug_enabled(on)
+	for agent: NavigationAgent3D in get_tree().root.find_children("*", "NavigationAgent3D", true, false):
+		agent.debug_enabled = on
+	return "nav %s" % ("on" if on else "off")
 
 
 func _show_setting(key: StringName) -> String:

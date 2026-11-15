@@ -9,9 +9,8 @@
 [ext_resource type="PackedScene" uid="uid://ljeaketqpotb" path="res://props/rocks.tscn" id="8_ritfc"]
 [ext_resource type="PackedScene" uid="uid://3cr8gu01tmg6" path="res://props/table.tscn" id="9_y7qgn"]
 [ext_resource type="PackedScene" uid="uid://cgoetoa6kv3y3" path="res://props/stones.tscn" id="10_f4qvn"]
-[ext_resource type="PackedScene" path="res://characters/standee/standee.tscn" id="11_qjjs2"]
 [ext_resource type="PackedScene" uid="uid://b7lxromdaqgee" path="res://characters/player/player.tscn" id="12_player"]
-[ext_resource type="SpriteFrames" path="res://characters/standee/frames/zombie.tres" id="14_r0eph"]
+[ext_resource type="PackedScene" path="res://characters/enemy/zombie.tscn" id="14_zombie"]
 [ext_resource type="NavigationMesh" path="res://scenes/sandbox_navmesh.tres" id="15_navmesh"]
 
 [sub_resource type="Environment" id="Environment_dugpm"]
@@ -84,16 +83,16 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 2)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, -2)
 
 [node name="WallRocks" parent="PixelatedView/SubViewport/World/NavigationRegion3D/Props" unique_id=1938274700 instance=ExtResource("8_ritfc")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, -5.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, -5)
 
 [node name="WallBarrel" parent="PixelatedView/SubViewport/World/NavigationRegion3D/Props" unique_id=1938274701 instance=ExtResource("5_hc7ve")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, -4.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, -4)
 
 [node name="WallBarrel2" parent="PixelatedView/SubViewport/World/NavigationRegion3D/Props" unique_id=1938274702 instance=ExtResource("5_hc7ve")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, -3.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, -3)
 
 [node name="WallBarrel3" parent="PixelatedView/SubViewport/World/NavigationRegion3D/Props" unique_id=1938274703 instance=ExtResource("5_hc7ve")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, -2.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, -2)
 
 [node name="HallColumn" parent="PixelatedView/SubViewport/World/NavigationRegion3D/Props" unique_id=1938274704 instance=ExtResource("4_8b5lh")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 2)
@@ -120,14 +119,23 @@ transform = Transform3D(0.70710677, -0.4055798, 0.579228, 0, 0.81915206, 0.57357
 projection = 1
 size = 6.0
 
-[node name="Zombie" type="Node3D" parent="PixelatedView/SubViewport/World" unique_id=1428405492]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, -2)
+[node name="PackZombie" parent="PixelatedView/SubViewport/World" unique_id=1938276100 instance=ExtResource("14_zombie")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 4)
 
-[node name="Standee" parent="PixelatedView/SubViewport/World/Zombie" unique_id=1681790588 instance=ExtResource("11_qjjs2")]
-frames = ExtResource("14_r0eph")
+[node name="PackZombie2" parent="PixelatedView/SubViewport/World" unique_id=1938276101 instance=ExtResource("14_zombie")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21, 0, 4.5)
 
-[node name="Zombie2" type="Node3D" parent="PixelatedView/SubViewport/World" unique_id=523571849]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, 3)
+[node name="PackZombie3" parent="PixelatedView/SubViewport/World" unique_id=1938276102 instance=ExtResource("14_zombie")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.5, 0, 5.5)
 
-[node name="Standee" parent="PixelatedView/SubViewport/World/Zombie2" unique_id=76418715 instance=ExtResource("11_qjjs2")]
-frames = ExtResource("14_r0eph")
+[node name="PackZombie4" parent="PixelatedView/SubViewport/World" unique_id=1938276103 instance=ExtResource("14_zombie")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 0, 6)
+
+[node name="PackZombie5" parent="PixelatedView/SubViewport/World" unique_id=1938276104 instance=ExtResource("14_zombie")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 6.5)
+
+[node name="CorridorZombie" parent="PixelatedView/SubViewport/World" unique_id=1938276105 instance=ExtResource("14_zombie")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, 0, -9.5)
+
+[node name="DetourZombie" parent="PixelatedView/SubViewport/World" unique_id=1938276106 instance=ExtResource("14_zombie")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0, -2)

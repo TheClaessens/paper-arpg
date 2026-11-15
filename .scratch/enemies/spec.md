@@ -1,8 +1,8 @@
 # Enemies
 
-Status: ready-for-agent
+Status: ready-for-human
 
-README step 2, movement behaviour of basic Enemies only. Agreed in a grilling session on 2026-11-16. Step 1's open items (controller pass, tuning, shimmer) stay open: controller testing happens after this step.
+README step 2, movement behaviour of basic Enemies only. Agreed in a grilling session on 2026-11-16. Built; waiting on the developer's look at crowding and the corridor finding below. Step 1's open items (controller pass, tuning, shimmer) stay open: controller testing happens after this step.
 
 ## Requirements
 
@@ -32,7 +32,7 @@ README step 2, movement behaviour of basic Enemies only. Agreed in a grilling se
 7. **Placement.** Hand-placed in `sandbox.tscn`: a pack of 5 in the hall, single zombies in the corridor and the detour room. The old bare-`Node3D` zombies are replaced.
 8. **Console commands.**
    - `aggro` toggles every Enemy's Aggro ring.
-   - `nav` toggles navmesh drawing and every agent's current path.
+   - `nav` toggles every agent's current path.
 
 ## Commits
 
@@ -63,14 +63,35 @@ README step 2, movement behaviour of basic Enemies only. Agreed in a grilling se
 - **The ring is a thin `TorusMesh`,** unshaded, lying flat 0.02 above the floor.
 - **One static `Aggro.rings_visible`** drives every ring. The `aggro` command flips it, and Enemies placed later pick it up too.
 - **The Aggro test uses real physics:** bodies on the `player` and `enemy` layers step into the sphere. It checks the layer mask and the radius, not just the signal code.
+- **Grid cells span `[x, x+1]`,** not `x ± 0.5`. Commit 1 placed the wall rocks flush with the wall; commit 3 moves them (and the wall barrels) half a tile out, so the 0.5 gap exists.
+- **Without avoidance the Enemy moves itself.** With `avoidance_enabled` off the agent never emits `velocity_computed`, so the Enemy calls its own handler (the pattern from Godot's docs).
+- **`path_desired_distance` 0.1.** At 0.5 an Enemy counted a corridor corner as reached 0.3 early, aimed past it and pushed into the wall.
+- **`path_height_offset` 0.2.** Path points sit on the baked floor at y 0.2 (see above). Without the offset an Enemy at y 0 is never within 0.1 of a point and stops. It must match the floor's baked height if the navmesh settings change.
+- **The agent's `max_speed` follows `Movement.speed`,** set in `_ready`, so the speed is tuned in one place.
+- **A standing Enemy skips `move_and_slide()`.** Run with zero velocity it still pushes the Enemy out of everything pressing into it, and a pack arriving behind shoved the first arrivals onto the player (0.5 instead of reach 1.0).
+- **`avoidance_priority` 1.0 while within reach, 0.5 while chasing.** Avoidance is reciprocal: a standing Enemy stepped aside for arrivals and drifted onto the player. An agent ignores agents of lower priority, so chasers now walk around the ones standing.
+- **`nav` draws paths only.** The navmesh draws only when navigation debugging is on from launch (Debug > Visible Navigation in the editor, or `--debug-navigation`); scripts can't switch it.
+
+## Findings
+
+Measured in headless runs with the player standing still. Positions after 6 s, distances to the player.
+
+- **Pack of 5 in the hall, crowding compared:**
+  - *Both on (shipped):* the first three stop at reach (0.95–0.97). The other two queue behind them at 1.43 and do not walk round to the player's free sides.
+  - *Collision only:* the same, with the back two grinding at 1.3–1.8.
+  - *Avoidance only:* the same as both on; with collision off they could overlap but don't here.
+- **An idle Enemy blocks a one-tile corridor in every setup.** The detour zombie stops behind the corridor zombie for good. Two bodies can't pass in a one-tile corridor, and avoidance won't push them through. Pack Aggro would fix it (the blocker would chase too); so would wider corridors.
+- **The detour works:** the detour zombie notices the player through the wall, walks 27.8 for a 5.4 straight line and stops at 0.97 (with the corridor zombie moved aside).
 
 ## Later
 
-- Pack Aggro: one Enemy noticing the player wakes its neighbours.
+- Pack Aggro: one Enemy noticing the player wakes its neighbours. Also unblocks corridors (see Findings).
+- Surrounding: Enemies queueing behind the front row could walk round to free sides of the player.
 - Line of sight and leashing, if aggro through walls feels wrong.
 - Wandering before Aggro.
 - Enemy kinds (elites, bosses) and rarities.
 
 ## Open
 
-- Crowding comparison (see Decisions).
+- Crowding: watch the pack with each setup (`avoidance_enabled` on the zombie's NavigationAgent3D; Enemy-to-Enemy collision is mask bit 3) and pick one.
+- The one-tile-corridor jam: accept, widen corridors, or pull pack Aggro forward.
