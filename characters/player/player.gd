@@ -7,6 +7,23 @@ extends CharacterBody3D
 @onready var _standee: Standee = $Standee
 
 
+# Registered while in the tree, so a reloaded scene's new Player takes the command over.
+func _enter_tree() -> void:
+	Console.register(&"tp", _cmd_tp, "tp <x> <z>: move the player to a spot on the ground.")
+
+
+func _exit_tree() -> void:
+	Console.unregister(&"tp")
+
+
+func _cmd_tp(args: PackedStringArray) -> String:
+	if args.size() != 2 or not args[0].is_valid_float() or not args[1].is_valid_float():
+		return "Usage: tp <x> <z>"
+	global_position = Vector3(args[0].to_float(), 0.0, args[1].to_float())
+	velocity = Vector3.ZERO
+	return "tp %s %s" % [args[0], args[1]]
+
+
 func _physics_process(delta: float) -> void:
 	velocity = _movement.next_velocity(velocity, _input_direction(), delta)
 	move_and_slide()

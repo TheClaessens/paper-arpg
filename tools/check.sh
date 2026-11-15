@@ -13,6 +13,11 @@ step() {
 	echo "== $label"
 	out=$("$@" 2>&1) || status=$?
 	grep -E "$filter" <<<"$out"
+	# Godot falls back to the path on a bad uid="..." and only warns, so catch it here.
+	if grep "invalid UID" <<<"$out"; then
+		echo "!! $label: invalid UID (fix it, or drop the uid attribute)"
+		exit 1
+	fi
 	if ((status != 0)); then
 		echo "!! $label failed (exit $status)"
 		exit "$status"
