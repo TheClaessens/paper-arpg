@@ -3,7 +3,7 @@ extends CanvasLayer
 ## Developer console, available in debug builds only.
 ## Open with the backtick key (`) or by clicking both sticks in at once.
 ## Systems add their own commands with register(); the console itself only knows
-## `help`, the commands for reading and changing Settings, and engine debug toggles.
+## `help`, the commands for reading and changing Settings, and debug drawing toggles.
 ##
 ## In release builds the Console is an empty shell: no panel, no input, and register()
 ## does nothing. Game code can call it freely without checking the build type.
@@ -29,6 +29,7 @@ func _init() -> void:
 	register(&"get", _cmd_get, "get <setting>: show a setting's value.")
 	register(&"set", _cmd_set, "set <setting> <value>: change a setting.")
 	register(&"collisions", _cmd_collisions, "Toggle drawing collision shapes.")
+	register(&"aggro", _cmd_aggro, "Toggle drawing every Enemy's Aggro radius.")
 
 
 func _ready() -> void:
@@ -156,6 +157,11 @@ func _cmd_collisions(_args: PackedStringArray) -> String:
 	for grid_map: GridMap in scene.find_children("*", "GridMap", true, false):
 		grid_map.cell_size = grid_map.cell_size
 	return "collisions %s" % ("on" if tree.debug_collisions_hint else "off")
+
+
+func _cmd_aggro(_args: PackedStringArray) -> String:
+	Aggro.rings_visible = not Aggro.rings_visible
+	return "aggro %s" % ("on" if Aggro.rings_visible else "off")
 
 
 func _show_setting(key: StringName) -> String:

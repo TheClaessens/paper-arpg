@@ -1,0 +1,31 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://characters/aggro/aggro.gd" id="1_aggro"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_aggro"]
+resource_local_to_scene = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ring"]
+shading_mode = 0
+albedo_color = Color(1, 0.35, 0.3, 1)
+
+[sub_resource type="TorusMesh" id="TorusMesh_ring"]
+resource_local_to_scene = true
+material = SubResource("StandardMaterial3D_ring")
+rings = 64
+ring_segments = 4
+
+[node name="Aggro" type="Area3D" unique_id=1938275001]
+collision_layer = 0
+collision_mask = 2
+monitorable = false
+script = ExtResource("1_aggro")
+
+[node name="Sphere" type="CollisionShape3D" parent="." unique_id=1938275002]
+shape = SubResource("SphereShape3D_aggro")
+
+[node name="Ring" type="MeshInstance3D" parent="." unique_id=1938275003]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+visible = false
+cast_shadow = 0
+mesh = SubResource("TorusMesh_ring")

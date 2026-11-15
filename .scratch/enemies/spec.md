@@ -59,6 +59,10 @@ README step 2, movement behaviour of basic Enemies only. Agreed in a grilling se
 - **The floor bakes at y 0.2,** not 0: heights round up to the cell height. Enemies only use the path's direction on the ground, so it doesn't matter.
 - **Wall and prop tops bake as islands.** Nothing can reach them; they show up in the `nav` drawing only.
 - **The chest moved** out of the start room's new north doorway.
+- **`Aggro` is a scene,** `characters/aggro/aggro.tscn`: the `Area3D` with its `Sphere` and `Ring`. Both resources are local to the scene, so each Enemy's radius is its own.
+- **The ring is a thin `TorusMesh`,** unshaded, lying flat 0.02 above the floor.
+- **One static `Aggro.rings_visible`** drives every ring. The `aggro` command flips it, and Enemies placed later pick it up too.
+- **The Aggro test uses real physics:** bodies on the `player` and `enemy` layers step into the sphere. It checks the layer mask and the radius, not just the signal code.
 
 ## Later
 
