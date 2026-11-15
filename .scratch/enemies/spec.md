@@ -1,8 +1,8 @@
 # Enemies
 
-Status: ready-for-human
+Status: done
 
-README step 2, movement behaviour of basic Enemies only. Agreed in a grilling session on 2026-11-16. Built; functional test passed 2026-11-16. Crowding setup still to pick. Step 1's open items (controller pass, tuning, shimmer) stay open: controller testing happens after this step.
+README step 2, movement behaviour of basic Enemies only. Agreed in a grilling session on 2026-11-16. Built; functional test passed 2026-11-16. Step 1's open items (controller pass, tuning, shimmer) stay open: controller testing happens after this step.
 
 ## Requirements
 
@@ -48,7 +48,7 @@ README step 2, movement behaviour of basic Enemies only. Agreed in a grilling se
 - **`Aggro` is an `Area3D` component.** The physics engine reports the player, so the Enemy never looks it up, and every Enemy type reuses it.
 - **No inherited enemy base scene.** One Enemy type; extract a base when the second one shows what they share.
 - **Editor-baked navmesh.** No code. Upgrade path: runtime baking, chunked per room on a background thread, once levels are generated. Only the level changes; Enemies don't.
-- **Crowding is decided by eye.** Ship with collision and avoidance (RVO) both on, then compare both / collision only (layer mask) / avoidance only (`avoidance_enabled`) in the hall and corridor. Record the outcome here.
+- **Crowding is decided by eye.** Compare both / collision only / avoidance only in the hall and corridor. Outcome below.
 
 ## Decisions made during the build
 
@@ -74,7 +74,7 @@ README step 2, movement behaviour of basic Enemies only. Agreed in a grilling se
 - **The target is set only while chasing,** not every frame: a standing Enemy has no path to follow.
 - **`nav` reaches only the agents present when it runs.** Enemies added later don't show paths until it's toggled again. Fine while Enemies are hand-placed.
 - **The one-tile corridor is a dead end off the hall,** at x 18. It first doubled as the detour route, so its idle zombie blocked the detour zombie for good (see Findings).
-- **Crowding is two settings,** `enemy_avoidance` and `enemy_collision` (both on), so the setups can be compared live: `set enemy_avoidance off`. Each Enemy applies them on `_ready` and when `Settings.changed` fires; the zombie scene no longer sets avoidance itself.
+- **Crowding: avoidance and collision both on** (developer, 2026-11-16). Avoidance does the steering; collision is the hard guarantee for when soft avoidance gives way (dense packs, choke points, step-3 knockback). It keeps Standees from overlapping and body-blocking consistent. Compared live through two temporary settings, removed once decided.
 - **`nav` draws paths only.** The navmesh draws only when navigation debugging is on from launch (Debug > Visible Navigation in the editor, or `--debug-navigation`); scripts can't switch it.
 
 ## Findings
@@ -100,4 +100,4 @@ Measured in headless runs with the player standing still. Positions after 6 s, d
 
 ## Open
 
-- Crowding: watch the pack with each setup (`set enemy_avoidance on|off`, `set enemy_collision on|off`) and pick one.
+Nothing.
