@@ -32,7 +32,6 @@ speed = 2.5
 path_desired_distance = 0.1
 path_height_offset = 0.2
 target_desired_distance = 0.5
-avoidance_enabled = true
 height = 1.0
 radius = 0.3
 neighbor_distance = 3.0

@@ -3,6 +3,9 @@ extends CharacterBody3D
 ## A Character hostile to the player (see GLOSSARY.md). Stands still until its Aggro notices
 ## the player, then chases them along the navmesh for good, stopping within reach.
 
+## The `enemy` physics layer's number (project.godot).
+const ENEMY_LAYER := 3
+
 ## Stops chasing this close to the target, in world units.
 @export var reach_distance := 1.0
 ## Chases again once the target is this far away. Larger than `reach_distance`, so a small
@@ -21,11 +24,24 @@ func _ready() -> void:
 	($Aggro as Aggro).aggroed.connect(func(target: Node3D) -> void: _target = target)
 	_agent.velocity_computed.connect(_on_velocity_computed)
 	_agent.max_speed = _movement.speed # avoidance never speeds an Enemy past its own top speed
+	Settings.changed.connect(_on_setting_changed)
+	_apply_crowding()
 
 
 ## Whether to chase a target `distance` away, given whether the Enemy is chasing now.
 func should_chase(chasing: bool, distance: float) -> bool:
 	return distance > (reach_distance if chasing else resume_distance)
+
+
+## How Enemies keep out of each other's way comes from Settings, so it can be compared live.
+func _apply_crowding() -> void:
+	_agent.avoidance_enabled = Settings.get_value(&"enemy_avoidance") as bool
+	set_collision_mask_value(ENEMY_LAYER, Settings.get_value(&"enemy_collision") as bool)
+
+
+func _on_setting_changed(key: StringName, _value: Variant) -> void:
+	if key in [&"enemy_avoidance", &"enemy_collision"]:
+		_apply_crowding()
 
 
 func _physics_process(delta: float) -> void:

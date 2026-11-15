@@ -13,6 +13,16 @@ const DEFINITIONS: Dictionary[StringName, Dictionary] = {
 		default = true,
 		description = "Render the world at low resolution with crisp, blocky upscaling.",
 	},
+	&"enemy_avoidance": {
+		type = TYPE_BOOL,
+		default = true,
+		description = "Enemies steer around each other.",
+	},
+	&"enemy_collision": {
+		type = TYPE_BOOL,
+		default = true,
+		description = "Enemies collide with each other.",
+	},
 }
 
 var _values: Dictionary[StringName, Variant] = {}

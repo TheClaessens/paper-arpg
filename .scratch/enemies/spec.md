@@ -74,6 +74,7 @@ README step 2, movement behaviour of basic Enemies only. Agreed in a grilling se
 - **The target is set only while chasing,** not every frame: a standing Enemy has no path to follow.
 - **`nav` reaches only the agents present when it runs.** Enemies added later don't show paths until it's toggled again. Fine while Enemies are hand-placed.
 - **The one-tile corridor is a dead end off the hall,** at x 18. It first doubled as the detour route, so its idle zombie blocked the detour zombie for good (see Findings).
+- **Crowding is two settings,** `enemy_avoidance` and `enemy_collision` (both on), so the setups can be compared live: `set enemy_avoidance off`. Each Enemy applies them on `_ready` and when `Settings.changed` fires; the zombie scene no longer sets avoidance itself.
 - **`nav` draws paths only.** The navmesh draws only when navigation debugging is on from launch (Debug > Visible Navigation in the editor, or `--debug-navigation`); scripts can't switch it.
 
 ## Findings
@@ -84,6 +85,7 @@ Measured in headless runs with the player standing still. Positions after 6 s, d
   - *Both on (shipped):* the first three stop at reach (0.95–0.97). The other two queue behind them at 1.43 and do not walk round to the player's free sides.
   - *Collision only:* the same, with the back two grinding at 1.3–1.8.
   - *Avoidance only:* the same as both on; with collision off they could overlap but don't here.
+  - *Neither:* all five stand on almost the same spot at reach.
 - **An idle Enemy blocks a one-tile corridor in every setup.** Two bodies can't pass in a one-tile corridor, and avoidance won't push them through. Seen when the corridor was also the detour route; the corridor is now a dead end of its own. Level design should keep idle Enemies out of corridors others path through, until pack Aggro (the blocker would chase too).
 - **The detour works:** the detour zombie notices the player through the wall, walks 27.8 for a 5.4 straight line and stops at 0.97.
 - **The corridor zombie** walks out of its dead end to a player at the corridor mouth and stops at 0.97.
@@ -98,4 +100,4 @@ Measured in headless runs with the player standing still. Positions after 6 s, d
 
 ## Open
 
-- Crowding: watch the pack with each setup (`avoidance_enabled` on the zombie's NavigationAgent3D; Enemy-to-Enemy collision is mask bit 3) and pick one.
+- Crowding: watch the pack with each setup (`set enemy_avoidance on|off`, `set enemy_collision on|off`) and pick one.
