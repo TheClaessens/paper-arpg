@@ -1,5 +1,8 @@
 extends GutTest
 
+# Assertions compare dynamic values (settings, shader parameters), which are Variant by design.
+@warning_ignore_start("unsafe_call_argument")
+
 var settings: GameSettings
 
 
