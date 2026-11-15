@@ -43,6 +43,16 @@ README step 1, basic movement only. Blink, Leap and other movement abilities wai
 - **Direction-only stick.** Chosen over proportional speed (Diablo IV's model) and walk/run thresholds. Switching to proportional later means dropping the normalisation.
 - **Only `idle` and `walk`.** The run poses wait until speed is tuned.
 
+## Decisions made during the build
+
+- **Props are scenes.** Each prop is `props/<name>.tscn`: a `StaticBody3D` root with the Kenney model and a box shape. Wall tiles use the importer's physics option plus matching shapes in the MeshLibrary, so a re-export from `dungeon_tiles.tscn` keeps them.
+- **`next_velocity(velocity, direction, delta)`.** It takes the current velocity instead of storing its own, so speed lost against a wall in `move_and_slide()` stays lost.
+- **Physical WASD keys.** Bound by physical key, so they sit in the same place on AZERTY.
+- **The deadzone lives in the Input Map.** Each `move_*` action has a 0.2 deadzone, and `get_vector()` uses it.
+- **Running into a wall plays `idle`.** Once the velocity is zero, the walk stops.
+- **`safe_margin` 0.02 on Character bodies.** The default 0.001 let the capsule wedge into a gap exactly its width (wall to rocks, 0.5) and stay stuck. With 0.02 it stops at the gap instead. Enemies get the same margin in step 2.
+- **`sandbox.gd` deleted.** With `anim` gone it had nothing left.
+
 ## Open
 
 - Tune speed, acceleration and deceleration with the developer.
