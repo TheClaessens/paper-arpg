@@ -145,3 +145,15 @@ func test_a_drag_aims_a_spot_skill_as_far_as_it_goes() -> void:
 	assert_almost_eq(half, Vector3(0.0, 0.0, 4.0), Vector3.ONE * 0.001, "half the drag, half the Range")
 	var past := Player.ground_aim(Vector2(0.0, 300.0), Vector3.RIGHT, Vector3.BACK, 8.0, 100.0, true)
 	assert_almost_eq(past, Vector3(0.0, 0.0, 8.0), Vector3.ONE * 0.001, "never past the Range")
+
+
+func test_after_a_use_the_player_faces_the_aim_for_a_moment() -> void:
+	_tilted_camera()
+	player.set_physics_process(true)
+	Input.action_press(&"move_up")
+	player.skill_bar.press(0, Vector3(3.0, 0.0, 0.0)) # the Attack, aimed to the right
+	await wait_physics_frames(4)
+	assert_almost_eq(player.facing, Vector3(1.0, 0.0, 0.0), Vector3.ONE * 0.05, "faces the aim while walking up")
+	await wait_seconds(0.5)
+	Input.action_release(&"move_up")
+	assert_almost_eq(player.facing, Vector3(0.0, 0.0, -1.0), Vector3.ONE * 0.05, "then the walk takes Facing back")

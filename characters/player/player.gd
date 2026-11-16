@@ -9,6 +9,8 @@ extends CharacterBody3D
 const USE_STRETCH := -0.15
 ## How near the mouse cursor's spot an Enemy must be to be highlighted.
 const HOVER_REACH := 1.0
+## How long the player keeps facing what a Skill was aimed at before the walk takes Facing back.
+const FACE_AIM_TIME := 0.35
 
 ## The player's Facing (see GLOSSARY.md): a unit direction on the ground. It follows the right
 ## stick while that is pushed, the mouse cursor once the mouse moves, otherwise the movement.
@@ -31,6 +33,7 @@ var skills: Array[Skill]:
 var _cursor := Vector2.ZERO # mouse position in this viewport
 var _aim_with_mouse := false
 var _aim_with_stick := false # the right stick is pushed
+var _face_aim_left := 0.0 # time left facing the last use's aim
 
 @onready var _movement: Movement = $Movement
 @onready var _standee: Standee = $Standee
@@ -86,7 +89,8 @@ static func slot_action(slot: int) -> StringName:
 func _on_skill_used(skill: Skill, given_aim: Vector3) -> void:
 	var aim := given_aim if given_aim.is_finite() else _aim_for(skill)
 	if not aim.is_zero_approx():
-		facing = aim.normalized() # turn to what it was aimed at
+		facing = aim.normalized() # turn to what it was aimed at, for a moment
+		_face_aim_left = FACE_AIM_TIME
 	skill.use(aim)
 	_standee.squash(USE_STRETCH)
 
@@ -178,8 +182,11 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	var aim := _stick_direction(&"aim_left", &"aim_right", &"aim_up", &"aim_down")
 	_aim_with_stick = not aim.is_zero_approx()
+	_face_aim_left = maxf(0.0, _face_aim_left - delta)
 	if _aim_with_stick:
 		facing = aim
+	elif _face_aim_left > 0.0:
+		pass # still facing the last use's aim
 	elif _aim_with_mouse:
 		facing = _facing_toward_cursor()
 	elif not direction.is_zero_approx():
