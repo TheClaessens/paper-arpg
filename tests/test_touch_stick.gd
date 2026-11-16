@@ -96,10 +96,31 @@ func test_follow_mode_drags_the_origin() -> void:
 
 
 func test_touch_on_console_button_does_not_start_the_stick() -> void:
-	var button: Button = Console.get_node("%Toggle")
+	var button: Button = Console.get_node("%Button")
 	var on_button := InputEventScreenTouch.new()
 	on_button.position = button.get_global_rect().get_center()
 	on_button.pressed = true
 	get_viewport().push_input(on_button, true)
 	_drag(0, on_button.position + Vector2(100, 0))
-	assert_eq(_pushed(), Vector2.ZERO, "the Console claims touches on its button")
+	assert_eq(_pushed(), Vector2.ZERO, "the GUI claims touches on the button")
+	# Control step: the same route off the button does reach the stick.
+	var beside := InputEventScreenTouch.new()
+	beside.position = on_button.position + Vector2(0, 100)
+	beside.pressed = true
+	get_viewport().push_input(beside, true)
+	_drag(0, beside.position + Vector2(100, 0))
+	assert_gt(_pushed().x, 0.0, "a touch beside the button starts the stick")
+
+
+func test_stick_leaves_a_held_key_alone() -> void:
+	Input.action_press(&"move_up") # W held on the keyboard
+	_touch(0, Vector2(100, 400), true)
+	_drag(0, Vector2(200, 400))
+	_touch(0, Vector2(200, 400), false)
+	assert_true(Input.is_action_pressed(&"move_up"), "the stick only releases what it pressed")
+
+
+func test_pausing_without_a_thumb_leaves_a_held_key_alone() -> void:
+	Input.action_press(&"move_up")
+	stick.notification(Node.NOTIFICATION_PAUSED)
+	assert_true(Input.is_action_pressed(&"move_up"))

@@ -82,7 +82,7 @@ func test_closing_console_keeps_game_paused_if_it_was() -> void:
 
 func test_button_toggles_console_like_the_key() -> void:
 	var open_console: DevConsole = add_child_autofree(ConsoleScene.instantiate())
-	var button: Button = open_console.get_node("%Toggle")
+	var button: Button = open_console.get_node("%Button")
 	button.pressed.emit()
 	assert_true(get_tree().paused, "button opens the console")
 	button.pressed.emit()

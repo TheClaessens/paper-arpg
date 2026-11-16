@@ -4,16 +4,19 @@ extends Control
 ## drags a stick from that spot. It presses the move_* actions like the controller's left
 ## stick, so the Player can't tell them apart.
 
+const NO_FINGER := -1
+
 ## How far the thumb travels from the origin to push the stick fully.
 @export var radius := 80.0
 
 ## When on, the origin is dragged along behind a thumb past the rim instead of staying put.
 ## Temporary: switched with the `touchstick` console command until the device test settles it.
-var follow := false
+@export var follow := false
 
-var _finger := -1 # touch index that owns the stick, -1 when no thumb is down
+var _finger := NO_FINGER # touch index that owns the stick
 var _origin := Vector2.ZERO
 var _thumb := Vector2.ZERO
+var _stick := Vector2.ZERO # what the stick last pressed, so it releases only that
 
 @onready var _pad: Sprite2D = $Pad
 @onready var _nub: Sprite2D = $Nub
@@ -49,7 +52,7 @@ func _cmd_touchstick(args: PackedStringArray) -> String:
 func _unhandled_input(event: InputEvent) -> void:
 	var touch := event as InputEventScreenTouch
 	if touch:
-		if touch.pressed and _finger == -1 and touch.position.x < get_viewport_rect().size.x / 2.0:
+		if touch.pressed and _finger == NO_FINGER and touch.position.x < get_viewport_rect().size.x / 2.0:
 			_finger = touch.index
 			_origin = touch.position
 			_move_thumb(touch.position)
@@ -77,28 +80,33 @@ func _move_thumb(at: Vector2) -> void:
 
 
 func _release() -> void:
-	_finger = -1
+	if _finger == NO_FINGER:
+		return
+	_finger = NO_FINGER
 	_press(Vector2.ZERO)
 	_place_sprites()
 
 
 ## Presses each move_* action by its share of the stick; the Input Map deadzone applies on read.
+## An action the stick stops pushing is released only if the stick was the one pressing it,
+## so a key held on the keyboard stays held.
 func _press(stick: Vector2) -> void:
-	_press_action(&"move_left", -stick.x)
-	_press_action(&"move_right", stick.x)
-	_press_action(&"move_up", -stick.y)
-	_press_action(&"move_down", stick.y)
+	_press_action(&"move_left", -stick.x, -_stick.x)
+	_press_action(&"move_right", stick.x, _stick.x)
+	_press_action(&"move_up", -stick.y, -_stick.y)
+	_press_action(&"move_down", stick.y, _stick.y)
+	_stick = stick
 
 
-func _press_action(action: StringName, strength: float) -> void:
+func _press_action(action: StringName, strength: float, was: float) -> void:
 	if strength > 0.0:
 		Input.action_press(action, strength)
-	else:
+	elif was > 0.0:
 		Input.action_release(action)
 
 
 func _place_sprites() -> void:
-	_pad.visible = _finger != -1
+	_pad.visible = _finger != NO_FINGER
 	_nub.visible = _pad.visible
 	# Sized so the pad's ring sits on the radius the thumb has to reach.
 	_pad.scale = Vector2.ONE * radius * 2.0 / _pad.texture.get_width()

@@ -22,7 +22,7 @@ var _game_was_paused := false
 @onready var _panel: Control = $Panel
 @onready var _output: RichTextLabel = %Output
 @onready var _field: LineEdit = %Input
-@onready var _toggle: Button = %Toggle
+@onready var _button: Button = %Button
 
 
 func _init() -> void:
@@ -37,14 +37,14 @@ func _init() -> void:
 func _ready() -> void:
 	if not _enabled:
 		_panel.queue_free()
-		_toggle.queue_free()
+		_button.queue_free()
 		set_process_input(false)
 		return
 	if settings == null:
 		settings = Settings
 	_panel.hide()
 	_field.text_submitted.connect(_on_input_submitted)
-	_toggle.pressed.connect(_toggle_panel)
+	_button.pressed.connect(_toggle_panel)
 	get_viewport().size_changed.connect(_avoid_notch)
 	_avoid_notch()
 
@@ -104,7 +104,7 @@ func _avoid_notch() -> void:
 	var left := safe.position.x
 	var right := screen.x - safe.end.x
 	var to_viewport := get_viewport().get_visible_rect().size / screen
-	_toggle.position = Vector2(maxf(left, right), safe.position.y) * to_viewport
+	_button.position = Vector2(maxf(left, right), safe.position.y) * to_viewport
 
 
 func _is_toggle(event: InputEvent) -> bool:

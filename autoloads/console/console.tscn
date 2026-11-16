@@ -29,7 +29,7 @@ layout_mode = 2
 placeholder_text = "Type 'help' for a list of commands"
 keep_editing_on_text_submit = true
 
-[node name="Toggle" type="Button" parent="."]
+[node name="Button" type="Button" parent="."]
 unique_name_in_owner = true
 offset_right = 40.0
 offset_bottom = 40.0

@@ -48,6 +48,11 @@ Movement on touch: the left thumb drags a **Touch stick** (see GLOSSARY.md). Thi
 - **The GUI already claims touches on the console button.** A Control with the default mouse filter consumes a screen touch over it, so the button needs no extra code. `test_touch_stick.gd` guards it. The full-screen `PixelatedView` doesn't block the stick.
 - **The stick sets raw action strengths.** `Input.get_vector()` applies the 0.2 deadzone and rescales past it, the same as for the controller.
 
+- **The preset's other choices.** It has an opaque 1024 px icon made from `icon.svg` (the export requires one) and a minimum of iOS 15, as in Legendary. GUT and `tests/` are left out of the export. The team ID is committed; it isn't a secret.
+- **Notch inset.** It's skipped on desktop, where the safe area belongs to the display and not the window. On a phone the larger of the left and right insets is used, because in landscape the notch changes sides when the phone turns.
+- **The stick releases only what it pressed.** A held W/A/S/D key survives a touch, a pause or a focus loss.
+- **A thumb held through a pause is dropped.** After unpausing, it does nothing until it lifts and touches again.
+
 ## Open
 
 - Tune `radius` on the device.
