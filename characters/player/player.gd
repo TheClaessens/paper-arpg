@@ -50,6 +50,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	var slot := pressed_slot(event)
 	if slot != SkillBar.NONE:
 		skill_bar.press(slot)
+		skill_bar.set_held(slot, true)
+	slot = released_slot(event)
+	if slot != SkillBar.NONE:
+		skill_bar.set_held(slot, false)
 
 
 ## Which Skill slot `event` presses: 0 for the main slot, 1 to 4 for the small ones, or
@@ -60,6 +64,16 @@ static func pressed_slot(event: InputEvent) -> int:
 		return SkillBar.NONE
 	for slot in SkillBar.SLOTS:
 		if event.is_action_pressed(slot_action(slot)):
+			return slot
+	return SkillBar.NONE
+
+
+## Which Skill slot letting go of `event` releases, or SkillBar.NONE (see pressed_slot()).
+static func released_slot(event: InputEvent) -> int:
+	if event.device == InputEvent.DEVICE_ID_EMULATION:
+		return SkillBar.NONE
+	for slot in SkillBar.SLOTS:
+		if event.is_action_released(slot_action(slot)):
 			return slot
 	return SkillBar.NONE
 

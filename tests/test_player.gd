@@ -102,6 +102,13 @@ func test_each_binding_presses_its_slot() -> void:
 	assert_eq(Player.pressed_slot(_key(KEY_W)), -1, "walking presses no slot")
 
 
+func test_letting_go_of_a_binding_releases_its_slot() -> void:
+	var key := _key(KEY_Q)
+	key.pressed = false
+	assert_eq(Player.released_slot(key), 2)
+	assert_eq(Player.released_slot(_key(KEY_Q)), -1, "a press releases nothing")
+
+
 func test_a_touch_does_not_use_a_slot() -> void:
 	# The mouse click Godot makes from every touch.
 	assert_eq(Player.pressed_slot(_click(MOUSE_BUTTON_LEFT, InputEvent.DEVICE_ID_EMULATION)), -1)

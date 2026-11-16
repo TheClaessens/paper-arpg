@@ -19,6 +19,8 @@ const AUTO_AIM_ANGLE := 60.0
 @export var aim := Aim.AUTO
 ## Whether it lands on a spot (aimed by how far, too) rather than going a direction.
 @export var aims_at_spot := false
+## Whether holding its slot uses it again each time its Use time ends.
+@export var repeats_while_held := false
 ## The Skill's Use time: how long one use takes. The Skill bar takes no new use until it has passed.
 @export var use_time := 0.4
 ## The Skill's cooldown: how long after a use starts before it can be used again, from any slot.

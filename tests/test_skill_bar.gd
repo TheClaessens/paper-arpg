@@ -150,3 +150,47 @@ func test_a_plain_press_leaves_the_aim_to_the_character() -> void:
 	bar.press(1)
 	bar.advance(0.016)
 	assert_eq(aims, [SkillBar.NO_AIM] as Array[Vector3])
+
+
+# Holding: while a slot is held, a Skill that repeats while held is used again each time the Use
+# time ends, aimed where the hold steers it.
+
+func test_holding_repeats_a_repeating_skill() -> void:
+	sword.repeats_while_held = true
+	bar.press(0)
+	bar.set_held(0, true)
+	bar.advance(0.016)
+	bar.advance(0.4)
+	bar.advance(0.4)
+	assert_eq(used.size(), 3, "every 0.4 s while held")
+	bar.set_held(0, false)
+	bar.advance(1.0)
+	assert_eq(used.size(), 3, "letting go stops it")
+
+
+func test_holding_does_not_repeat_other_skills() -> void:
+	bar.press(1)
+	bar.set_held(1, true)
+	bar.advance(0.016)
+	bar.advance(2.0)
+	assert_eq(used, [fire] as Array[Skill])
+
+
+func test_a_hold_steers_the_next_uses() -> void:
+	sword.repeats_while_held = true
+	bar.press(0)
+	bar.set_held(0, true)
+	bar.advance(0.016)
+	bar.set_held(0, true, Vector3(0.0, 0.0, 2.0))
+	bar.advance(0.4)
+	assert_eq(aims, [SkillBar.NO_AIM, Vector3(0.0, 0.0, 2.0)] as Array[Vector3])
+
+
+func test_pausing_lets_go() -> void:
+	sword.repeats_while_held = true
+	bar.press(0)
+	bar.set_held(0, true)
+	bar.advance(0.016)
+	bar.propagate_notification(Node.NOTIFICATION_PAUSED) # the release may never arrive while paused
+	bar.advance(1.0)
+	assert_eq(used.size(), 1)

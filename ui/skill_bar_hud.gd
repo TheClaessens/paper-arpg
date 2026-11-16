@@ -5,7 +5,8 @@ extends Control
 ## While the Skill bar is being changed (`editing`), each slot can be chosen; `slot_chosen` says
 ## which. Each slot shows its Skill's cooldown, presses in when used and flashes when ready.
 ##
-## On touch, tapping a slot uses it (auto-aimed). An aimed Skill can instead be dragged off its
+## On touch, tapping a slot uses it (auto-aimed). Holding a Skill that repeats while held (the
+## Attack) keeps using it, and dragging steers it. An aimed Skill can instead be dragged off its
 ## slot: the Player shows where it would go, and lifting the thumb uses it there. Lifting over the
 ## cancel zone cancels it: back on the slot, or on a cancel button, switched with `aim cancel`
 ## until a playtest picks one. Sizes are in viewport units: on an iPhone 17 Pro, 1 pt is about 1.6 of them.
@@ -37,6 +38,7 @@ var _buttons: Array[SkillSlotButton] = []
 var _aiming_slot := SkillBar.NONE # the slot whose Skill is being dragged
 var _aimed := false # the drag has left the deadzone, so lifting is no longer a tap
 var _left_slot := false # the thumb has been off the slot, so coming back onto it cancels
+var _held_slot := SkillBar.NONE # the slot held down to repeat its Skill
 
 @onready var _cancel_button: Control = $CancelButton
 
@@ -105,9 +107,14 @@ func _on_touch_started(slot: int) -> void:
 		_left_slot = false
 	else:
 		player.skill_bar.press(slot)
+		if skill.repeats_while_held:
+			_held_slot = slot
+			player.skill_bar.set_held(slot, true)
 
 
 func _on_touch_moved(at: Vector2, slot: int) -> void:
+	if slot == _held_slot:
+		_steer(slot, at)
 	if slot != _aiming_slot:
 		return
 	var drag := at - _buttons[slot].centre()
@@ -123,6 +130,10 @@ func _on_touch_moved(at: Vector2, slot: int) -> void:
 
 
 func _on_touch_ended(at: Vector2, slot: int) -> void:
+	if slot == _held_slot:
+		_held_slot = SkillBar.NONE
+		player.skill_bar.set_held(slot, false)
+		player.hide_aim()
 	if slot != _aiming_slot:
 		return
 	_aiming_slot = SkillBar.NONE
@@ -136,6 +147,20 @@ func _on_touch_ended(at: Vector2, slot: int) -> void:
 	elif not _over_cancel(slot, at):
 		var drag := at - _buttons[slot].centre()
 		player.skill_bar.press(slot, player.aim_from_drag(skill, drag, drag_full_range))
+
+
+## Steers a held slot's repeats along the drag, showing where they go; inside the deadzone
+## they are auto-aimed again.
+func _steer(slot: int, at: Vector2) -> void:
+	var drag := at - _buttons[slot].centre()
+	if drag.length() <= drag_deadzone:
+		player.skill_bar.set_held(slot, true)
+		player.hide_aim()
+		return
+	var skill := player.skill_bar.skill_in(slot)
+	var aim := player.aim_from_drag(skill, drag, drag_full_range)
+	player.skill_bar.set_held(slot, true, aim)
+	player.show_aim(skill, aim, false)
 
 
 ## Whether a thumb at `at`, dragging `slot`, is over the cancel zone. The slot only cancels once

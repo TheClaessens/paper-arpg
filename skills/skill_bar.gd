@@ -7,6 +7,8 @@ extends Node
 ## kept and used the moment it ends (the latest such press wins); an earlier one is dropped.
 ## A Skill on cooldown can't be used from any slot; a press on it is ignored, not kept.
 ## A press may carry its own aim (a drag on touch); otherwise the Character aims the Skill.
+## While a slot is held, a Skill that repeats while held is used again each time the Use time
+## ends, aimed where the hold steers it. Pausing lets go of every slot.
 ## The Character connects `used`.
 
 ## `skill` is used. `aim` is the press's own aim, or NO_AIM to let the Character aim it.
@@ -34,6 +36,7 @@ var _pressed_aim := NO_AIM
 var _buffered := NONE # a slot kept for when the Use time ends
 var _buffered_aim := NO_AIM
 var _busy := 0.0 # Use time left
+var _held: Dictionary[int, Vector3] = {} # held slots, each with its steered aim (or NO_AIM)
 
 
 func _init() -> void:
@@ -66,6 +69,21 @@ func press(slot: int, aim := NO_AIM) -> void:
 		_pressed_aim = aim
 
 
+## Holds `slot` down (or lets go), steering its repeats toward `aim` (an offset on the ground),
+## or letting the Character aim them with NO_AIM.
+func set_held(slot: int, held: bool, aim := NO_AIM) -> void:
+	if held:
+		_held[slot] = aim
+	else:
+		_held.erase(slot)
+
+
+func _notification(what: int) -> void:
+	# A press held through a pause may lift unheard, so a pause lets go.
+	if what == NOTIFICATION_PAUSED:
+		_held.clear()
+
+
 func _physics_process(delta: float) -> void:
 	advance(delta)
 
@@ -79,6 +97,8 @@ func advance(delta: float) -> void:
 		_buffered = _pressed
 		_buffered_aim = _pressed_aim
 	_pressed = NONE
+	if _buffered == NONE and _busy == 0.0:
+		_repeat_held()
 	if _buffered != NONE and _busy == 0.0:
 		var skill := _slots[_buffered]
 		var slot := _buffered
@@ -100,3 +120,13 @@ func _cool_down(delta: float) -> void:
 		skill.cooldown_left = maxf(0.0, skill.cooldown_left - delta)
 		if skill.cooldown_left == 0.0:
 			ready_again.emit(skill)
+
+
+## Queues a held slot whose Skill repeats while held, aimed where its hold steers it.
+func _repeat_held() -> void:
+	for slot: int in _held:
+		var skill := _slots[slot]
+		if skill and skill.repeats_while_held and skill.cooldown_left <= 0.0:
+			_buffered = slot
+			_buffered_aim = _held[slot]
+			return

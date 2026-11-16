@@ -14,6 +14,7 @@ size = Vector2(2, 2)
 
 [node name="Attack" type="Node3D"]
 script = ExtResource("1_attack")
+repeats_while_held = true
 title = "Attack"
 icon = ExtResource("4_icon")
 range = 1.6
