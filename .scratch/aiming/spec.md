@@ -14,12 +14,13 @@ On touch and controller, Facing follows movement, so a Skill can only go where t
    - **Mouse**: Skills go exactly toward the cursor, never auto-aimed. On PC precision Skills can be pinpointed; on touch they can't, and that's fine.
    - **Controller**: the right stick sets Facing while it is pushed past 0.2, apart from movement. When it is idle, auto-aim applies as on touch. Binding slots to the shoulder buttons waits for rebinding.
    - **Touch**: a tap uses the Skill at once, auto-aimed. Aimed Skills can also be dragged.
+   - **Every input**: after a use, the player turns to face what the Skill was aimed at.
 3. **Drag to aim (touch, aimed Skills)**:
    - Pressing the slot and dragging past a small deadzone shows an aim marker on the ground. Releasing uses the Skill there.
-   - Dragging into a cancel zone cancels it.
+   - Dragging back onto the slot and lifting there cancels it.
    - **Direction Skills** (Fireball) show a line from the player along the drag, as long as their Range.
    - **Spot Skills** (Mark) show a target that goes as far as the drag, up to the Range. It reaches full Range at 110 pt of drag. The Enemy it would mark is ringed before release.
-   - A dashed ring shows the Range while aiming. The deadzone is 14 pt. The marker turns grey over the cancel zone.
+   - A ring shows the Range while aiming. The deadzone is 8 units (about 5 pt), only enough to tell a tap from a drag. The marker turns grey over the cancel zone.
 4. **Cooldowns**: a Skill may have a cooldown, a separate clock that starts when a use starts.
    - While it runs, that Skill can't be used from any slot it sits in. A press is ignored, not buffered.
    - Use time still blocks every slot, as today.
@@ -45,19 +46,20 @@ The clickable prototype is the "Drag to aim (touch)" artboard on https://claude.
 
 Rebinding, targeting a specific Enemy by tapping it, aim assist on the mouse, damage and health.
 
-## Open
+## Known limits
 
-- **How to cancel:** dragging back onto the slot, or onto a × button that appears in the top right while aiming. Both get built, switched with an `aim cancel slot|button` console command, until the device playtest picks one.
+- A tapped spot Skill (Mark) auto-aims like any other: only at Enemies within 60° of Facing. With zombies beside or behind you, a tap marks nothing; dragging reaches them. Accepted for now (2026-11-16).
 
 ## Decisions made during the build
 
 - **A use is aimed at an offset on the ground** (`Skill.use(aim)`): its direction for every Skill, plus how far for a spot Skill. The Player picks it: exactly at the cursor, along a pushed right stick, otherwise auto-aimed. A drag carries its own aim through `SkillBar.press(slot, aim)`.
 - **The slot buttons follow their own touches**, like the Touch stick, instead of a `TouchScreenButton`, so a drag can be followed. A non-aimed Skill is used the moment the finger lands. An aimed one waits for the lift.
 - **A drag that has aimed can't turn back into a tap.** With "cancel slot", lifting on the slot after aiming cancels it, even inside the deadzone. Found in the sandbox check.
-- **Sizes in viewport units:** deadzone 22 (8 after the device test, below), full Range at 177 drag units, cancel button 88 in the top right of the safe area.
+- **Sizes in viewport units:** deadzone 22 (8 after the device test, below), full Range at 177 drag units, and the cancel button, since removed.
 - **The Range ring is the Skill's whole Range**, so Fireball's (10 units) mostly falls off screen. Mark's shorter Range shows it.
 - **The slot only cancels after the thumb has left it.** A short aim that stays on the slot still counts, so near spots can be aimed. Coming back onto the slot after leaving it cancels. Found in the sandbox check with Mark.
 - **Nova and Mark values:** Nova has Range 3, knockback 0.8, Stagger 0.15, cooldown 6 s, and reuses the swing shader as a full disc. Mark has Range 6, reach 1.5 around the spot, a 3 s amber tint, and Use time 0.3 s.
 - **Deadzone 8 instead of 22, from the device test (2026-11-16).** Mark couldn't be dragged onto zombies hugging the player: the spot only appeared 0.75 units out, past where they stand. Now the deadzone only tells a tap from a drag.
 - **The mouse highlights the Enemy under the cursor** (the developer's ask, 2026-11-16): a ring on the Enemy nearest the cursor's spot, within 1 unit. It uses the same rule as Mark's target (`Skill.nearest_to`), so on PC the ring shows who a Mark click marks.
 - **Holding repeats the Attack** (device test, 2026-11-16). A Skill marked `repeats_while_held` (only Attack for now) is used again each time the Use time ends while its slot is held, on every input. On touch, dragging while holding steers the following swings and shows the aim line. Inside the deadzone they auto-aim again. Lifting just stops: no extra use, no cancel zone. A pause lets go of every slot, because a release during a pause may never arrive.
+- **Cancel by dragging back onto the slot** (the developer's pick, 2026-11-16). The cancel button and the `aim cancel` console command that switched between the two are removed.

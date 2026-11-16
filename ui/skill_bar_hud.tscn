@@ -2,8 +2,6 @@
 
 [ext_resource type="Script" path="res://ui/skill_bar_hud.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://ui/skill_slot_button.tscn" id="2_slot"]
-[ext_resource type="Texture2D" path="res://assets/kenney/kenney_ui-pack-adventure/PNG/Double/round_brown_dark.png" id="3_round"]
-[ext_resource type="Texture2D" path="res://assets/kenney/kenney_mobile-controls/Sprites/Icons/Large (2×)/icon_cross.png" id="4_cross"]
 
 [node name="SkillBarHud" type="Control"]
 process_mode = 3
@@ -30,38 +28,3 @@ layout_mode = 0
 
 [node name="Slot4" parent="." instance=ExtResource("2_slot")]
 layout_mode = 0
-
-[node name="CancelButton" type="Control" parent="."]
-visible = false
-layout_mode = 3
-anchors_preset = 0
-offset_right = 88.0
-offset_bottom = 88.0
-mouse_filter = 2
-
-[node name="Background" type="TextureRect" parent="CancelButton"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("3_round")
-expand_mode = 1
-
-[node name="Icon" type="TextureRect" parent="CancelButton"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 22.0
-offset_top = 22.0
-offset_right = -22.0
-offset_bottom = -22.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("4_cross")
-expand_mode = 1
-stretch_mode = 5

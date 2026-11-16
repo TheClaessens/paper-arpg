@@ -66,7 +66,11 @@ _Avoid_: Skill picker, spellbook, inventory
 
 **Use time**:
 How long one use of a Skill takes. The Skill bar takes no new use, from any slot, until it has passed. Each Skill has its own, and game systems such as attack speed may change it.
-_Avoid_: Cooldown, global cooldown, cast time, attack time
+_Avoid_: Global cooldown, cast time, attack time
+
+**Cooldown**:
+How long after a use starts before a Skill can be used again, from any slot it sits in. It is the Skill's own clock, separate from Use time; many Skills have none.
+_Avoid_: Recharge, refresh, timer
 
 **Range**:
 How far a Skill reaches from the Character using it: the length of a swing, or how far a projectile flies.

@@ -7,13 +7,10 @@ extends Control
 ##
 ## On touch, tapping a slot uses it (auto-aimed). Holding a Skill that repeats while held (the
 ## Attack) keeps using it, and dragging steers it. An aimed Skill can instead be dragged off its
-## slot: the Player shows where it would go, and lifting the thumb uses it there. Lifting over the
-## cancel zone cancels it: back on the slot, or on a cancel button, switched with `aim cancel`
-## until a playtest picks one. Sizes are in viewport units: on an iPhone 17 Pro, 1 pt is about 1.6 of them.
+## slot: the Player shows where it would go, and lifting the thumb uses it there. Dragging back
+## onto the slot and lifting there cancels it. Sizes are in viewport units: on an iPhone 17 Pro, 1 pt is about 1.6 of them.
 
 signal slot_chosen(slot: int)
-
-enum CancelStyle { SLOT, BUTTON }
 
 @export var player: Player
 ## Diameter of the main slot and of the small slots.
@@ -31,20 +28,12 @@ enum CancelStyle { SLOT, BUTTON }
 @export var drag_deadzone := 8.0
 ## How far a thumb drags to aim a spot Skill its whole Range.
 @export var drag_full_range := 177.0
-## How a drag-aimed Skill is cancelled. Temporary: switched with the `aim` console command.
-@export var cancel_style := CancelStyle.SLOT
 
 var _buttons: Array[SkillSlotButton] = []
 var _aiming_slot := SkillBar.NONE # the slot whose Skill is being dragged
 var _aimed := false # the drag has left the deadzone, so lifting is no longer a tap
 var _left_slot := false # the thumb has been off the slot, so coming back onto it cancels
 var _held_slot := SkillBar.NONE # the slot held down to repeat its Skill
-
-@onready var _cancel_button: Control = $CancelButton
-
-
-func _enter_tree() -> void:
-	Console.register(&"aim", _cmd_aim, "aim cancel slot|button: lift on the slot, or on a cancel button, to cancel a dragged aim.")
 
 
 func _ready() -> void:
@@ -90,13 +79,6 @@ func _on_ready_again(skill: Skill) -> void:
 			_buttons[slot].flash()
 
 
-func _cmd_aim(args: PackedStringArray) -> String:
-	if args.size() != 2 or args[0] != "cancel" or args[1] not in ["slot", "button"]:
-		return "Usage: aim cancel slot|button"
-	cancel_style = CancelStyle.SLOT if args[1] == "slot" else CancelStyle.BUTTON
-	return "aim cancel %s" % args[1]
-
-
 func _on_touch_started(slot: int) -> void:
 	var skill := player.skill_bar.skill_in(slot)
 	if skill == null or skill.cooldown_left > 0.0:
@@ -120,11 +102,9 @@ func _on_touch_moved(at: Vector2, slot: int) -> void:
 	var drag := at - _buttons[slot].centre()
 	_aimed = _aimed or drag.length() > drag_deadzone
 	_left_slot = _left_slot or not _buttons[slot].covers(at)
-	_cancel_button.visible = _aimed and cancel_style == CancelStyle.BUTTON
 	if not _aimed:
 		return
 	var cancelling := _over_cancel(slot, at)
-	_cancel_button.modulate = Color(1.0, 0.45, 0.4) if cancelling else Color.WHITE
 	var skill := player.skill_bar.skill_in(slot)
 	player.show_aim(skill, player.aim_from_drag(skill, drag, drag_full_range), cancelling)
 
@@ -138,7 +118,6 @@ func _on_touch_ended(at: Vector2, slot: int) -> void:
 		return
 	_aiming_slot = SkillBar.NONE
 	player.hide_aim()
-	_cancel_button.hide()
 	var skill := player.skill_bar.skill_in(slot)
 	if get_tree().paused or skill == null:
 		return
@@ -163,18 +142,14 @@ func _steer(slot: int, at: Vector2) -> void:
 	player.show_aim(skill, aim, false)
 
 
-## Whether a thumb at `at`, dragging `slot`, is over the cancel zone. The slot only cancels once
-## the thumb has left it and come back, so a short aim that stays on the slot still counts.
+## Whether a thumb at `at`, dragging `slot`, would cancel: back on the slot after leaving it.
+## A short aim that never left the slot still counts.
 func _over_cancel(slot: int, at: Vector2) -> bool:
-	if cancel_style == CancelStyle.BUTTON:
-		return _cancel_button.get_global_rect().grow(12.0).has_point(at)
 	return _left_slot and _buttons[slot].covers(at)
 
 
 func _layout() -> void:
 	var safe := SafeArea.of(get_viewport())
-	# The cancel button sits in the top right, away from the Skill bar.
-	_cancel_button.position = Vector2(safe.end.x - edge_margin.x - _cancel_button.size.x, safe.position.y + edge_margin.y)
 	var centre := safe.end - edge_margin - Vector2.ONE * main_size / 2.0
 	_buttons[0].place(centre, main_size)
 	# 0° is straight left of the main slot, 90° straight up.
