@@ -1,7 +1,11 @@
 class_name Player
 extends CharacterBody3D
 ## The player's Character (see GLOSSARY.md). Walks where the left stick or the keys point,
-## relative to the camera: pushing up walks up the screen.
+## relative to the camera: pushing up walks up the screen. The `use_skill_slot` action uses
+## the Skill in its Skill slot along its Facing.
+
+## How far the card stretches when the player uses a Skill.
+const USE_STRETCH := -0.15
 
 ## The player's Facing (see GLOSSARY.md): a unit direction on the ground. It follows the mouse
 ## cursor once the mouse moves, otherwise the stick or keys.
@@ -13,12 +17,24 @@ var _aim_with_mouse := false
 @onready var _movement: Movement = $Movement
 @onready var _standee: Standee = $Standee
 @onready var _facing_arrow: Node3D = $FacingArrow
+@onready var _skill_slot: SkillSlot = $SkillSlot
 
 
 func _ready() -> void:
 	var camera := get_viewport().get_camera_3d()
 	if camera:
 		facing = Vector3(camera.global_basis.x.x, 0.0, camera.global_basis.x.z).normalized() # screen right
+	_skill_slot.used.connect(_on_skill_used)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed(&"use_skill_slot"):
+		_skill_slot.press()
+
+
+func _on_skill_used(skill: Skill) -> void:
+	skill.use(facing)
+	_standee.squash(USE_STRETCH)
 
 
 # Registered while in the tree, so a reloaded scene's new Player takes the command over.

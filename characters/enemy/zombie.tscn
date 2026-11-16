@@ -5,6 +5,7 @@
 [ext_resource type="SpriteFrames" path="res://characters/standee/frames/zombie.tres" id="3_frames"]
 [ext_resource type="Script" path="res://characters/movement.gd" id="4_movement"]
 [ext_resource type="PackedScene" path="res://characters/aggro/aggro.tscn" id="5_aggro"]
+[ext_resource type="Resource" path="res://skills/hit_feedback.tres" id="6_feedback"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 radius = 0.25
@@ -16,6 +17,7 @@ collision_mask = 7
 motion_mode = 1
 safe_margin = 0.02
 script = ExtResource("1_enemy")
+hit_feedback = ExtResource("6_feedback")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1938276002]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)

@@ -1,0 +1,23 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://skills/attack/attack.gd" id="1_attack"]
+[ext_resource type="Shader" path="res://skills/attack/swing.gdshader" id="2_swing"]
+[ext_resource type="Resource" path="res://skills/hit_feedback.tres" id="3_feedback"]
+
+[sub_resource type="ShaderMaterial" id="swing_material"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("2_swing")
+
+[sub_resource type="PlaneMesh" id="swing_mesh"]
+size = Vector2(2, 2)
+
+[node name="Attack" type="Node3D"]
+script = ExtResource("1_attack")
+hit_feedback = ExtResource("3_feedback")
+
+[node name="Swing" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0)
+cast_shadow = 0
+material_override = SubResource("swing_material")
+mesh = SubResource("swing_mesh")

@@ -66,3 +66,8 @@ Enemies hurting the player, health and death, sound, aiming on touch or controll
 - **The card flips to Facing**, not to velocity, so it looks where the mouse aims even while walking the other way.
 - **Facing starts at screen right**, the side the card faces by default.
 - **The cursor leads Facing.** Changed after trying it: WASD walking no longer overrides the mouse, since keyboard and mouse are played together. Only a gamepad stick or a touch, each of which aims by itself, takes Facing back.
+- **One impact per use.** Hitstop and screen shake play once per swing, however many Enemies it hits; flash, squash and knockback play on each Enemy.
+- **Hitstop sets `Engine.time_scale` to 0.** The shake and the hitstop's own timer ignore the time scale, so the screen shakes through the freeze.
+- **Using a Skill stretches the player's card** (a squash of -0.15). It reuses the hit squash and reads as a small hop.
+- **Hit feedback values live in `skills/hit_feedback.tres`**, one resource shared by the Attack and every Enemy, so `hitfeel` can tune them live later.
+- **The slot button is a `TouchScreenButton`** that presses `use_skill_slot`. It hides when there's no touch screen.
