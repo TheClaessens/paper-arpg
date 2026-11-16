@@ -34,7 +34,7 @@ _Avoid_: Virtual joystick, thumbstick, d-pad
 
 **Facing**:
 The direction on the ground a Character points, at any angle. The player's Facing follows the mouse cursor once the mouse moves, and otherwise the stick, keeping its last direction when the stick is let go.
-_Avoid_: Heading, aim, orientation
+_Avoid_: Heading, orientation
 
 **Skill**:
 Something the player uses from a Skill slot, such as Fireball or Attack.
@@ -87,3 +87,11 @@ _Avoid_: Juice, game feel, impact effects
 **Stagger**:
 The short time after a hit when an Enemy slides with the knockback and does not chase. Another hit restarts it.
 _Avoid_: Stun, hitstun, flinch
+
+**Aim**:
+Where a use of a Skill is sent: a direction on the ground, and for a Skill that lands on a spot, also how far. The mouse cursor, the right stick or a drag off the Skill slot sets it; otherwise Auto-aim does. A Skill used around the player has none.
+_Avoid_: Target, heading, direction
+
+**Auto-aim**:
+Aim chosen for the player: the nearest Enemy within the Skill's Range and near Facing, or straight along Facing when there is none.
+_Avoid_: Aim assist, lock-on, soft target
