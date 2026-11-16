@@ -147,9 +147,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0, -2)
 
 [node name="TouchStick" parent="HUD" instance=ExtResource("16_touch_stick")]
 
-[node name="SkillSlotButton" parent="HUD" node_paths=PackedStringArray("skill_slot") instance=ExtResource("17_slot_button")]
-skill_slot = NodePath("../../PixelatedView/SubViewport/World/Player/SkillSlot")
+[node name="SkillSlotButton" parent="HUD" node_paths=PackedStringArray("player") instance=ExtResource("17_slot_button")]
+player = NodePath("../../PixelatedView/SubViewport/World/Player")
 
-[node name="PauseMenu" parent="HUD" node_paths=PackedStringArray("skill_slot", "skills") instance=ExtResource("20_pause_menu")]
-skill_slot = NodePath("../../PixelatedView/SubViewport/World/Player/SkillSlot")
-skills = [NodePath("../../PixelatedView/SubViewport/World/Player/Attack"), NodePath("../../PixelatedView/SubViewport/World/Player/Fireball")]
+[node name="PauseMenu" parent="HUD" node_paths=PackedStringArray("player") instance=ExtResource("20_pause_menu")]
+player = NodePath("../../PixelatedView/SubViewport/World/Player")

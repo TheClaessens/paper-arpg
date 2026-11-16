@@ -103,3 +103,10 @@ func test_the_right_stick_leaves_the_cursor_in_charge() -> void:
 	await wait_physics_frames(2)
 	Input.action_release(&"move_up")
 	assert_almost_eq(player.facing, Vector3(1.0, 0.0, 0.0), Vector3.ONE * 0.05)
+
+
+func test_its_skills_are_the_skill_nodes_it_holds() -> void:
+	var titles: Array[String] = []
+	for skill in player.skills:
+		titles.append(skill.title)
+	assert_eq(titles, ["Attack", "Fireball"] as Array[String])

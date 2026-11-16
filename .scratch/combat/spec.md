@@ -101,3 +101,4 @@ Enemies hurting the player, health and death, sound, aiming on touch or controll
   - **Skill lands its own hits.** `Skill._land_hits()` pushes each hit Enemy with the Skill's knockback and Stagger, then plays the impact once per use. Attack and Fireball both use it.
   - **The Hit feedback is reached with `HitFeedback.shared()`**, so no scene links the `.tres` any more.
   - **The knockback slide is now exact.** It used each frame's starting speed and overshot: a 0.35 knockback over a 3-frame Stagger slid 0.47. Each frame now moves exactly its share of the distance, and a hitstop frame doesn't move.
+  - **The Player answers "which Skills do I have".** `player.skills` is every Skill node the Player holds, and `player.skill_slot` is its slot. The pause screen and the touch slot button each point at the Player only. Adding a Skill means adding a node to `player.tscn`. It will likely change once Skills are unlocked.

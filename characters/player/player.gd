@@ -11,25 +11,38 @@ const USE_STRETCH := -0.15
 ## cursor once the mouse moves, otherwise the stick or keys.
 var facing := Vector3.RIGHT
 
+## The player's Skill slot.
+var skill_slot: SkillSlot:
+	get:
+		return $SkillSlot
+
+## The Skills the player has: every Skill node it holds.
+var skills: Array[Skill]:
+	get:
+		var found: Array[Skill] = []
+		for child in get_children():
+			if child is Skill:
+				found.append(child as Skill)
+		return found
+
 var _cursor := Vector2.ZERO # mouse position in this viewport
 var _aim_with_mouse := false
 
 @onready var _movement: Movement = $Movement
 @onready var _standee: Standee = $Standee
 @onready var _facing_arrow: Node3D = $FacingArrow
-@onready var _skill_slot: SkillSlot = $SkillSlot
 
 
 func _ready() -> void:
 	var camera := get_viewport().get_camera_3d()
 	if camera:
 		facing = Vector3(camera.global_basis.x.x, 0.0, camera.global_basis.x.z).normalized() # screen right
-	_skill_slot.used.connect(_on_skill_used)
+	skill_slot.used.connect(_on_skill_used)
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if uses_skill_slot(event):
-		_skill_slot.press()
+		skill_slot.press()
 
 
 ## Whether `event` presses the Skill slot. Godot also turns every touch into a left click,

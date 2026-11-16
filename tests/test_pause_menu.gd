@@ -2,23 +2,18 @@ extends GutTest
 ## The pause screen: it pauses the game, and its Skill menu changes what the Skill slot holds.
 
 const MenuScene := preload("res://ui/pause_menu.tscn")
+const PlayerScene := preload("res://characters/player/player.tscn")
 
 var menu: PauseMenu
-var slot: SkillSlot
-var attack: Skill
-var fireball: Skill
+var player: Player
 
 
 func before_each() -> void:
-	attack = autofree(Skill.new())
-	attack.title = "Attack"
-	fireball = autofree(Skill.new())
-	fireball.title = "Fireball"
-	slot = autofree(SkillSlot.new())
-	slot.skill = attack
+	player = PlayerScene.instantiate()
+	player.set_physics_process(false) # no camera here to read input against
+	add_child_autofree(player)
 	menu = MenuScene.instantiate()
-	menu.skill_slot = slot
-	menu.skills = [attack, fireball]
+	menu.player = player
 	add_child_autofree(menu)
 
 
@@ -44,7 +39,7 @@ func test_choosing_a_skill_puts_it_in_the_slot() -> void:
 	menu.open()
 	_button("Attack").pressed.emit() # the slot, showing what it holds
 	_button("Fireball").pressed.emit() # in the Skill menu
-	assert_eq(slot.skill, fireball)
+	assert_eq(player.skill_slot.skill, player.get_node("Fireball"))
 	assert_not_null(_button("Resume"), "back on the pause screen")
 	assert_true(get_tree().paused, "still paused")
 
@@ -53,5 +48,5 @@ func test_back_leaves_the_slot_alone() -> void:
 	menu.open()
 	_button("Attack").pressed.emit()
 	_button("Back").pressed.emit()
-	assert_eq(slot.skill, attack)
+	assert_eq(player.skill_slot.skill, player.get_node("Attack"))
 	assert_not_null(_button("Resume"))
