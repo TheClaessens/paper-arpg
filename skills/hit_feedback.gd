@@ -13,13 +13,13 @@ extends Resource
 ## How far the hit Standee squashes at the peak: 0.3 is 30% wider and 30% shorter.
 @export var squash := 0.3
 ## How far the hit Enemy is pushed, in world units.
-@export var knockback := 0.8
+@export var knockback := 0.35
 ## How far the screen shakes, in world units.
 @export var shake := 0.12
 ## How long the screen shakes.
 @export var shake_time := 0.15
 ## How long the hit Enemy slides without chasing.
-@export var stagger := 0.2
+@export var stagger := 0.05
 
 # Hitstops started and not yet over. Overlapping ones keep the game frozen until the last ends.
 static var _hitstops := 0

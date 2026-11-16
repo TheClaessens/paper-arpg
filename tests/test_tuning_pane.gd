@@ -35,7 +35,7 @@ func test_sets_attack_and_slot_values() -> void:
 func test_rejects_unknown_names_and_non_numbers() -> void:
 	assert_string_starts_with(Console.execute("hitfeel wobble 1"), "Unknown value 'wobble'")
 	assert_eq(Console.execute("hitfeel knockback lots"), "Usage: hitfeel [<name> <value>]")
-	assert_eq(feedback.knockback, 0.8, "unchanged")
+	assert_eq(feedback.knockback, HitFeedback.new().knockback, "unchanged")
 
 
 func test_alone_it_toggles_the_pane_and_lists_every_value() -> void:

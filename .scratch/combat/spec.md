@@ -26,7 +26,7 @@ Baseline for the feedback: Seki & Ishikawa, *Quantifying Hit Feedback Preference
    - squash: the hit Standee squashes
    - knockback: the distance the Enemy is pushed
    - screen shake: strength and duration
-   - **Stagger**: the Enemy slides with the knockback and doesn't chase, starting at 0.2 s. A hit during a Stagger restarts it.
+   - **Stagger**: the Enemy slides with the knockback and doesn't chase, starting at 0.05 s. A hit during a Stagger restarts it.
    - Enemies have no health and don't die yet.
 6. **Swapping**: a small button in the bottom right, plus a `pause` action (Esc and controller Start).
    - It pauses the game and shows the pause screen with the Skill slot.
@@ -43,10 +43,10 @@ These were tuned in the throwaway Combat Feel Lab artifact (https://claude.ai/ar
 | hitstop | 0.06 s |
 | flash | 0.1 s |
 | squash | 0.3 (the Standee widens 30% and shortens 30% at the peak, over 0.18 s) |
-| knockback | 0.8 units |
+| knockback | 0.35 units |
 | shake strength | 0.12 units |
 | shake duration | 0.15 s |
-| stagger | 0.2 s (knockback speed falls linearly to zero over it) |
+| stagger | 0.05 s (knockback speed falls linearly to zero over it) |
 | Attack arc / reach / use time | 120° / 1.6 units / 0.4 s |
 | Fireball speed / range / use time | 12 units/s / 10 units / 0.6 s |
 | press buffer | 0.15 s |
@@ -72,3 +72,4 @@ Enemies hurting the player, health and death, sound, aiming on touch or controll
 - **Hit feedback values live in `skills/hit_feedback.tres`**, one resource shared by the Attack and every Enemy, so `hitfeel` can tune them live later.
 - **The slot button is a `TouchScreenButton`** that presses `use_skill_slot`. It hides when there's no touch screen.
 - **The tuning pane came early**, before Fireball: on trying the Attack, knockback and hitstop felt too strong. Its sliders don't take keyboard focus, so arrow keys keep walking the player.
+- **Knockback 0.35 and Stagger 0.05 after tuning in game** (2026-11-16). The lab's 0.8 and 0.2 felt excessive on the real Attack: a short, sharp shove instead of a slide.
