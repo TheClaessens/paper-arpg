@@ -8,6 +8,7 @@ uniform float pad_px = 8.0; // set by standee.gd, which also sizes the quad
 uniform float outline_px = 5.0;
 uniform vec4 outline_color : source_color = vec4(1.0);
 uniform bool flip = false;
+uniform bool flash = false; // a hit: the whole cut-out turns white
 
 float alpha_at(vec2 uv) {
 	if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return 0.0;
@@ -27,7 +28,7 @@ void fragment() {
 		border = max(border, max(alpha_at(uv + dir * outline_px), alpha_at(uv + dir * outline_px * 0.5)));
 	}
 
-	ALBEDO = mix(outline_color.rgb, c.rgb, c.a);
+	ALBEDO = flash ? vec3(1.0) : mix(outline_color.rgb, c.rgb, c.a);
 	ALPHA = max(c.a, border);
 	ALPHA_SCISSOR_THRESHOLD = 0.5;
 }

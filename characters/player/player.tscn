@@ -1,13 +1,24 @@
 [gd_scene format=3 uid="uid://b7lxromdaqgee"]
 
-[ext_resource type="Script" path="res://characters/player/player.gd" id="1_player"]
+[ext_resource type="Script" uid="uid://qjyokai73hl8" path="res://characters/player/player.gd" id="1_player"]
 [ext_resource type="PackedScene" path="res://characters/standee/standee.tscn" id="2_standee"]
 [ext_resource type="SpriteFrames" path="res://characters/standee/frames/adventurer.tres" id="3_frames"]
-[ext_resource type="Script" path="res://characters/movement.gd" id="4_movement"]
+[ext_resource type="Script" uid="uid://bc551mjhw7rop" path="res://characters/movement.gd" id="4_movement"]
+[ext_resource type="PackedScene" path="res://skills/attack/attack.tscn" id="5_attack"]
+[ext_resource type="Script" uid="uid://bfyg2oqxoqrvw" path="res://skills/skill_slot.gd" id="6_slot"]
+[ext_resource type="PackedScene" path="res://skills/fireball/fireball.tscn" id="7_fireball"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 radius = 0.25
 height = 1.0
+
+[sub_resource type="StandardMaterial3D" id="arrow_material"]
+shading_mode = 0
+albedo_color = Color(0.94, 0.65, 0.23, 1)
+
+[sub_resource type="PrismMesh" id="arrow_mesh"]
+material = SubResource("arrow_material")
+size = Vector3(0.22, 0.22, 0.02)
 
 [node name="Player" type="CharacterBody3D" unique_id=656968988]
 collision_layer = 2
@@ -25,3 +36,19 @@ frames = ExtResource("3_frames")
 
 [node name="Movement" type="Node" parent="." unique_id=656968991]
 script = ExtResource("4_movement")
+
+[node name="FacingArrow" type="Node3D" parent="." unique_id=512963340]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="FacingArrow" unique_id=1807788607]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, -0.55)
+cast_shadow = 0
+mesh = SubResource("arrow_mesh")
+
+[node name="Attack" parent="." unique_id=1240203622 instance=ExtResource("5_attack")]
+
+[node name="Fireball" parent="." unique_id=877120161 instance=ExtResource("7_fireball")]
+
+[node name="SkillSlot" type="Node" parent="." unique_id=807985351 node_paths=PackedStringArray("skill")]
+script = ExtResource("6_slot")
+skill = NodePath("../Attack")

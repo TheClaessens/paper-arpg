@@ -2,6 +2,7 @@ class_name Enemy
 extends CharacterBody3D
 ## A Character hostile to the player (see GLOSSARY.md). Stands still until its Aggro notices
 ## the player, then chases them along the navmesh for good, stopping within reach.
+## A hit staggers it: it slides away with the knockback and doesn't chase until the Stagger ends.
 
 ## Stops chasing this close to the target, in world units.
 @export var reach_distance := 1.0
@@ -11,6 +12,9 @@ extends CharacterBody3D
 
 var _target: Node3D
 var _chasing := false
+var _stagger_left := 0.0
+var _stagger_time := 0.0 # the full length of the current Stagger
+var _knockback := Vector3.ZERO # direction times distance
 
 @onready var _movement: Movement = $Movement
 @onready var _standee: Standee = $Standee
@@ -28,7 +32,29 @@ func should_chase(chasing: bool, distance: float) -> bool:
 	return distance > (reach_distance if chasing else resume_distance)
 
 
+## How much of a `distance`-long knockback slide is still to go with `left` seconds of a
+## `stagger`-long Stagger remaining. The slide's speed falls linearly to zero, so the distance
+## still to go shrinks with the square of the time left.
+static func knockback_left(distance: float, stagger: float, left: float) -> float:
+	return distance * (left / stagger) ** 2
+
+
+## Hit by a Skill: pushed `knockback` world units along `direction` (a unit vector on the
+## ground), sliding without chasing for `stagger` seconds. The Skill decides both.
+func take_hit(direction: Vector3, knockback: float, stagger: float) -> void:
+	# ponytail: a Stagger of 0 would need an instant push; the shortest slide stands in for it.
+	_stagger_time = maxf(stagger, 0.02)
+	_stagger_left = _stagger_time
+	_knockback = direction * knockback
+	var feedback := HitFeedback.shared()
+	_standee.flash(feedback.flash)
+	_standee.squash(feedback.squash)
+
+
 func _physics_process(delta: float) -> void:
+	if _stagger_left > 0.0:
+		_slide(delta)
+		return
 	var direction := Vector3.ZERO
 	if _target:
 		_chasing = should_chase(_chasing, _flat(_target.global_position - global_position).length())
@@ -60,6 +86,23 @@ func _on_velocity_computed(safe_velocity: Vector3) -> void:
 	else:
 		_standee.play(&"walk")
 		_standee.face(velocity)
+
+
+## Staggered: slides with the knockback and doesn't steer. Skips the navigation agent, which
+## would bend the slide around other Enemies a frame late.
+func _slide(delta: float) -> void:
+	if delta == 0.0: # frozen by a hitstop
+		return
+	# Exactly this frame's share of the slide, so the whole slide covers the knockback distance
+	# at any frame rate, even when the Stagger lasts only a few frames.
+	var left_after := maxf(_stagger_left - delta, 0.0)
+	var distance := _knockback.length()
+	var step := knockback_left(distance, _stagger_time, _stagger_left) - knockback_left(distance, _stagger_time, left_after)
+	velocity = _knockback.normalized() * step / delta
+	_stagger_left = left_after
+	move_and_slide()
+	if _stagger_left <= 0.0:
+		velocity = Vector3.ZERO
 
 
 ## The part of `vector` along the ground. Path points sit a little above the floor.

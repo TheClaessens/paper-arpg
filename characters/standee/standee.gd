@@ -6,6 +6,8 @@ extends Node3D
 
 ## Room around each frame for the white outline, in texture pixels.
 const PADDING_PX := 8.0
+## How long a squash takes, out and back.
+const SQUASH_TIME := 0.18
 
 ## Animations by name. Needs at least `idle`: the starting pose, which also sets the card size.
 ## Every frame must be the same size.
@@ -21,6 +23,9 @@ var _animation: StringName = &"idle"
 var _frame := 0
 var _frame_elapsed := 0.0
 var _wobble_phase := 0.0
+var _flash_left := 0.0
+var _squash_amount := 0.0
+var _squash_elapsed := SQUASH_TIME # done
 
 @onready var _card: Node3D = $Card
 @onready var _sprite: MeshInstance3D = $Card/Sprite
@@ -61,6 +66,18 @@ func face(direction: Vector3) -> void:
 		_material.set_shader_parameter("flip", side < 0.0)
 
 
+## Turns the card white for `duration` seconds.
+func flash(duration: float) -> void:
+	_flash_left = duration
+
+
+## Squashes the card and lets it spring back over SQUASH_TIME. At the peak it is `amount`
+## wider and shorter (0.3 is 30%). A negative amount stretches it instead.
+func squash(amount: float) -> void:
+	_squash_amount = amount
+	_squash_elapsed = 0.0
+
+
 func _process(delta: float) -> void:
 	_advance(delta)
 	_show_frame()
@@ -74,6 +91,17 @@ func _process(delta: float) -> void:
 	if _animation == wobble_animation:
 		wobble = deg_to_rad(wobble_angle) * sin(_wobble_phase)
 	_card.global_rotation = Vector3(0.0, camera.global_rotation.y, wobble)
+	_show_hit(delta)
+
+
+## The flash and squash. The card's feet stay on the ground: it scales around its origin.
+## Runs after the rotation is set, which resets the card's scale.
+func _show_hit(delta: float) -> void:
+	_flash_left = maxf(0.0, _flash_left - delta)
+	_material.set_shader_parameter("flash", _flash_left > 0.0)
+	_squash_elapsed = minf(SQUASH_TIME, _squash_elapsed + delta)
+	var s := _squash_amount * sin(PI * _squash_elapsed / SQUASH_TIME)
+	_card.scale = Vector3(1.0 + s, 1.0 - s, 1.0)
 
 
 ## Moves through the frames like AnimatedSprite3D does: a frame lasts its relative

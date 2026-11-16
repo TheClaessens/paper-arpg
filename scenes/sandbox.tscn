@@ -13,6 +13,8 @@
 [ext_resource type="PackedScene" path="res://characters/enemy/zombie.tscn" id="14_zombie"]
 [ext_resource type="NavigationMesh" path="res://scenes/sandbox_navmesh.tres" id="15_navmesh"]
 [ext_resource type="PackedScene" path="res://ui/touch_stick.tscn" id="16_touch_stick"]
+[ext_resource type="PackedScene" path="res://ui/skill_slot_button.tscn" id="17_slot_button"]
+[ext_resource type="PackedScene" path="res://ui/pause_menu.tscn" id="20_pause_menu"]
 
 [sub_resource type="Environment" id="Environment_dugpm"]
 background_mode = 1
@@ -144,3 +146,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0, -2)
 [node name="HUD" type="CanvasLayer" parent="."]
 
 [node name="TouchStick" parent="HUD" instance=ExtResource("16_touch_stick")]
+
+[node name="SkillSlotButton" parent="HUD" node_paths=PackedStringArray("player") instance=ExtResource("17_slot_button")]
+player = NodePath("../../PixelatedView/SubViewport/World/Player")
+
+[node name="PauseMenu" parent="HUD" node_paths=PackedStringArray("player") instance=ExtResource("20_pause_menu")]
+player = NodePath("../../PixelatedView/SubViewport/World/Player")

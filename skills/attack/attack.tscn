@@ -1,0 +1,27 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://skills/attack/attack.gd" id="1_attack"]
+[ext_resource type="Shader" path="res://skills/attack/swing.gdshader" id="2_swing"]
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_mobile-controls/Sprites/Icons/Default/icon_sword.png" id="4_icon"]
+
+[sub_resource type="ShaderMaterial" id="swing_material"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("2_swing")
+
+[sub_resource type="PlaneMesh" id="swing_mesh"]
+size = Vector2(2, 2)
+
+[node name="Attack" type="Node3D"]
+script = ExtResource("1_attack")
+title = "Attack"
+icon = ExtResource("4_icon")
+range = 1.6
+knockback = 0.35
+stagger = 0.05
+
+[node name="Swing" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0)
+cast_shadow = 0
+material_override = SubResource("swing_material")
+mesh = SubResource("swing_mesh")

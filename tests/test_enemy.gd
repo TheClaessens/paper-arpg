@@ -26,3 +26,12 @@ func test_stays_stopped_until_past_resume() -> void:
 
 func test_chases_again_past_resume() -> void:
 	assert_true(enemy.should_chase(false, 1.4))
+
+
+# Knockback: the slide's speed falls linearly to zero over the Stagger, so the distance still
+# to go shrinks with the square of the time left.
+
+func test_knockback_left_over_the_stagger() -> void:
+	assert_almost_eq(Enemy.knockback_left(0.8, 0.2, 0.2), 0.8, 0.001, "all of it at the start")
+	assert_almost_eq(Enemy.knockback_left(0.8, 0.2, 0.1), 0.2, 0.001, "a quarter halfway")
+	assert_almost_eq(Enemy.knockback_left(0.8, 0.2, 0.0), 0.0, 0.001, "none at the end")
