@@ -49,15 +49,29 @@ func _ready() -> void:
 	_fit_safe_area()
 
 
+## Adds a command. When `callback` belongs to a node, the command goes when that node
+## leaves the tree, so register it in `_enter_tree` to have it back after a re-entry.
+## A static callback, or one on an object that isn't a node, stays until the game quits.
+## Registering the same callback again does nothing; another callback under a taken name asserts.
 func register(command: StringName, callback: Callable, help: String) -> void:
 	if not _enabled:
 		return
-	assert(not _commands.has(command), "Console command registered twice: %s" % command)
+	if _commands.has(command):
+		assert(_commands[command].callback == callback, "Console command registered twice: %s" % command)
+		return
 	_commands[command] = {callback = callback, help = help}
+	var owner_node := callback.get_object() as Node
+	if owner_node and not owner_node.tree_exiting.is_connected(_drop_commands_of):
+		owner_node.tree_exiting.connect(_drop_commands_of.bind(owner_node), CONNECT_ONE_SHOT)
 
 
-func unregister(command: StringName) -> void:
-	_commands.erase(command)
+## Drops every command `owner_node` still owns. A command another node has registered since
+## belongs to that node and stays.
+func _drop_commands_of(owner_node: Node) -> void:
+	for command: StringName in _commands.keys():
+		var callback: Callable = _commands[command].callback
+		if callback.get_object() == owner_node:
+			_commands.erase(command)
 
 
 ## Runs one line of input and returns the text to show.

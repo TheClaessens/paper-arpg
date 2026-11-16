@@ -9,6 +9,14 @@ var console: DevConsole
 var settings: GameSettings
 
 
+## A node that owns a console command, as Player owns `tp`.
+class CommandOwner:
+	extends Node
+
+	func ping(_args: PackedStringArray) -> String:
+		return "pong"
+
+
 func before_each() -> void:
 	settings = autofree(GameSettings.new())
 	console = autofree(DevConsole.new())
@@ -28,10 +36,30 @@ func test_registered_command_receives_args() -> void:
 	assert_eq(console.execute("  echo a  b "), "a|b")
 
 
-func test_unregister_removes_command() -> void:
-	console.register(&"echo", func(_args: PackedStringArray) -> String: return "", "Echo.")
-	console.unregister(&"echo")
-	assert_string_contains(console.execute("echo"), "Unknown command")
+func test_command_leaves_with_its_node() -> void:
+	var owner_node: CommandOwner = add_child_autofree(CommandOwner.new())
+	console.register(&"ping", owner_node.ping, "Ping.")
+	assert_eq(console.execute("ping"), "pong")
+	remove_child(owner_node)
+	assert_string_contains(console.execute("ping"), "Unknown command")
+
+
+func test_a_node_leaving_keeps_other_nodes_commands() -> void:
+	var leaving: CommandOwner = add_child_autofree(CommandOwner.new())
+	var staying: CommandOwner = add_child_autofree(CommandOwner.new())
+	console.register(&"ping", leaving.ping, "Ping.")
+	console.register(&"pong", staying.ping, "Pong.")
+	remove_child(leaving)
+	assert_eq(console.execute("pong"), "pong")
+
+
+func test_registering_the_same_callback_again_does_nothing() -> void:
+	# Every Aggro registers the same static callback for `aggro`.
+	var owner_node: CommandOwner = add_child_autofree(CommandOwner.new())
+	console.register(&"ping", owner_node.ping, "Ping.")
+	console.register(&"ping", owner_node.ping, "Ping.")
+	assert_eq(console.execute("ping"), "pong")
+	assert_eq(console.execute("help").count("ping  Ping."), 1)
 
 
 func test_help_lists_commands_with_descriptions() -> void:

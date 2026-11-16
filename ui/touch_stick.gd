@@ -37,10 +37,6 @@ func _enter_tree() -> void:
 	Console.register(&"touchstick", _cmd_touchstick, "touchstick follow on|off: let the stick's origin follow the thumb.")
 
 
-func _exit_tree() -> void:
-	Console.unregister(&"touchstick")
-
-
 func _cmd_touchstick(args: PackedStringArray) -> String:
 	if args.size() != 2 or args[0] != "follow" or args[1] not in ["on", "off"]:
 		return "Usage: touchstick follow on|off"
