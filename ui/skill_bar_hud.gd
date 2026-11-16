@@ -22,7 +22,7 @@ signal slot_chosen(slot: int)
 @export_range(60.0, 130.0, 5.0, "suffix:°") var fan_spread := 110.0
 ## Gap between the main slot and the safe area's right and bottom edges.
 @export var edge_margin := Vector2(26.0, 22.0)
-## How far a thumb may wander and still be a tap; past it, the drag aims. Kept just above a
+## How far a thumb may wander from where it landed and still be a tap; past it, the drag aims. Kept just above a
 ## thumb's wobble: the spot follows the drag from the player outward, so a larger one would
 ## leave the ground right around the player out of reach.
 @export var drag_deadzone := 8.0
@@ -34,6 +34,7 @@ var _aiming_slot := SkillBar.NONE # the slot whose Skill is being dragged
 var _aimed := false # the drag has left the deadzone, so lifting is no longer a tap
 var _left_slot := false # the thumb has been off the slot, so coming back onto it cancels
 var _held_slot := SkillBar.NONE # the slot held down to repeat its Skill
+var _landed := Vector2.ZERO # where the thumb landed; drags are measured from here
 
 
 func _ready() -> void:
@@ -79,7 +80,8 @@ func _on_ready_again(skill: Skill) -> void:
 			_buttons[slot].flash()
 
 
-func _on_touch_started(slot: int) -> void:
+func _on_touch_started(at: Vector2, slot: int) -> void:
+	_landed = at
 	var skill := player.skill_bar.skill_in(slot)
 	if skill == null or skill.cooldown_left > 0.0:
 		return
@@ -99,7 +101,7 @@ func _on_touch_moved(at: Vector2, slot: int) -> void:
 		_steer(slot, at)
 	if slot != _aiming_slot:
 		return
-	var drag := at - _buttons[slot].centre()
+	var drag := at - _landed
 	_aimed = _aimed or drag.length() > drag_deadzone
 	_left_slot = _left_slot or not _buttons[slot].covers(at)
 	if not _aimed:
@@ -124,14 +126,13 @@ func _on_touch_ended(at: Vector2, slot: int) -> void:
 	if not _aimed:
 		player.skill_bar.press(slot) # a tap: auto-aimed
 	elif not _over_cancel(slot, at):
-		var drag := at - _buttons[slot].centre()
-		player.skill_bar.press(slot, player.aim_from_drag(skill, drag, drag_full_range))
+		player.skill_bar.press(slot, player.aim_from_drag(skill, at - _landed, drag_full_range))
 
 
 ## Steers a held slot's repeats along the drag, showing where they go; inside the deadzone
 ## they are auto-aimed again.
 func _steer(slot: int, at: Vector2) -> void:
-	var drag := at - _buttons[slot].centre()
+	var drag := at - _landed
 	if drag.length() <= drag_deadzone:
 		player.skill_bar.set_held(slot, true)
 		player.hide_aim()

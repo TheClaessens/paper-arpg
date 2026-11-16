@@ -8,8 +8,8 @@ extends Control
 ## It also shows the Skill's cooldown, presses in when used and flashes when ready again.
 
 signal chosen
-## A finger landed on the button, moved to `at`, or lifted at `at` (viewport coordinates).
-signal touch_started
+## A finger landed on the button at `at`, moved to `at`, or lifted at `at` (viewport coordinates).
+signal touch_started(at: Vector2)
 signal touch_moved(at: Vector2)
 signal touch_ended(at: Vector2)
 
@@ -98,7 +98,7 @@ func _input(event: InputEvent) -> void:
 		if touch.pressed and _finger == NO_FINGER and not _choose.visible and not get_tree().paused and covers(touch.position):
 			_finger = touch.index
 			get_viewport().set_input_as_handled()
-			touch_started.emit()
+			touch_started.emit(touch.position)
 		elif not touch.pressed and touch.index == _finger:
 			_finger = NO_FINGER
 			get_viewport().set_input_as_handled()
