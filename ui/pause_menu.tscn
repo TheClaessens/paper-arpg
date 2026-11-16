@@ -1,7 +1,21 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://ui/pause_menu.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/kenney/kenney_mobile-controls/Sprites/Icons/Default/icon_pause.png" id="2_pause"]
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_ui-pack-adventure/PNG/Double/round_brown_dark.png" id="2_round"]
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_mobile-controls/Sprites/Icons/Large (2×)/icon_pause.png" id="3_pause"]
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_ui-pack-adventure/PNG/Default/panel_brown_dark.png" id="4_panel"]
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_ui-pack-adventure/PNG/Double/banner_hanging.png" id="5_banner"]
+
+[sub_resource type="StyleBoxTexture" id="panel_style"]
+texture = ExtResource("4_panel")
+texture_margin_left = 16.0
+texture_margin_top = 16.0
+texture_margin_right = 16.0
+texture_margin_bottom = 16.0
+content_margin_left = 22.0
+content_margin_top = 18.0
+content_margin_right = 22.0
+content_margin_bottom = 22.0
 
 [node name="PauseMenu" type="Control"]
 process_mode = 3
@@ -14,27 +28,9 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("1_script")
 
-[node name="PauseButton" type="Button" parent="."]
+[node name="Dim" type="ColorRect" parent="."]
 unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -84.0
-offset_top = -72.0
-offset_right = -28.0
-offset_bottom = -16.0
-grow_horizontal = 0
-grow_vertical = 0
-focus_mode = 0
-icon = ExtResource("2_pause")
-icon_alignment = 1
-expand_icon = true
-
-[node name="Screen" type="ColorRect" parent="."]
-unique_name_in_owner = true
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -43,81 +39,139 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.04, 0.05, 0.07, 0.72)
 
-[node name="Center" type="CenterContainer" parent="Screen"]
+[node name="Corner" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 72.0
+offset_bottom = 72.0
+tooltip_text = "Pause"
+flat = true
+
+[node name="Background" type="TextureRect" parent="Corner"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_round")
+expand_mode = 1
 
-[node name="Panel" type="PanelContainer" parent="Screen/Center"]
-layout_mode = 2
-
-[node name="Margin" type="MarginContainer" parent="Screen/Center/Panel"]
-layout_mode = 2
-theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 20
-
-[node name="Pages" type="VBoxContainer" parent="Screen/Center/Panel/Margin"]
-layout_mode = 2
-
-[node name="Main" type="VBoxContainer" parent="Screen/Center/Panel/Margin/Pages"]
+[node name="CornerIcon" type="TextureRect" parent="Corner"]
 unique_name_in_owner = true
-layout_mode = 2
-theme_override_constants/separation = 12
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_pause")
+expand_mode = 1
+stretch_mode = 5
 
-[node name="Title" type="Label" parent="Screen/Center/Panel/Margin/Pages/Main"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 28
-text = "Paused"
-horizontal_alignment = 1
-
-[node name="SlotLabel" type="Label" parent="Screen/Center/Panel/Margin/Pages/Main"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.6, 0.63, 0.7, 1)
-text = "Skill slot"
-horizontal_alignment = 1
-
-[node name="Slot" type="Button" parent="Screen/Center/Panel/Margin/Pages/Main"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(220, 64)
-layout_mode = 2
-text = "Attack"
-
-[node name="Hint" type="Label" parent="Screen/Center/Panel/Margin/Pages/Main"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.6, 0.63, 0.7, 1)
-theme_override_font_sizes/font_size = 14
-text = "Choose the slot to change its Skill."
-horizontal_alignment = 1
-
-[node name="Resume" type="Button" parent="Screen/Center/Panel/Margin/Pages/Main"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 48)
-layout_mode = 2
-text = "Resume"
-
-[node name="SkillMenu" type="VBoxContainer" parent="Screen/Center/Panel/Margin/Pages"]
+[node name="Hint" type="Label" parent="."]
 unique_name_in_owner = true
 visible = false
-layout_mode = 2
-theme_override_constants/separation = 12
+layout_mode = 0
+offset_right = 360.0
+offset_bottom = 28.0
+theme_override_colors/font_color = Color(0.91, 0.89, 0.85, 1)
+theme_override_font_sizes/font_size = 20
+text = "Choose a slot to change its Skill"
 
-[node name="Heading" type="Label" parent="Screen/Center/Panel/Margin/Pages/SkillMenu"]
+[node name="Menu" type="CenterContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="Menu"]
 layout_mode = 2
-text = "Choose a Skill for this slot"
+theme_override_styles/panel = SubResource("panel_style")
+
+[node name="Items" type="VBoxContainer" parent="Menu/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Banner" type="TextureRect" parent="Menu/Panel/Items"]
+custom_minimum_size = Vector2(240, 60)
+layout_mode = 2
+texture = ExtResource("5_banner")
+expand_mode = 1
+
+[node name="Title" type="Label" parent="Menu/Panel/Items/Banner"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -6.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.97, 0.9, 1)
+theme_override_font_sizes/font_size = 24
+text = "Paused"
 horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="Options" type="VBoxContainer" parent="Screen/Center/Panel/Margin/Pages/SkillMenu"]
+[node name="SkillBarItem" type="Button" parent="Menu/Panel/Items"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Skill bar"
+
+[node name="Resume" type="Button" parent="Menu/Panel/Items"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Resume"
+
+[node name="Drawer" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+theme_override_styles/panel = SubResource("panel_style")
+
+[node name="Items" type="VBoxContainer" parent="Drawer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Banner" type="TextureRect" parent="Drawer/Items"]
+custom_minimum_size = Vector2(180, 45)
+layout_mode = 2
+size_flags_horizontal = 0
+texture = ExtResource("5_banner")
+expand_mode = 1
+
+[node name="Title" type="Label" parent="Drawer/Items/Banner"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.97, 0.9, 1)
+theme_override_font_sizes/font_size = 20
+text = "Skills"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Tiles" type="GridContainer" parent="Drawer/Items"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="Back" type="Button" parent="Screen/Center/Panel/Margin/Pages/SkillMenu"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 48)
-layout_mode = 2
-text = "Back"
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+columns = 4

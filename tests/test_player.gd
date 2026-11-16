@@ -78,15 +78,33 @@ func _tilted_camera() -> Camera3D:
 	return camera
 
 
-func test_a_touch_does_not_use_the_skill_slot() -> void:
-	var tap := InputEventMouseButton.new() # the mouse click Godot makes from every touch
-	tap.device = InputEvent.DEVICE_ID_EMULATION
-	tap.button_index = MOUSE_BUTTON_LEFT
-	tap.pressed = true
-	assert_false(Player.uses_skill_slot(tap), "a touch is not a click")
-	var click := tap.duplicate() as InputEventMouseButton
-	click.device = 0
-	assert_true(Player.uses_skill_slot(click), "a real click is")
+func _key(code: Key) -> InputEventKey:
+	var key := InputEventKey.new()
+	key.physical_keycode = code
+	key.pressed = true
+	return key
+
+
+func _click(button: MouseButton, device: int) -> InputEventMouseButton:
+	var click := InputEventMouseButton.new()
+	click.button_index = button
+	click.device = device
+	click.pressed = true
+	return click
+
+
+func test_each_binding_presses_its_slot() -> void:
+	assert_eq(Player.pressed_slot(_click(MOUSE_BUTTON_LEFT, 0)), 0, "left click: main slot")
+	assert_eq(Player.pressed_slot(_click(MOUSE_BUTTON_RIGHT, 0)), 1, "right click")
+	assert_eq(Player.pressed_slot(_key(KEY_Q)), 2)
+	assert_eq(Player.pressed_slot(_key(KEY_E)), 3)
+	assert_eq(Player.pressed_slot(_key(KEY_R)), 4)
+	assert_eq(Player.pressed_slot(_key(KEY_W)), -1, "walking presses no slot")
+
+
+func test_a_touch_does_not_use_a_slot() -> void:
+	# The mouse click Godot makes from every touch.
+	assert_eq(Player.pressed_slot(_click(MOUSE_BUTTON_LEFT, InputEvent.DEVICE_ID_EMULATION)), -1)
 
 
 func test_the_right_stick_leaves_the_cursor_in_charge() -> void:

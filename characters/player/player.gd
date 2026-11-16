@@ -1,8 +1,8 @@
 class_name Player
 extends CharacterBody3D
 ## The player's Character (see GLOSSARY.md). Walks where the left stick or the keys point,
-## relative to the camera: pushing up walks up the screen. The `use_skill_slot` action uses
-## the Skill in its Skill slot along its Facing.
+## relative to the camera: pushing up walks up the screen. The `use_skill_slot_1` to `_5`
+## actions use the Skills on its Skill bar along its Facing.
 
 ## How far the card stretches when the player uses a Skill.
 const USE_STRETCH := -0.15
@@ -11,10 +11,10 @@ const USE_STRETCH := -0.15
 ## cursor once the mouse moves, otherwise the stick or keys.
 var facing := Vector3.RIGHT
 
-## The player's Skill slot.
-var skill_slot: SkillSlot:
+## The player's Skill bar.
+var skill_bar: SkillBar:
 	get:
-		return $SkillSlot
+		return $SkillBar
 
 ## The Skills the player has: every Skill node it holds.
 var skills: Array[Skill]:
@@ -37,18 +37,30 @@ func _ready() -> void:
 	var camera := get_viewport().get_camera_3d()
 	if camera:
 		facing = Vector3(camera.global_basis.x.x, 0.0, camera.global_basis.x.z).normalized() # screen right
-	skill_slot.used.connect(_on_skill_used)
+	skill_bar.used.connect(_on_skill_used)
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if uses_skill_slot(event):
-		skill_slot.press()
+	var slot := pressed_slot(event)
+	if slot != SkillBar.NONE:
+		skill_bar.press(slot)
 
 
-## Whether `event` presses the Skill slot. Godot also turns every touch into a left click,
-## which would use the slot wherever a thumb lands, so those emulated clicks don't count.
-static func uses_skill_slot(event: InputEvent) -> bool:
-	return event.is_action_pressed(&"use_skill_slot") and event.device != InputEvent.DEVICE_ID_EMULATION
+## Which Skill slot `event` presses: 0 for the main slot, 1 to 4 for the small ones, or
+## SkillBar.NONE. Godot also turns every touch into a left click, which would use the main slot
+## wherever a thumb lands, so those emulated clicks don't count.
+static func pressed_slot(event: InputEvent) -> int:
+	if event.device == InputEvent.DEVICE_ID_EMULATION:
+		return SkillBar.NONE
+	for slot in SkillBar.SLOTS:
+		if event.is_action_pressed(slot_action(slot)):
+			return slot
+	return SkillBar.NONE
+
+
+## The input action that uses `slot`: `use_skill_slot_1` for the main slot, up to `_5`.
+static func slot_action(slot: int) -> StringName:
+	return StringName("use_skill_slot_%d" % (slot + 1))
 
 
 func _on_skill_used(skill: Skill) -> void:
