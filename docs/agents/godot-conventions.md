@@ -34,6 +34,14 @@ Logic with branches (parsing, validation, rules) gets a [GUT](https://gut.readth
 
 To check a change visually, `tools/screenshot.gd` opens a scene, runs console commands, and saves a screenshot after each one (usage in its header). To check behaviour without playing, `tools/simulate.gd` runs a scene headless after console commands and prints every Character's position once per second; `tp <x> <z>` puts the player where the test needs them.
 
+A test that simulates a screen touch sends it with `get_viewport().push_input(event, true)`. Without `true` the position is read as window coordinates and lands somewhere else.
+
+To try a change on the iPhone, `tools/deploy_ios.sh` exports, installs and launches the debug build. Its header lists the known failures and their fixes.
+
+## Assets
+
+Art comes from Kenney packs in `assets/kenney/<pack>/`. kenney.nl refuses scripted downloads, so ask the developer to download a new pack into that folder.
+
 ## Levels and navigation
 
 - A GridMap cell (x, z) covers [x, x+1] × [z, z+1]; its centre is (x + 0.5, z + 0.5). Place props and Characters by that, not by the cell index.
