@@ -10,7 +10,7 @@ Baseline for the feedback: Seki & Ishikawa, *Quantifying Hit Feedback Preference
 
 1. **Facing** on the Player: a direction on the ground, at any angle.
    - Stick or WASD: the pushed direction. It keeps the last one when let go.
-   - Mouse: from the player to the spot under the cursor on the ground, while the mouse is the last thing used. Stick or WASD takes Facing back.
+   - Mouse: from the player to the spot under the cursor on the ground. Once the mouse moves it leads, and WASD only walks. Pushing a gamepad stick or touching the screen takes Facing back.
    - A small arrow on the ground at the player's feet points along Facing.
 2. **Skill slot**: exactly one, holding Attack by default. It resets on every launch.
    - Touch: a button on the right of the screen showing the slotted Skill's icon.
@@ -65,3 +65,4 @@ Enemies hurting the player, health and death, sound, aiming on touch or controll
 - **Mouse-to-touch emulation is off.** A left click uses the slot, so it can't also be a screen touch that grabs the Touch stick. The Mac now plays like PC (WASD, mouse aims, click uses the slot). The stick is tried on the phone and covered by its GUT test.
 - **The card flips to Facing**, not to velocity, so it looks where the mouse aims even while walking the other way.
 - **Facing starts at screen right**, the side the card faces by default.
+- **The cursor leads Facing.** Changed after trying it: WASD walking no longer overrides the mouse, since keyboard and mouse are played together. Only a gamepad stick or a touch, each of which aims by itself, takes Facing back.

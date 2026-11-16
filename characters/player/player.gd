@@ -3,8 +3,8 @@ extends CharacterBody3D
 ## The player's Character (see GLOSSARY.md). Walks where the left stick or the keys point,
 ## relative to the camera: pushing up walks up the screen.
 
-## The player's Facing (see GLOSSARY.md): a unit direction on the ground. It follows the stick
-## or keys, or the mouse cursor while the mouse was the last thing used.
+## The player's Facing (see GLOSSARY.md): a unit direction on the ground. It follows the mouse
+## cursor once the mouse moves, otherwise the stick or keys.
 var facing := Vector3.RIGHT
 
 var _cursor := Vector2.ZERO # mouse position in this viewport
@@ -42,23 +42,28 @@ static func facing_toward(from: Vector3, to: Vector3, current: Vector3) -> Vecto
 
 
 # _input, not _unhandled_input: the full-screen PixelatedView would claim mouse motion as GUI
-# input first. A touch also moves the emulated mouse, which mustn't steal Facing from the stick.
+# input first. The mouse leads Facing once it moves; the keys only walk. A stick (gamepad or
+# touch) aims by itself, so pushing one takes Facing back. A touch also moves the emulated
+# mouse, which mustn't count as the mouse.
 func _input(event: InputEvent) -> void:
 	var motion := event as InputEventMouseMotion
 	if motion and motion.device != InputEvent.DEVICE_ID_EMULATION:
 		_cursor = motion.position
 		_aim_with_mouse = true
+	elif event is InputEventScreenTouch:
+		_aim_with_mouse = false
+	elif event is InputEventJoypadMotion and absf((event as InputEventJoypadMotion).axis_value) > 0.2:
+		_aim_with_mouse = false
 
 
 func _physics_process(delta: float) -> void:
 	var direction := _input_direction()
 	velocity = _movement.next_velocity(velocity, direction, delta)
 	move_and_slide()
-	if not direction.is_zero_approx():
-		_aim_with_mouse = false # the stick or keys take Facing back
-		facing = direction
-	elif _aim_with_mouse:
+	if _aim_with_mouse:
 		facing = _facing_toward_cursor()
+	elif not direction.is_zero_approx():
+		facing = direction
 	_facing_arrow.basis = Basis.looking_at(facing)
 	_standee.face(facing)
 	_standee.play(&"idle" if velocity.is_zero_approx() else &"walk")

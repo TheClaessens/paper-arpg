@@ -51,3 +51,19 @@ func test_facing_follows_the_stick_and_stays_when_let_go() -> void:
 	Input.action_release(&"move_up")
 	await wait_physics_frames(2)
 	assert_almost_eq(player.facing, Vector3(0.0, 0.0, -1.0), Vector3.ONE * 0.001, "let go: Facing stays")
+
+
+func test_the_cursor_leads_facing_while_the_keys_walk() -> void:
+	var camera := Camera3D.new() # tilted down like the game's: up the screen is -Z on the ground
+	camera.position = Vector3(0.0, 10.0, 6.0)
+	camera.rotation_degrees.x = -60.0
+	add_child_autofree(camera)
+	camera.make_current()
+	player.set_physics_process(true)
+	var motion := InputEventMouseMotion.new()
+	motion.position = camera.unproject_position(Vector3(3.0, 0.0, 0.0)) # cursor right of the player
+	get_viewport().push_input(motion, true)
+	Input.action_press(&"move_up")
+	await wait_physics_frames(2)
+	Input.action_release(&"move_up")
+	assert_almost_eq(player.facing, Vector3(1.0, 0.0, 0.0), Vector3.ONE * 0.05)

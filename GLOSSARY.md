@@ -33,7 +33,7 @@ The on-screen stick a thumb drags to move the player. It appears where the thumb
 _Avoid_: Virtual joystick, thumbstick, d-pad
 
 **Facing**:
-The direction on the ground a Character points, at any angle. The player's Facing follows the stick and keeps its last direction when the stick is let go.
+The direction on the ground a Character points, at any angle. The player's Facing follows the mouse cursor once the mouse moves, and otherwise the stick, keeping its last direction when the stick is let go.
 _Avoid_: Heading, aim, orientation
 
 **Skill**:
