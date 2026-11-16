@@ -35,7 +35,7 @@ Baseline for the feedback: Seki & Ishikawa, *Quantifying Hit Feedback Preference
    - It pauses the game and shows the pause screen with the Skill slot.
    - Tapping the slot opens a small menu of Skills (Attack, Fireball). Choosing one replaces what's in the slot.
    - Unpausing returns to play. The layout will be refined later.
-7. **Tuning**: `hitfeel` in the Console toggles a pane of sliders on the right that stays open while playing. It covers the Hit feedback values, the Attack's arc, reach and use time, and the press buffer. `hitfeel` also lists every value as commands to paste back, and `hitfeel <name> <value>` sets one. Values reset on launch. It goes away or becomes a setting once the values settle.
+7. **Tuning**: ~~a `hitfeel` pane of sliders~~. Built and used to settle the values, then removed once they settled (see the decisions below).
 
 ## Starting values
 
@@ -91,3 +91,4 @@ Enemies hurting the player, health and death, sound, aiming on touch or controll
 - **Each Skill has a `title` and an `icon`** (Kenney's sword and fire icons). The slot button and the pause screen show what's in the slot, and follow it through the slot's `skill_changed` signal.
 - **The pause screen** (`ui/pause_menu.tscn`) runs while paused. Esc and Start, plus the controller's B button (`ui_cancel`), step back: from the Skill menu to the pause screen, from there to the game. Focus lands on the slot, then on the slotted Skill, so the D-pad works right away.
 - **The Skill menu's buttons are built each time it opens**, from the `skills` list the sandbox gives it, so it always matches the slot.
+- **The tuning pane is removed** after the review. The values have settled, and the pane broke "scenes live in the editor". Tuning now happens in the editor: the Hit feedback in `skills/hit_feedback.tres`, and each Skill's values in its own scene.
