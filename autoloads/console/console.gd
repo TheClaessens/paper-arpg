@@ -45,8 +45,8 @@ func _ready() -> void:
 	_panel.hide()
 	_field.text_submitted.connect(_on_input_submitted)
 	_button.pressed.connect(_toggle_panel)
-	get_viewport().size_changed.connect(_avoid_notch)
-	_avoid_notch()
+	get_viewport().size_changed.connect(_fit_safe_area)
+	_fit_safe_area()
 
 
 func register(command: StringName, callback: Callable, help: String) -> void:
@@ -65,7 +65,7 @@ func execute(line: String) -> String:
 	var words := line.strip_edges().split(" ", false)
 	if words.is_empty():
 		return ""
-	var command := StringName(words[0])
+	var command := StringName(words[0].to_lower()) # iOS capitalises the first letter
 	if not _commands.has(command):
 		return "Unknown command '%s'. Type 'help' for a list." % command
 	var callback: Callable = _commands[command].callback
@@ -93,18 +93,24 @@ func _toggle_panel() -> void:
 		_field.release_focus()
 
 
-## Insets the button past an iPhone's notch. The safe area is in screen pixels, so it's scaled
-## to the stretched viewport. In landscape the notch can flip sides when the phone turns, so
-## the larger side inset is used either way.
-func _avoid_notch() -> void:
-	if not OS.has_feature("mobile"):
-		return # on desktop the safe area is the display's, not the window's
-	var safe := Rect2(DisplayServer.get_display_safe_area())
-	var screen := Vector2(DisplayServer.window_get_size())
-	var left := safe.position.x
-	var right := screen.x - safe.end.x
-	var to_viewport := get_viewport().get_visible_rect().size / screen
-	_button.position = Vector2(maxf(left, right), safe.position.y) * to_viewport
+## Keeps the button and the panel clear of an iPhone's notch and rounded corners, with the
+## panel to the right of the button. The safe area is in screen pixels, so it's scaled to the
+## stretched viewport. In landscape the notch can flip sides when the phone turns, so the larger
+## side inset is used on both sides.
+func _fit_safe_area() -> void:
+	var inset := Vector2.ZERO
+	# On desktop the safe area is the display's, not the window's: no inset.
+	if OS.has_feature("mobile"):
+		var safe := Rect2(DisplayServer.get_display_safe_area())
+		var screen := Vector2(DisplayServer.window_get_size())
+		var side := maxf(safe.position.x, screen.x - safe.end.x)
+		inset = Vector2(side, safe.position.y) * get_viewport().get_visible_rect().size / screen
+	var height := _panel.offset_bottom - _panel.offset_top # set in the editor
+	_button.position = inset
+	_panel.offset_left = inset.x + _button.size.x
+	_panel.offset_right = -inset.x
+	_panel.offset_top = inset.y
+	_panel.offset_bottom = inset.y + height
 
 
 func _is_toggle(event: InputEvent) -> bool:

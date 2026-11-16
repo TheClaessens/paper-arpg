@@ -87,3 +87,8 @@ func test_button_toggles_console_like_the_key() -> void:
 	assert_true(get_tree().paused, "button opens the console")
 	button.pressed.emit()
 	assert_false(get_tree().paused, "button closes it again")
+
+
+func test_command_word_ignores_case() -> void:
+	# iOS capitalises the first letter typed.
+	assert_string_contains(console.execute("Help"), "settings  List every setting")

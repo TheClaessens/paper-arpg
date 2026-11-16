@@ -1,6 +1,6 @@
 # Touch controls
 
-Status: ready-for-agent
+Status: ready-for-human
 
 Movement on touch: the left thumb drags a **Touch stick** (see GLOSSARY.md). This was pulled forward from the playtest prep after step 3. Touch aiming for skills waits until combat exists. Agreed in a grilling session on 2026-11-16.
 
@@ -53,7 +53,12 @@ Movement on touch: the left thumb drags a **Touch stick** (see GLOSSARY.md). Thi
 - **The stick releases only what it pressed.** A held W/A/S/D key survives a touch, a pause or a focus loss.
 - **A thumb held through a pause is dropped.** After unpausing, it does nothing until it lifts and touches again.
 
+- **Device test (2026-11-16): the stick feels right.** It keeps a fixed origin and the 80 px radius. The follow mode stays, off by default, and becomes a player setting later. The `touchstick` console command switches it until then.
+- **Console fixes from the device test.**
+  - The command word is lower-cased, because iOS capitalises the first letter typed.
+  - The panel sits inside the safe area, to the right of the button.
+  - The input sits at the top of the panel, and the panel is 280 px tall, so the on-screen keyboard doesn't cover it.
+
 ## Open
 
-- Tune `radius` on the device.
-- Fixed or following origin, decided on the device.
+- Follow mode as a player setting, once there is a settings screen.
