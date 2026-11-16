@@ -1,7 +1,8 @@
 class_name DevConsole
 extends CanvasLayer
 ## Developer console, available in debug builds only.
-## Open with the backtick key (`) or by clicking both sticks in at once.
+## Open with the backtick key (`), by clicking both sticks in at once, or with the button in
+## the top-left corner (for touch screens).
 ## Systems add their own commands with register(); the console itself only knows
 ## `help`, the commands for reading and changing Settings, and engine debug toggles.
 ##
@@ -21,6 +22,7 @@ var _game_was_paused := false
 @onready var _panel: Control = $Panel
 @onready var _output: RichTextLabel = %Output
 @onready var _field: LineEdit = %Input
+@onready var _toggle: Button = %Toggle
 
 
 func _init() -> void:
@@ -35,12 +37,16 @@ func _init() -> void:
 func _ready() -> void:
 	if not _enabled:
 		_panel.queue_free()
+		_toggle.queue_free()
 		set_process_input(false)
 		return
 	if settings == null:
 		settings = Settings
 	_panel.hide()
 	_field.text_submitted.connect(_on_input_submitted)
+	_toggle.pressed.connect(_toggle_panel)
+	get_viewport().size_changed.connect(_avoid_notch)
+	_avoid_notch()
 
 
 func register(command: StringName, callback: Callable, help: String) -> void:
@@ -69,18 +75,36 @@ func execute(line: String) -> String:
 func _input(event: InputEvent) -> void:
 	if _is_toggle(event):
 		get_viewport().set_input_as_handled() # keeps the ` out of the text field
-		_panel.visible = not _panel.visible
-		# Typing must not drive the game: the Player reads the keyboard directly, so pause the
-		# whole tree while open (the Console runs with process_mode ALWAYS). Closing restores
-		# whatever pause state the game had before.
-		if _panel.visible:
-			_game_was_paused = get_tree().paused
-			get_tree().paused = true
-			_field.clear()
-			_field.grab_focus()
-		else:
-			get_tree().paused = _game_was_paused
-			_field.release_focus()
+		_toggle_panel()
+
+
+func _toggle_panel() -> void:
+	_panel.visible = not _panel.visible
+	# Typing must not drive the game: the Player reads the keyboard directly, so pause the
+	# whole tree while open (the Console runs with process_mode ALWAYS). Closing restores
+	# whatever pause state the game had before.
+	if _panel.visible:
+		_game_was_paused = get_tree().paused
+		get_tree().paused = true
+		_field.clear()
+		_field.grab_focus() # on iOS this brings up the on-screen keyboard
+	else:
+		get_tree().paused = _game_was_paused
+		_field.release_focus()
+
+
+## Insets the button past an iPhone's notch. The safe area is in screen pixels, so it's scaled
+## to the stretched viewport. In landscape the notch can flip sides when the phone turns, so
+## the larger side inset is used either way.
+func _avoid_notch() -> void:
+	if not OS.has_feature("mobile"):
+		return # on desktop the safe area is the display's, not the window's
+	var safe := Rect2(DisplayServer.get_display_safe_area())
+	var screen := Vector2(DisplayServer.window_get_size())
+	var left := safe.position.x
+	var right := screen.x - safe.end.x
+	var to_viewport := get_viewport().get_visible_rect().size / screen
+	_toggle.position = Vector2(maxf(left, right), safe.position.y) * to_viewport
 
 
 func _is_toggle(event: InputEvent) -> bool:
