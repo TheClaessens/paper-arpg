@@ -33,6 +33,7 @@ var _aim_with_stick := false # the right stick is pushed
 @onready var _movement: Movement = $Movement
 @onready var _standee: Standee = $Standee
 @onready var _facing_arrow: Node3D = $FacingArrow
+@onready var _aim_marker: AimMarker = $AimMarker
 
 
 func _ready() -> void:
@@ -65,12 +66,39 @@ static func slot_action(slot: int) -> StringName:
 	return StringName("use_skill_slot_%d" % (slot + 1))
 
 
-func _on_skill_used(skill: Skill) -> void:
-	var aim := _aim_for(skill)
+func _on_skill_used(skill: Skill, given_aim: Vector3) -> void:
+	var aim := given_aim if given_aim.is_finite() else _aim_for(skill)
 	if not aim.is_zero_approx():
 		facing = aim.normalized() # turn to what it was aimed at
 	skill.use(aim)
 	_standee.squash(USE_STRETCH)
+
+
+## The aim on the ground for a thumb `drag` on screen (see ground_aim()).
+func aim_from_drag(skill: Skill, drag: Vector2, full_drag: float) -> Vector3:
+	var camera := get_viewport().get_camera_3d().global_basis
+	var right := Vector3(camera.x.x, 0.0, camera.x.z).normalized()
+	var back := Vector3(camera.z.x, 0.0, camera.z.z).normalized()
+	return ground_aim(drag, right, back, skill.range, full_drag, skill.aims_at_spot)
+
+
+## The aim on the ground, as an offset from the Character, for a thumb `drag` on screen.
+## `right` and `back` are screen right and screen down on the ground. A Skill that goes a
+## direction goes its whole Range; one that lands on a spot goes as far as the drag, reaching
+## its Range at `full_drag`.
+static func ground_aim(drag: Vector2, right: Vector3, back: Vector3, skill_range: float, full_drag: float, to_spot: bool) -> Vector3:
+	var direction := (right * drag.x + back * drag.y).normalized()
+	var reach := minf(drag.length() / full_drag, 1.0) if to_spot else 1.0
+	return direction * skill_range * reach
+
+
+## Shows where `skill` would go if used now with `aim`, greyed out while `cancelling`.
+func show_aim(skill: Skill, aim: Vector3, cancelling: bool) -> void:
+	_aim_marker.show_aim(skill, aim, cancelling)
+
+
+func hide_aim() -> void:
+	_aim_marker.hide()
 
 
 ## Where `skill` goes, as an offset on the ground: exactly at the mouse cursor, along a pushed

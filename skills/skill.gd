@@ -17,6 +17,8 @@ const AUTO_AIM_ANGLE := 60.0
 @export var icon: Texture2D
 ## How the Skill aims.
 @export var aim := Aim.AUTO
+## Whether it lands on a spot (aimed by how far, too) rather than going a direction.
+@export var aims_at_spot := false
 ## The Skill's Use time: how long one use takes. The Skill bar takes no new use until it has passed.
 @export var use_time := 0.4
 ## The Skill's cooldown: how long after a use starts before it can be used again, from any slot.
@@ -62,6 +64,11 @@ func aim_toward(facing: Vector3) -> Vector3:
 ## where the Skill goes; for a Skill that lands on a spot, its length is how far.
 func use(_aim: Vector3) -> void:
 	pass
+
+
+## What a use aimed at `aim` would pick out, to ring it while aiming; null for most Skills.
+func target_for(_aim: Vector3) -> Node3D:
+	return null
 
 
 ## Every Enemy whose body is within `reach` of the Character, in any direction. The physics

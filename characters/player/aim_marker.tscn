@@ -1,0 +1,55 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://characters/player/aim_marker.gd" id="1_script"]
+
+[sub_resource type="StandardMaterial3D" id="aim_material"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(1, 0.82, 0.48, 0.9)
+
+[sub_resource type="TorusMesh" id="range_ring"]
+resource_local_to_scene = true
+inner_radius = 0.93
+outer_radius = 1.0
+rings = 64
+
+[sub_resource type="BoxMesh" id="line_mesh"]
+size = Vector3(0.22, 0.02, 1)
+
+[sub_resource type="TorusMesh" id="spot_ring"]
+inner_radius = 0.32
+outer_radius = 0.42
+rings = 32
+
+[sub_resource type="TorusMesh" id="target_ring"]
+inner_radius = 0.42
+outer_radius = 0.52
+rings = 32
+
+[node name="AimMarker" type="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+script = ExtResource("1_script")
+
+[node name="RangeRing" type="MeshInstance3D" parent="."]
+cast_shadow = 0
+material_override = SubResource("aim_material")
+mesh = SubResource("range_ring")
+
+[node name="Line" type="Node3D" parent="."]
+
+[node name="Mesh" type="MeshInstance3D" parent="Line"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.5)
+cast_shadow = 0
+material_override = SubResource("aim_material")
+mesh = SubResource("line_mesh")
+
+[node name="Spot" type="MeshInstance3D" parent="."]
+cast_shadow = 0
+material_override = SubResource("aim_material")
+mesh = SubResource("spot_ring")
+
+[node name="Target" type="MeshInstance3D" parent="."]
+top_level = true
+cast_shadow = 0
+material_override = SubResource("aim_material")
+mesh = SubResource("target_ring")

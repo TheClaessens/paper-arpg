@@ -7,6 +7,7 @@ var bar: SkillBar
 var sword: Skill
 var fire: Skill
 var used: Array[Skill] = []
+var aims: Array[Vector3] = []
 
 
 func before_each() -> void:
@@ -19,7 +20,10 @@ func before_each() -> void:
 	bar.set_skill(0, sword)
 	bar.set_skill(1, fire)
 	used = []
-	bar.used.connect(func(skill: Skill) -> void: used.append(skill))
+	aims = []
+	bar.used.connect(func(skill: Skill, aim: Vector3) -> void:
+		used.append(skill)
+		aims.append(aim))
 
 
 func test_a_press_uses_the_slots_skill() -> void:
@@ -132,3 +136,17 @@ func test_it_says_which_slot_was_used() -> void:
 	bar.press(1)
 	bar.advance(0.016)
 	assert_eq(slots, [1] as Array[int])
+
+
+# Drag to aim: a press can carry its own aim, which reaches `used` as it was given.
+
+func test_a_press_carries_its_aim_through() -> void:
+	bar.press(1, Vector3(2.0, 0.0, 1.0))
+	bar.advance(0.016)
+	assert_eq(aims, [Vector3(2.0, 0.0, 1.0)] as Array[Vector3])
+
+
+func test_a_plain_press_leaves_the_aim_to_the_character() -> void:
+	bar.press(1)
+	bar.advance(0.016)
+	assert_eq(aims, [SkillBar.NO_AIM] as Array[Vector3])

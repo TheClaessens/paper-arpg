@@ -122,3 +122,19 @@ func test_its_skills_are_the_skill_nodes_it_holds() -> void:
 	for skill in player.skills:
 		titles.append(skill.title)
 	assert_eq(titles, ["Attack", "Fireball"] as Array[String])
+
+
+
+# A thumb drag on screen becomes an aim on the ground: screen right and screen down are the
+# camera's right and back axes on the ground.
+
+func test_a_drag_aims_a_direction_skill_its_full_range() -> void:
+	var aim := Player.ground_aim(Vector2(30.0, 0.0), Vector3.RIGHT, Vector3.BACK, 10.0, 100.0, false)
+	assert_almost_eq(aim, Vector3(10.0, 0.0, 0.0), Vector3.ONE * 0.001)
+
+
+func test_a_drag_aims_a_spot_skill_as_far_as_it_goes() -> void:
+	var half := Player.ground_aim(Vector2(0.0, 50.0), Vector3.RIGHT, Vector3.BACK, 8.0, 100.0, true)
+	assert_almost_eq(half, Vector3(0.0, 0.0, 4.0), Vector3.ONE * 0.001, "half the drag, half the Range")
+	var past := Player.ground_aim(Vector2(0.0, 300.0), Vector3.RIGHT, Vector3.BACK, 8.0, 100.0, true)
+	assert_almost_eq(past, Vector3(0.0, 0.0, 8.0), Vector3.ONE * 0.001, "never past the Range")

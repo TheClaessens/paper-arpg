@@ -5,8 +5,9 @@
 [ext_resource type="SpriteFrames" path="res://characters/standee/frames/adventurer.tres" id="3_frames"]
 [ext_resource type="Script" uid="uid://bc551mjhw7rop" path="res://characters/movement.gd" id="4_movement"]
 [ext_resource type="PackedScene" path="res://skills/attack/attack.tscn" id="5_attack"]
-[ext_resource type="Script" path="res://skills/skill_bar.gd" id="6_slot"]
+[ext_resource type="Script" uid="uid://y4k7t2l0tssu" path="res://skills/skill_bar.gd" id="6_slot"]
 [ext_resource type="PackedScene" path="res://skills/fireball/fireball.tscn" id="7_fireball"]
+[ext_resource type="PackedScene" path="res://characters/player/aim_marker.tscn" id="8_aim_marker"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 radius = 0.25
@@ -52,3 +53,5 @@ mesh = SubResource("arrow_mesh")
 [node name="SkillBar" type="Node" parent="." unique_id=807985351 node_paths=PackedStringArray("main_skill")]
 script = ExtResource("6_slot")
 main_skill = NodePath("../Attack")
+
+[node name="AimMarker" parent="." instance=ExtResource("8_aim_marker")]

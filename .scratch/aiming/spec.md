@@ -48,3 +48,11 @@ Rebinding, targeting a specific Enemy by tapping it, aim assist on the mouse, da
 ## Open
 
 - **How to cancel:** dragging back onto the slot, or onto a × button that appears in the top right while aiming. Both get built, switched with an `aim cancel slot|button` console command, until the device playtest picks one.
+
+## Decisions made during the build
+
+- **A use is aimed at an offset on the ground** (`Skill.use(aim)`): its direction for every Skill, plus how far for a spot Skill. The Player picks it: exactly at the cursor, along a pushed right stick, otherwise auto-aimed. A drag carries its own aim through `SkillBar.press(slot, aim)`.
+- **The slot buttons follow their own touches**, like the Touch stick, instead of a `TouchScreenButton`, so a drag can be followed. A non-aimed Skill is used the moment the finger lands. An aimed one waits for the lift.
+- **A drag that has aimed can't turn back into a tap.** With "cancel slot", lifting on the slot after aiming cancels it, even inside the deadzone. Found in the sandbox check.
+- **Sizes in viewport units:** deadzone 22, full Range at 177 drag units, cancel button 88 in the top right of the safe area.
+- **The Range ring is the Skill's whole Range**, so Fireball's (10 units) mostly falls off screen. Mark's shorter Range shows it.

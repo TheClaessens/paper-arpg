@@ -5,10 +5,6 @@
 [ext_resource type="Texture2D" path="res://assets/kenney/kenney_ui-pack-adventure/PNG/Double/round_brown_dark.png" id="2_round"]
 [ext_resource type="Texture2D" path="res://assets/kenney/kenney_mobile-controls/Sprites/Highlights A/Large (2×)/button_circle_highlight.png" id="3_ring"]
 
-[sub_resource type="CircleShape2D" id="touch_shape"]
-resource_local_to_scene = true
-radius = 44.0
-
 [node name="SkillSlotButton" type="Control"]
 layout_mode = 3
 anchors_preset = 0
@@ -75,11 +71,6 @@ grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("3_ring")
 expand_mode = 1
-
-[node name="Touch" type="TouchScreenButton" parent="."]
-process_mode = 1
-position = Vector2(44, 44)
-shape = SubResource("touch_shape")
 
 [node name="Choose" type="Button" parent="."]
 visible = false

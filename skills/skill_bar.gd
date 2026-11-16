@@ -6,9 +6,11 @@ extends Node
 ## no slot is used until it has passed. A press in its final `buffer` seconds, from any slot, is
 ## kept and used the moment it ends (the latest such press wins); an earlier one is dropped.
 ## A Skill on cooldown can't be used from any slot; a press on it is ignored, not kept.
-## The Character connects `used` and aims the Skill.
+## A press may carry its own aim (a drag on touch); otherwise the Character aims the Skill.
+## The Character connects `used`.
 
-signal used(skill: Skill)
+## `skill` is used. `aim` is the press's own aim, or NO_AIM to let the Character aim it.
+signal used(skill: Skill, aim: Vector3)
 ## `slot` was used (the HUD presses its button in).
 signal slot_used(slot: int)
 ## `skill`'s cooldown has run out.
@@ -18,6 +20,8 @@ signal changed(slot: int, skill: Skill)
 
 const SLOTS := 5
 const NONE := -1
+## A press without its own aim.
+const NO_AIM := Vector3.INF
 
 ## The Skill in the main slot at the start. The small slots start empty.
 @export var main_skill: Skill
@@ -26,7 +30,9 @@ const NONE := -1
 
 var _slots: Array[Skill] = []
 var _pressed := NONE # a slot pressed since the last advance()
+var _pressed_aim := NO_AIM
 var _buffered := NONE # a slot kept for when the Use time ends
+var _buffered_aim := NO_AIM
 var _busy := 0.0 # Use time left
 
 
@@ -50,12 +56,14 @@ func set_skill(slot: int, skill: Skill) -> void:
 	changed.emit(slot, skill)
 
 
-## Asks to use `slot`. Takes effect on the next physics frame. An empty slot, or one whose Skill
-## is cooling down, does nothing.
-func press(slot: int) -> void:
+## Asks to use `slot`, aimed at `aim` (an offset on the ground) or, by default, by the
+## Character. Takes effect on the next physics frame. An empty slot, or one whose Skill is
+## cooling down, does nothing.
+func press(slot: int, aim := NO_AIM) -> void:
 	var skill := _slots[slot]
 	if skill and skill.cooldown_left <= 0.0:
 		_pressed = slot
+		_pressed_aim = aim
 
 
 func _physics_process(delta: float) -> void:
@@ -69,6 +77,7 @@ func advance(delta: float) -> void:
 	_busy = maxf(0.0, _busy - delta)
 	if _pressed != NONE and _busy <= buffer:
 		_buffered = _pressed
+		_buffered_aim = _pressed_aim
 	_pressed = NONE
 	if _buffered != NONE and _busy == 0.0:
 		var skill := _slots[_buffered]
@@ -77,7 +86,7 @@ func advance(delta: float) -> void:
 		if skill and skill.cooldown_left <= 0.0: # emptied, or used from another slot, since the press
 			_busy = skill.use_time
 			skill.cooldown_left = skill.cooldown
-			used.emit(skill)
+			used.emit(skill, _buffered_aim)
 			slot_used.emit(slot)
 
 
