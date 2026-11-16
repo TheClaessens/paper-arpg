@@ -12,8 +12,6 @@ const FLIGHT_HEIGHT := 0.5
 
 ## How fast the ball flies, in world units per second.
 @export var speed := 12.0
-## How the game shows the hit (game-wide, shared by every Skill).
-@export var hit_feedback: HitFeedback
 
 
 func use(facing: Vector3) -> void:
@@ -22,11 +20,6 @@ func use(facing: Vector3) -> void:
 	ball.speed = speed
 	ball.range = range
 	ball.top_level = true # flies on its own instead of following the Character
-	ball.hit_enemy.connect(func(enemy: Enemy) -> void: _hit(enemy, facing))
+	ball.hit_enemy.connect(func(enemy: Enemy) -> void: _land_hits({enemy: facing})) # pushed along the throw
 	add_child(ball)
 	ball.global_position = global_position + facing * LAUNCH_OFFSET + Vector3.UP * FLIGHT_HEIGHT
-
-
-func _hit(enemy: Enemy, direction: Vector3) -> void:
-	enemy.take_hit(direction, knockback, stagger)
-	hit_feedback.play_impact(get_viewport())

@@ -9,8 +9,6 @@ extends CharacterBody3D
 ## Chases again once the target is this far away. Larger than `reach_distance`, so a small
 ## step by the player doesn't flick the Enemy between walking and standing.
 @export var resume_distance := 1.3
-## How hits show (game-wide, skills/hit_feedback.tres).
-@export var hit_feedback: HitFeedback
 
 var _target: Node3D
 var _chasing := false
@@ -34,10 +32,11 @@ func should_chase(chasing: bool, distance: float) -> bool:
 	return distance > (reach_distance if chasing else resume_distance)
 
 
-## The knockback slide's speed with `left` seconds of a `stagger`-long Stagger to go. It falls
-## linearly to zero, so over the whole Stagger the Enemy slides exactly `distance`.
-static func knockback_speed(distance: float, stagger: float, left: float) -> float:
-	return 2.0 * distance * left / (stagger * stagger)
+## How much of a `distance`-long knockback slide is still to go with `left` seconds of a
+## `stagger`-long Stagger remaining. The slide's speed falls linearly to zero, so the distance
+## still to go shrinks with the square of the time left.
+static func knockback_left(distance: float, stagger: float, left: float) -> float:
+	return distance * (left / stagger) ** 2
 
 
 ## Hit by a Skill: pushed `knockback` world units along `direction` (a unit vector on the
@@ -47,8 +46,9 @@ func take_hit(direction: Vector3, knockback: float, stagger: float) -> void:
 	_stagger_time = maxf(stagger, 0.02)
 	_stagger_left = _stagger_time
 	_knockback = direction * knockback
-	_standee.flash(hit_feedback.flash)
-	_standee.squash(hit_feedback.squash)
+	var feedback := HitFeedback.shared()
+	_standee.flash(feedback.flash)
+	_standee.squash(feedback.squash)
 
 
 func _physics_process(delta: float) -> void:
@@ -91,8 +91,15 @@ func _on_velocity_computed(safe_velocity: Vector3) -> void:
 ## Staggered: slides with the knockback and doesn't steer. Skips the navigation agent, which
 ## would bend the slide around other Enemies a frame late.
 func _slide(delta: float) -> void:
-	velocity = _knockback.normalized() * knockback_speed(_knockback.length(), _stagger_time, _stagger_left)
-	_stagger_left -= delta
+	if delta == 0.0: # frozen by a hitstop
+		return
+	# Exactly this frame's share of the slide, so the whole slide covers the knockback distance
+	# at any frame rate, even when the Stagger lasts only a few frames.
+	var left_after := maxf(_stagger_left - delta, 0.0)
+	var distance := _knockback.length()
+	var step := knockback_left(distance, _stagger_time, _stagger_left) - knockback_left(distance, _stagger_time, left_after)
+	velocity = _knockback.normalized() * step / delta
+	_stagger_left = left_after
 	move_and_slide()
 	if _stagger_left <= 0.0:
 		velocity = Vector3.ZERO

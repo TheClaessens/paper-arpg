@@ -12,8 +12,6 @@ const SWING_FADE := 0.16
 @export_range(10.0, 360.0, 5.0, "suffix:°") var sweep := 120.0
 ## How big an Enemy's body is around its centre; the swing hits any part of it.
 @export var body_radius := 0.25
-## How the game shows the hit (game-wide, shared by every Skill).
-@export var hit_feedback: HitFeedback
 
 @onready var _swing: MeshInstance3D = $Swing
 @onready var _swing_material: ShaderMaterial = _swing.material_override
@@ -31,15 +29,13 @@ static func in_sweep(offset: Vector3, facing: Vector3, sweep_degrees: float, swi
 
 func use(facing: Vector3) -> void:
 	_show_swing(facing)
-	var hit := false
+	var hits: Dictionary[Enemy, Vector3] = {}
 	for enemy in _enemies_in_range():
 		var offset := enemy.global_position - global_position
 		if in_sweep(offset, facing, sweep, range, body_radius):
-			var direction := Vector3(offset.x, 0.0, offset.z).normalized() if offset.length() > 0.01 else facing
-			enemy.take_hit(direction, knockback, stagger)
-			hit = true
-	if hit:
-		hit_feedback.play_impact(get_viewport()) # once per swing, however many it hits
+			# Pushed straight away from the player; one right on top goes along Facing.
+			hits[enemy] = Vector3(offset.x, 0.0, offset.z).normalized() if offset.length() > 0.01 else facing
+	_land_hits(hits)
 
 
 ## Every Enemy whose body is within Range, in any direction. The physics engine finds them:

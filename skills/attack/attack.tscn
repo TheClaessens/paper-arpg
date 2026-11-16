@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" path="res://skills/attack/attack.gd" id="1_attack"]
 [ext_resource type="Shader" path="res://skills/attack/swing.gdshader" id="2_swing"]
-[ext_resource type="Resource" path="res://skills/hit_feedback.tres" id="3_feedback"]
 [ext_resource type="Texture2D" path="res://assets/kenney/kenney_mobile-controls/Sprites/Icons/Default/icon_sword.png" id="4_icon"]
 
 [sub_resource type="ShaderMaterial" id="swing_material"]
@@ -20,7 +19,6 @@ icon = ExtResource("4_icon")
 range = 1.6
 knockback = 0.35
 stagger = 0.05
-hit_feedback = ExtResource("3_feedback")
 
 [node name="Swing" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0)

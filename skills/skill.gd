@@ -21,3 +21,14 @@ extends Node3D
 ## Uses the Skill along `facing`, a unit direction on the ground.
 func use(_facing: Vector3) -> void:
 	pass
+
+
+## Lands one use's hits: each Enemy in `hits` is pushed along its direction (a unit vector on
+## the ground) with this Skill's knockback and Stagger. The impact (hitstop, screen shake)
+## plays once for the whole use, however many Enemies it hit. For the Skills themselves.
+func _land_hits(hits: Dictionary[Enemy, Vector3]) -> void:
+	if hits.is_empty():
+		return
+	for enemy in hits:
+		enemy.take_hit(hits[enemy], knockback, stagger)
+	HitFeedback.shared().play_impact(get_viewport())

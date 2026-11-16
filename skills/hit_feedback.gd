@@ -3,7 +3,7 @@ extends Resource
 ## Hit feedback (see GLOSSARY.md): how the game shows the moment a Skill hits. Game-wide, not
 ## per Skill: no game system changes it, and melee and ranged hits felt the same in the tuning
 ## study the values started from (see .scratch/combat/spec.md). One shared set,
-## `hit_feedback.tres`, serves everything. How hard a hit pushes (knockback, Stagger) belongs
+## `hit_feedback.tres`, serves everything: shared() returns it. Tune it in the editor. How hard a hit pushes (knockback, Stagger) belongs
 ## to the Skill. The hit Enemy shows flash and squash; the Skill that hit plays the impact
 ## (hitstop and screen shake) once per use.
 
@@ -17,6 +17,11 @@ extends Resource
 @export var shake := 0.12
 ## How long the screen shakes.
 @export var shake_time := 0.15
+
+## The game's one set of Hit feedback.
+static func shared() -> HitFeedback:
+	return load("res://skills/hit_feedback.tres") # cached, so always the same instance
+
 
 # Hitstops started and not yet over. Overlapping ones keep the game frozen until the last ends.
 static var _hitstops := 0
