@@ -102,29 +102,58 @@ func test_each_binding_presses_its_slot() -> void:
 	assert_eq(Player.pressed_slot(_key(KEY_W)), -1, "walking presses no slot")
 
 
+func test_letting_go_of_a_binding_releases_its_slot() -> void:
+	var key := _key(KEY_Q)
+	key.pressed = false
+	assert_eq(Player.released_slot(key), 2)
+	assert_eq(Player.released_slot(_key(KEY_Q)), -1, "a press releases nothing")
+
+
 func test_a_touch_does_not_use_a_slot() -> void:
 	# The mouse click Godot makes from every touch.
 	assert_eq(Player.pressed_slot(_click(MOUSE_BUTTON_LEFT, InputEvent.DEVICE_ID_EMULATION)), -1)
 
 
-func test_the_right_stick_leaves_the_cursor_in_charge() -> void:
-	var camera := _tilted_camera()
+func test_the_right_stick_aims_apart_from_walking() -> void:
+	_tilted_camera()
 	player.set_physics_process(true)
-	var motion := InputEventMouseMotion.new()
-	motion.position = camera.unproject_position(Vector3(3.0, 0.0, 0.0)) # cursor right of the player
-	get_viewport().push_input(motion, true)
-	var right_stick := InputEventJoypadMotion.new()
-	right_stick.axis = JOY_AXIS_RIGHT_X
-	right_stick.axis_value = 1.0
-	get_viewport().push_input(right_stick, true)
 	Input.action_press(&"move_up")
+	Input.action_press(&"aim_right")
 	await wait_physics_frames(2)
 	Input.action_release(&"move_up")
-	assert_almost_eq(player.facing, Vector3(1.0, 0.0, 0.0), Vector3.ONE * 0.05)
-
+	Input.action_release(&"aim_right")
+	assert_almost_eq(player.facing, Vector3(1.0, 0.0, 0.0), Vector3.ONE * 0.05, "aims right while walking up")
 
 func test_its_skills_are_the_skill_nodes_it_holds() -> void:
 	var titles: Array[String] = []
 	for skill in player.skills:
 		titles.append(skill.title)
-	assert_eq(titles, ["Attack", "Fireball"] as Array[String])
+	assert_eq(titles, ["Attack", "Fireball", "Nova", "Mark"] as Array[String])
+
+
+
+# A thumb drag on screen becomes an aim on the ground: screen right and screen down are the
+# camera's right and back axes on the ground.
+
+func test_a_drag_aims_a_direction_skill_its_full_range() -> void:
+	var aim := Player.ground_aim(Vector2(30.0, 0.0), Vector3.RIGHT, Vector3.BACK, 10.0, 100.0, false)
+	assert_almost_eq(aim, Vector3(10.0, 0.0, 0.0), Vector3.ONE * 0.001)
+
+
+func test_a_drag_aims_a_spot_skill_as_far_as_it_goes() -> void:
+	var half := Player.ground_aim(Vector2(0.0, 50.0), Vector3.RIGHT, Vector3.BACK, 8.0, 100.0, true)
+	assert_almost_eq(half, Vector3(0.0, 0.0, 4.0), Vector3.ONE * 0.001, "half the drag, half the Range")
+	var past := Player.ground_aim(Vector2(0.0, 300.0), Vector3.RIGHT, Vector3.BACK, 8.0, 100.0, true)
+	assert_almost_eq(past, Vector3(0.0, 0.0, 8.0), Vector3.ONE * 0.001, "never past the Range")
+
+
+func test_after_a_use_the_player_faces_the_aim_for_a_moment() -> void:
+	_tilted_camera()
+	player.set_physics_process(true)
+	Input.action_press(&"move_up")
+	player.skill_bar.press(0, Vector3(3.0, 0.0, 0.0)) # the Attack, aimed to the right
+	await wait_physics_frames(4)
+	assert_almost_eq(player.facing, Vector3(1.0, 0.0, 0.0), Vector3.ONE * 0.05, "faces the aim while walking up")
+	await wait_seconds(0.5)
+	Input.action_release(&"move_up")
+	assert_almost_eq(player.facing, Vector3(0.0, 0.0, -1.0), Vector3.ONE * 0.05, "then the walk takes Facing back")

@@ -5,6 +5,8 @@
 
 [node name="Fireball" type="Node3D"]
 script = ExtResource("1_fireball")
+aim = 2
+cooldown = 4.0
 title = "Fireball"
 icon = ExtResource("3_icon")
 use_time = 0.6

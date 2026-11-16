@@ -7,6 +7,7 @@ var bar: SkillBar
 var sword: Skill
 var fire: Skill
 var used: Array[Skill] = []
+var aims: Array[Vector3] = []
 
 
 func before_each() -> void:
@@ -19,7 +20,10 @@ func before_each() -> void:
 	bar.set_skill(0, sword)
 	bar.set_skill(1, fire)
 	used = []
-	bar.used.connect(func(skill: Skill) -> void: used.append(skill))
+	aims = []
+	bar.used.connect(func(skill: Skill, aim: Vector3) -> void:
+		used.append(skill)
+		aims.append(aim))
 
 
 func test_a_press_uses_the_slots_skill() -> void:
@@ -84,3 +88,109 @@ func test_changing_a_slot_says_so() -> void:
 	bar.set_skill(0, null)
 	assert_eq(changes, [2, 0] as Array[int])
 	assert_null(bar.skill_in(0), "emptied")
+
+
+# Cooldowns: a Skill's own clock, started by a use. While it runs, the Skill can't be used from
+# any slot it sits in; a press is ignored, not kept.
+
+func test_a_cooling_skill_ignores_presses_in_every_slot() -> void:
+	fire.cooldown = 4.0
+	bar.set_skill(3, fire)
+	bar.press(1)
+	bar.advance(0.016)
+	bar.advance(1.0) # past its Use time, still cooling
+	bar.press(3)
+	bar.advance(0.016)
+	bar.advance(3.1) # cooled down now, but the press was not kept
+	assert_eq(used, [fire] as Array[Skill])
+	bar.press(3)
+	bar.advance(0.016)
+	assert_eq(used, [fire, fire] as Array[Skill])
+
+
+func test_another_skill_works_while_one_cools() -> void:
+	fire.cooldown = 4.0
+	bar.press(1)
+	bar.advance(0.016)
+	bar.advance(0.7)
+	bar.press(0)
+	bar.advance(0.016)
+	assert_eq(used, [fire, sword] as Array[Skill])
+
+
+func test_it_says_when_a_skill_is_ready_again() -> void:
+	fire.cooldown = 1.0
+	var ready: Array[Skill] = []
+	bar.ready_again.connect(func(skill: Skill) -> void: ready.append(skill))
+	bar.press(1)
+	bar.advance(0.016)
+	bar.advance(0.5)
+	assert_eq(ready, [] as Array[Skill])
+	bar.advance(0.6)
+	assert_eq(ready, [fire] as Array[Skill])
+
+
+func test_it_says_which_slot_was_used() -> void:
+	var slots: Array[int] = []
+	bar.slot_used.connect(func(slot: int) -> void: slots.append(slot))
+	bar.press(1)
+	bar.advance(0.016)
+	assert_eq(slots, [1] as Array[int])
+
+
+# Drag to aim: a press can carry its own aim, which reaches `used` as it was given.
+
+func test_a_press_carries_its_aim_through() -> void:
+	bar.press(1, Vector3(2.0, 0.0, 1.0))
+	bar.advance(0.016)
+	assert_eq(aims, [Vector3(2.0, 0.0, 1.0)] as Array[Vector3])
+
+
+func test_a_plain_press_leaves_the_aim_to_the_character() -> void:
+	bar.press(1)
+	bar.advance(0.016)
+	assert_eq(aims, [SkillBar.NO_AIM] as Array[Vector3])
+
+
+# Holding: while a slot is held, a Skill that repeats while held is used again each time the Use
+# time ends, aimed where the hold steers it.
+
+func test_holding_repeats_a_repeating_skill() -> void:
+	sword.repeats_while_held = true
+	bar.press(0)
+	bar.set_held(0, true)
+	bar.advance(0.016)
+	bar.advance(0.4)
+	bar.advance(0.4)
+	assert_eq(used.size(), 3, "every 0.4 s while held")
+	bar.set_held(0, false)
+	bar.advance(1.0)
+	assert_eq(used.size(), 3, "letting go stops it")
+
+
+func test_holding_does_not_repeat_other_skills() -> void:
+	bar.press(1)
+	bar.set_held(1, true)
+	bar.advance(0.016)
+	bar.advance(2.0)
+	assert_eq(used, [fire] as Array[Skill])
+
+
+func test_a_hold_steers_the_next_uses() -> void:
+	sword.repeats_while_held = true
+	bar.press(0)
+	bar.set_held(0, true)
+	bar.advance(0.016)
+	bar.set_held(0, true, Vector3(0.0, 0.0, 2.0))
+	bar.advance(0.4)
+	assert_eq(aims, [SkillBar.NO_AIM, Vector3(0.0, 0.0, 2.0)] as Array[Vector3])
+
+
+func test_pausing_lets_go() -> void:
+	sword.repeats_while_held = true
+	bar.press(0)
+	bar.set_held(0, true)
+	bar.advance(0.016)
+	bar.propagate_notification(Node.NOTIFICATION_PAUSED) # the release may never arrive while paused
+	bar.advance(1.0)
+	assert_eq(used.size(), 1)

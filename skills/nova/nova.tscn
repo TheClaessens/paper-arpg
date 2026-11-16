@@ -1,0 +1,31 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://skills/nova/nova.gd" id="1_nova"]
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_mobile-controls/Sprites/Icons/Large (2×)/icon_burst.png" id="2_icon"]
+[ext_resource type="Shader" path="res://skills/attack/swing.gdshader" id="3_swing"]
+
+[sub_resource type="ShaderMaterial" id="disc_material"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("3_swing")
+shader_parameter/half_sweep = 3.1416
+
+[sub_resource type="PlaneMesh" id="disc_mesh"]
+size = Vector2(2, 2)
+
+[node name="Nova" type="Node3D"]
+script = ExtResource("1_nova")
+title = "Nova"
+icon = ExtResource("2_icon")
+aim = 0
+use_time = 0.4
+cooldown = 6.0
+range = 3.0
+knockback = 0.8
+stagger = 0.15
+
+[node name="Disc" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0)
+cast_shadow = 0
+material_override = SubResource("disc_material")
+mesh = SubResource("disc_mesh")

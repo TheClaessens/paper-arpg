@@ -24,6 +24,8 @@ var _frame := 0
 var _frame_elapsed := 0.0
 var _wobble_phase := 0.0
 var _flash_left := 0.0
+var _tint := Color.TRANSPARENT
+var _tint_left := 0.0
 var _squash_amount := 0.0
 var _squash_elapsed := SQUASH_TIME # done
 
@@ -71,6 +73,12 @@ func flash(duration: float) -> void:
 	_flash_left = duration
 
 
+## Tints the card with `color` for `duration` seconds; the colour's alpha is how strongly.
+func tint(color: Color, duration: float) -> void:
+	_tint = color
+	_tint_left = duration
+
+
 ## Squashes the card and lets it spring back over SQUASH_TIME. At the peak it is `amount`
 ## wider and shorter (0.3 is 30%). A negative amount stretches it instead.
 func squash(amount: float) -> void:
@@ -99,6 +107,8 @@ func _process(delta: float) -> void:
 func _show_hit(delta: float) -> void:
 	_flash_left = maxf(0.0, _flash_left - delta)
 	_material.set_shader_parameter("flash", _flash_left > 0.0)
+	_tint_left = maxf(0.0, _tint_left - delta)
+	_material.set_shader_parameter("tint", _tint if _tint_left > 0.0 else Color.TRANSPARENT)
 	_squash_elapsed = minf(SQUASH_TIME, _squash_elapsed + delta)
 	var s := _squash_amount * sin(PI * _squash_elapsed / SQUASH_TIME)
 	_card.scale = Vector3(1.0 + s, 1.0 - s, 1.0)

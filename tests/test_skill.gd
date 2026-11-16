@@ -37,3 +37,22 @@ func test_each_enemy_is_pushed_its_own_way() -> void:
 func test_no_hits_no_impact() -> void:
 	skill._land_hits({})
 	assert_eq(Engine.time_scale, 1.0)
+
+
+# Auto-aim: the nearest Enemy within Range and within 60° of Facing; with none, along Facing.
+
+func test_auto_aim_picks_the_nearest_enemy_near_facing() -> void:
+	var near := Vector3(2.0, 0.0, 0.5)
+	var far := Vector3(4.0, 0.0, 0.0)
+	assert_eq(Skill.auto_aim(Vector3.RIGHT, 5.0, [far, near]), near)
+
+
+func test_auto_aim_ignores_enemies_behind_or_out_of_range() -> void:
+	var behind := Vector3(-1.0, 0.0, 0.0)
+	var wide := Vector3(1.0, 0.0, 2.0) # 63° off Facing
+	var too_far := Vector3(6.0, 0.0, 0.0)
+	assert_eq(Skill.auto_aim(Vector3.RIGHT, 5.0, [behind, wide, too_far]), Vector3.RIGHT * 5.0, "along Facing, as far as the Range")
+
+
+func test_auto_aim_ignores_height() -> void:
+	assert_eq(Skill.auto_aim(Vector3.RIGHT, 5.0, [Vector3(2.0, 0.5, 0.0)]), Vector3(2.0, 0.0, 0.0))
