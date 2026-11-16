@@ -142,6 +142,8 @@ func _aim_for(skill: Skill) -> Vector3:
 # Registered while in the tree, so a reloaded scene's new Player takes the command over.
 func _enter_tree() -> void:
 	Console.register(&"tp", _cmd_tp, "tp <x> <z>: move the player to a spot on the ground.")
+	Console.register(&"bar", _cmd_bar, "bar <1-5> <skill|empty>: put a Skill in a Skill slot (1 is the main slot), or empty it.")
+	Console.register(&"use", _cmd_use, "use <1-5> [<x> <z>]: use a Skill slot, auto-aimed or aimed at an offset on the ground.")
 
 
 func _cmd_tp(args: PackedStringArray) -> String:
@@ -150,6 +152,32 @@ func _cmd_tp(args: PackedStringArray) -> String:
 	global_position = Vector3(args[0].to_float(), 0.0, args[1].to_float())
 	velocity = Vector3.ZERO
 	return "tp %s %s" % [args[0], args[1]]
+
+
+func _cmd_bar(args: PackedStringArray) -> String:
+	if args.size() != 2 or not args[0].is_valid_int() or args[0].to_int() not in range(1, SkillBar.SLOTS + 1):
+		return "Usage: bar <1-5> <skill|empty>"
+	var slot := args[0].to_int() - 1
+	if args[1].to_lower() == "empty":
+		skill_bar.set_skill(slot, null)
+		return "bar %d empty" % (slot + 1)
+	for skill in skills:
+		if skill.title.to_lower() == args[1].to_lower():
+			skill_bar.set_skill(slot, skill)
+			return "bar %d %s" % [slot + 1, skill.title]
+	return "Unknown Skill '%s'. The player has: %s" % [args[1], ", ".join(skills.map(func(skill: Skill) -> String: return skill.title))]
+
+
+func _cmd_use(args: PackedStringArray) -> String:
+	var aimed := args.size() == 3 and args[1].is_valid_float() and args[2].is_valid_float()
+	if not (args.size() == 1 or aimed) or not args[0].is_valid_int() or args[0].to_int() not in range(1, SkillBar.SLOTS + 1):
+		return "Usage: use <1-5> [<x> <z>]"
+	var slot := args[0].to_int() - 1
+	if aimed:
+		skill_bar.press(slot, Vector3(args[1].to_float(), 0.0, args[2].to_float()))
+		return "use %d at %s %s" % [slot + 1, args[1], args[2]]
+	skill_bar.press(slot)
+	return "use %d" % (slot + 1)
 
 
 ## The Facing from `from` toward `to`, flattened onto the ground. A point right under `from`

@@ -32,11 +32,34 @@ Logic with branches (parsing, validation, rules) gets a [GUT](https://gut.readth
 
 `tools/check.sh` loads every script and scene, then runs all tests; it exits non-zero on any failure. The pre-commit hook runs it once enabled per clone with `git config core.hooksPath .githooks`.
 
-To check a change visually, `tools/screenshot.gd` opens a scene, runs console commands, and saves a screenshot after each one (usage in its header). To check behaviour without playing, `tools/simulate.gd` runs a scene headless after console commands and prints every Character's position once per second; `tp <x> <z>` puts the player where the test needs them.
+To check a change visually, `tools/screenshot.gd` opens a scene, runs console commands, and saves a screenshot after each one (usage in its header). To check behaviour without playing, `tools/simulate.gd` runs a scene headless after console commands and prints every Character's position once per second. Commands that set the scene up:
 
-A test that simulates a screen touch sends it with `get_viewport().push_input(event, true)`. Without `true` the position is read as window coordinates and lands somewhere else.
+- `tp <x> <z>` puts the player where the test needs them.
+- `bar <slot> <skill|empty>` fills or empties a Skill slot.
+- `use <slot> [<x> <z>]` uses one, auto-aimed or aimed.
+- `touch <slot> [<dx> <dy>]` taps or drags it like a finger.
+
+Reach for these before writing a one-off check script.
+
+A test that simulates a screen touch sends it with `get_viewport().push_input(event, true)`. Without `true` the position is read as window coordinates and lands somewhere else. Touch on the Skill bar's buttons is tested by emitting a `SkillSlotButton`'s `touch_started`/`touch_moved`/`touch_ended` signals: under GUT, pushed touch and mouse events don't reach them.
 
 To try a change on the iPhone, `tools/deploy_ios.sh` exports, installs and launches the debug build. Its header lists the known failures and their fixes.
+
+## The open editor
+
+The developer keeps the Godot editor open, and it writes files behind your back:
+
+- **Pressing Play saves every open scene first** ("Save Before Running", Editor Settings › Run › Auto Save). A scene changed on disk while it was open gets overwritten by the editor's stale copy. Keep that setting off.
+- **It doesn't pick up changes made outside it** until **Project › Reload Current Project**. Ask for a reload after changing scenes or scripts, and after switching branches.
+- **It rewrites `.uid` files** when its uid cache disagrees with them, and reorders `project.godot` when it saves project settings.
+
+Before committing, read `git diff` for scenes the editor reverted. Stage files by name, and leave `.uid` and reorder churn out unless the change needs it.
+
+## Input and UI
+
+- Godot's built-in `ui_accept` and `ui_cancel` come with keys only. This project's input map adds the controller's A and B, so menus work with a controller.
+- HUD sizes are in viewport units, the base viewport being 648 tall. On an iPhone 17 Pro, 1 pt is about 1.6 units. Keep HUD elements inside `SafeArea.of(viewport)`.
+- `Basis.scaled()` scales along the world's axes. To stretch a node along its own axis (a line's length), multiply by `Basis.from_scale()` instead.
 
 ## Assets
 

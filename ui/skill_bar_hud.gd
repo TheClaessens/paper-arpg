@@ -37,6 +37,10 @@ var _held_slot := SkillBar.NONE # the slot held down to repeat its Skill
 var _landed := Vector2.ZERO # where the thumb landed; drags are measured from here
 
 
+func _enter_tree() -> void:
+	Console.register(&"touch", _cmd_touch, "touch <1-5> [<dx> <dy>]: a finger lands on a Skill slot, moves by the offset and lifts (a tap without one).")
+
+
 func _ready() -> void:
 	for slot in SkillBar.SLOTS:
 		var button := get_node("Slot%d" % slot) as SkillSlotButton
@@ -78,6 +82,21 @@ func _on_ready_again(skill: Skill) -> void:
 	for slot in _buttons.size():
 		if player.skill_bar.skill_in(slot) == skill:
 			_buttons[slot].flash()
+
+
+func _cmd_touch(args: PackedStringArray) -> String:
+	var dragged := args.size() == 3 and args[1].is_valid_float() and args[2].is_valid_float()
+	if not (args.size() == 1 or dragged) or not args[0].is_valid_int() or args[0].to_int() not in range(1, SkillBar.SLOTS + 1):
+		return "Usage: touch <1-5> [<dx> <dy>]"
+	var slot := args[0].to_int() - 1
+	var at := _buttons[slot].centre()
+	var to := at + (Vector2(args[1].to_float(), args[2].to_float()) if dragged else Vector2.ZERO)
+	# The same signals a real finger sends.
+	_buttons[slot].touch_started.emit(at)
+	if dragged:
+		_buttons[slot].touch_moved.emit(to)
+	_buttons[slot].touch_ended.emit(to)
+	return "touch %d by %s %s" % [slot + 1, args[1], args[2]] if dragged else "touch %d" % (slot + 1)
 
 
 func _on_touch_started(at: Vector2, slot: int) -> void:

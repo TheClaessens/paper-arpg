@@ -55,3 +55,14 @@ func test_a_drag_aims_by_hand() -> void:
 func test_dragging_back_onto_the_slot_cancels() -> void:
 	_touch(Vector2.ZERO, [Vector2(-120.0, 0.0), Vector2(2.0, 0.0)] as Array[Vector2])
 	assert_eq(aims, [] as Array[Vector3])
+
+
+func test_the_touch_command_taps_or_drags_a_slot() -> void:
+	assert_eq(Console.execute("touch 2"), "touch 2")
+	player.skill_bar.advance(0.016)
+	player.skill_bar.advance(5.0) # past Fireball's cooldown
+	assert_eq(Console.execute("touch 2 -40 0"), "touch 2 by -40 0")
+	player.skill_bar.advance(0.016)
+	assert_eq(aims.size(), 2)
+	assert_false(aims[0].is_finite(), "a tap: auto-aimed")
+	assert_true(aims[1].is_finite(), "a drag: aimed by hand")

@@ -157,3 +157,29 @@ func test_after_a_use_the_player_faces_the_aim_for_a_moment() -> void:
 	await wait_seconds(0.5)
 	Input.action_release(&"move_up")
 	assert_almost_eq(player.facing, Vector3(0.0, 0.0, -1.0), Vector3.ONE * 0.05, "then the walk takes Facing back")
+
+
+# The `bar` and `use` console commands, for driving Skills from tools/screenshot.gd and simulate.gd.
+
+func test_bar_puts_a_skill_in_a_slot_and_empties_it() -> void:
+	assert_eq(Console.execute("bar 2 fireball"), "bar 2 Fireball")
+	assert_eq(player.skill_bar.skill_in(1), player.get_node("Fireball"))
+	assert_eq(Console.execute("bar 2 empty"), "bar 2 empty")
+	assert_null(player.skill_bar.skill_in(1))
+
+
+func test_bar_rejects_bad_slots_and_unknown_skills() -> void:
+	assert_eq(Console.execute("bar 6 attack"), "Usage: bar <1-5> <skill|empty>")
+	assert_string_starts_with(Console.execute("bar 2 hammer"), "Unknown Skill 'hammer'")
+
+
+func test_use_presses_a_slot_with_or_without_an_aim() -> void:
+	var aims: Array[Vector3] = []
+	player.skill_bar.used.connect(func(_skill: Skill, aim: Vector3) -> void: aims.append(aim))
+	assert_eq(Console.execute("use 1 3 -1"), "use 1 at 3 -1")
+	player.skill_bar.advance(0.016)
+	player.skill_bar.advance(1.0)
+	assert_eq(Console.execute("use 1"), "use 1")
+	player.skill_bar.advance(0.016)
+	assert_eq(aims, [Vector3(3.0, 0.0, -1.0), SkillBar.NO_AIM] as Array[Vector3])
+	assert_eq(Console.execute("use x"), "Usage: use <1-5> [<x> <z>]")
