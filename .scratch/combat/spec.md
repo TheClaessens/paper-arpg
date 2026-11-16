@@ -32,7 +32,7 @@ Baseline for the feedback: Seki & Ishikawa, *Quantifying Hit Feedback Preference
    - It pauses the game and shows the pause screen with the Skill slot.
    - Tapping the slot opens a small menu of Skills (Attack, Fireball). Choosing one replaces what's in the slot.
    - Unpausing returns to play. The layout will be refined later.
-7. **Tuning**: the console command `hitfeel <name> <value>` changes each Hit feedback value while the game runs, for tuning on the device. It goes away or becomes a setting once the values settle.
+7. **Tuning**: `hitfeel` in the Console toggles a pane of sliders on the right that stays open while playing. It covers the Hit feedback values, the Attack's arc, reach and use time, and the press buffer. `hitfeel` also lists every value as commands to paste back, and `hitfeel <name> <value>` sets one. Values reset on launch. It goes away or becomes a setting once the values settle.
 
 ## Starting values
 
@@ -71,3 +71,4 @@ Enemies hurting the player, health and death, sound, aiming on touch or controll
 - **Using a Skill stretches the player's card** (a squash of -0.15). It reuses the hit squash and reads as a small hop.
 - **Hit feedback values live in `skills/hit_feedback.tres`**, one resource shared by the Attack and every Enemy, so `hitfeel` can tune them live later.
 - **The slot button is a `TouchScreenButton`** that presses `use_skill_slot`. It hides when there's no touch screen.
+- **The tuning pane came early**, before Fireball: on trying the Attack, knockback and hitstop felt too strong. Its sliders don't take keyboard focus, so arrow keys keep walking the player.

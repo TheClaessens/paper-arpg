@@ -14,6 +14,8 @@
 [ext_resource type="NavigationMesh" path="res://scenes/sandbox_navmesh.tres" id="15_navmesh"]
 [ext_resource type="PackedScene" path="res://ui/touch_stick.tscn" id="16_touch_stick"]
 [ext_resource type="PackedScene" path="res://ui/skill_slot_button.tscn" id="17_slot_button"]
+[ext_resource type="PackedScene" path="res://ui/tuning_pane.tscn" id="18_tuning_pane"]
+[ext_resource type="Resource" path="res://skills/hit_feedback.tres" id="19_feedback"]
 
 [sub_resource type="Environment" id="Environment_dugpm"]
 background_mode = 1
@@ -147,3 +149,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0, -2)
 [node name="TouchStick" parent="HUD" instance=ExtResource("16_touch_stick")]
 
 [node name="SkillSlotButton" parent="HUD" instance=ExtResource("17_slot_button")]
+
+[node name="TuningPane" parent="HUD" node_paths=PackedStringArray("attack", "skill_slot") instance=ExtResource("18_tuning_pane")]
+hit_feedback = ExtResource("19_feedback")
+attack = NodePath("../../PixelatedView/SubViewport/World/Player/Attack")
+skill_slot = NodePath("../../PixelatedView/SubViewport/World/Player/SkillSlot")
