@@ -5,6 +5,14 @@
 [ext_resource type="SpriteFrames" path="res://characters/standee/frames/adventurer.tres" id="3_frames"]
 [ext_resource type="Script" path="res://characters/movement.gd" id="4_movement"]
 
+[sub_resource type="StandardMaterial3D" id="arrow_material"]
+shading_mode = 0
+albedo_color = Color(0.94, 0.65, 0.23, 1)
+
+[sub_resource type="PrismMesh" id="arrow_mesh"]
+material = SubResource("arrow_material")
+size = Vector3(0.22, 0.22, 0.02)
+
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 radius = 0.25
 height = 1.0
@@ -25,3 +33,11 @@ frames = ExtResource("3_frames")
 
 [node name="Movement" type="Node" parent="." unique_id=656968991]
 script = ExtResource("4_movement")
+
+[node name="FacingArrow" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="FacingArrow"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, -0.55)
+cast_shadow = 0
+mesh = SubResource("arrow_mesh")

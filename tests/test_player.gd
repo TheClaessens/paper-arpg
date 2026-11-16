@@ -28,3 +28,26 @@ func test_tp_leaves_and_returns_with_the_player() -> void:
 	assert_string_starts_with(Console.execute("tp 1 1"), "Unknown command")
 	add_child(player)
 	assert_eq(Console.execute("tp 1 1"), "tp 1 1", "re-entering registers it again")
+
+
+func test_facing_toward_a_point_lies_on_the_ground() -> void:
+	var facing := Player.facing_toward(Vector3(1.0, 0.0, 1.0), Vector3(1.0, 0.5, 4.0), Vector3.RIGHT)
+	assert_almost_eq(facing, Vector3(0.0, 0.0, 1.0), Vector3.ONE * 0.001)
+
+
+func test_facing_toward_the_spot_underfoot_keeps_the_facing() -> void:
+	var facing := Player.facing_toward(Vector3(1.0, 0.0, 1.0), Vector3(1.0, 0.3, 1.0), Vector3.LEFT)
+	assert_eq(facing, Vector3.LEFT)
+
+
+func test_facing_follows_the_stick_and_stays_when_let_go() -> void:
+	var camera := Camera3D.new() # unrotated: screen right is +X, screen up is -Z
+	add_child_autofree(camera)
+	camera.make_current()
+	player.set_physics_process(true)
+	Input.action_press(&"move_up")
+	await wait_physics_frames(2)
+	assert_almost_eq(player.facing, Vector3(0.0, 0.0, -1.0), Vector3.ONE * 0.001)
+	Input.action_release(&"move_up")
+	await wait_physics_frames(2)
+	assert_almost_eq(player.facing, Vector3(0.0, 0.0, -1.0), Vector3.ONE * 0.001, "let go: Facing stays")

@@ -3,8 +3,22 @@ extends CharacterBody3D
 ## The player's Character (see GLOSSARY.md). Walks where the left stick or the keys point,
 ## relative to the camera: pushing up walks up the screen.
 
+## The player's Facing (see GLOSSARY.md): a unit direction on the ground. It follows the stick
+## or keys, or the mouse cursor while the mouse was the last thing used.
+var facing := Vector3.RIGHT
+
+var _cursor := Vector2.ZERO # mouse position in this viewport
+var _aim_with_mouse := false
+
 @onready var _movement: Movement = $Movement
 @onready var _standee: Standee = $Standee
+@onready var _facing_arrow: Node3D = $FacingArrow
+
+
+func _ready() -> void:
+	var camera := get_viewport().get_camera_3d()
+	if camera:
+		facing = Vector3(camera.global_basis.x.x, 0.0, camera.global_basis.x.z).normalized() # screen right
 
 
 # Registered while in the tree, so a reloaded scene's new Player takes the command over.
@@ -20,14 +34,42 @@ func _cmd_tp(args: PackedStringArray) -> String:
 	return "tp %s %s" % [args[0], args[1]]
 
 
+## The Facing from `from` toward `to`, flattened onto the ground. A point right under `from`
+## gives no direction, so `current` is kept.
+static func facing_toward(from: Vector3, to: Vector3, current: Vector3) -> Vector3:
+	var flat := Vector3(to.x - from.x, 0.0, to.z - from.z)
+	return current if flat.length() < 0.05 else flat.normalized()
+
+
+# _input, not _unhandled_input: the full-screen PixelatedView would claim mouse motion as GUI
+# input first. A touch also moves the emulated mouse, which mustn't steal Facing from the stick.
+func _input(event: InputEvent) -> void:
+	var motion := event as InputEventMouseMotion
+	if motion and motion.device != InputEvent.DEVICE_ID_EMULATION:
+		_cursor = motion.position
+		_aim_with_mouse = true
+
+
 func _physics_process(delta: float) -> void:
-	velocity = _movement.next_velocity(velocity, _input_direction(), delta)
+	var direction := _input_direction()
+	velocity = _movement.next_velocity(velocity, direction, delta)
 	move_and_slide()
-	if velocity.is_zero_approx():
-		_standee.play(&"idle")
-	else:
-		_standee.play(&"walk")
-		_standee.face(velocity)
+	if not direction.is_zero_approx():
+		_aim_with_mouse = false # the stick or keys take Facing back
+		facing = direction
+	elif _aim_with_mouse:
+		facing = _facing_toward_cursor()
+	_facing_arrow.basis = Basis.looking_at(facing)
+	_standee.face(facing)
+	_standee.play(&"idle" if velocity.is_zero_approx() else &"walk")
+
+
+## Facing toward the ground under the mouse cursor, at the player's feet height.
+func _facing_toward_cursor() -> Vector3:
+	var camera := get_viewport().get_camera_3d()
+	var ground := Plane(Vector3.UP, global_position.y)
+	var hit: Variant = ground.intersects_ray(camera.project_ray_origin(_cursor), camera.project_ray_normal(_cursor))
+	return facing if hit == null else facing_toward(global_position, hit as Vector3, facing)
 
 
 ## The pushed direction as a unit vector on the ground, or zero inside the deadzone.
