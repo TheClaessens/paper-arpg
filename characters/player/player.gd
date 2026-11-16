@@ -7,6 +7,8 @@ extends CharacterBody3D
 
 ## How far the card stretches when the player uses a Skill.
 const USE_STRETCH := -0.15
+## How near the mouse cursor's spot an Enemy must be to be highlighted.
+const HOVER_REACH := 1.0
 
 ## The player's Facing (see GLOSSARY.md): a unit direction on the ground. It follows the right
 ## stick while that is pushed, the mouse cursor once the mouse moves, otherwise the movement.
@@ -34,6 +36,7 @@ var _aim_with_stick := false # the right stick is pushed
 @onready var _standee: Standee = $Standee
 @onready var _facing_arrow: Node3D = $FacingArrow
 @onready var _aim_marker: AimMarker = $AimMarker
+@onready var _hover_ring: Node3D = $HoverRing
 
 
 func _ready() -> void:
@@ -167,6 +170,7 @@ func _physics_process(delta: float) -> void:
 		facing = _facing_toward_cursor()
 	elif not direction.is_zero_approx():
 		facing = direction
+	_highlight_hovered()
 	_facing_arrow.basis = Basis.looking_at(facing)
 	_standee.face(facing)
 	_standee.play(&"idle" if velocity.is_zero_approx() else &"walk")
@@ -176,6 +180,24 @@ func _physics_process(delta: float) -> void:
 func _facing_toward_cursor() -> Vector3:
 	var point: Variant = _cursor_on_ground()
 	return facing if point == null else facing_toward(global_position, point as Vector3, facing)
+
+
+## Rings the Enemy nearest the spot under the mouse cursor, while the mouse aims: on PC, the
+## Enemy a precision Skill such as Mark would pick.
+func _highlight_hovered() -> void:
+	var point: Variant = _cursor_on_ground() if _aim_with_mouse else null
+	var hovered: Enemy = null
+	if point != null:
+		var spot := point as Vector3
+		var enemies := Skill.enemies_around(get_world_3d(), spot, HOVER_REACH, 0.0)
+		var positions: Array[Vector3] = []
+		for enemy in enemies:
+			positions.append(enemy.global_position)
+		var i := Skill.nearest_to(spot, positions, HOVER_REACH)
+		hovered = enemies[i] if i >= 0 else null
+	_hover_ring.visible = hovered != null
+	if hovered:
+		_hover_ring.global_position = hovered.global_position + Vector3.UP * 0.05
 
 
 ## The spot on the ground under the mouse cursor, at the player's feet height, or null.

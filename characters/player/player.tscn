@@ -11,6 +11,16 @@
 [ext_resource type="PackedScene" path="res://skills/nova/nova.tscn" id="9_nova"]
 [ext_resource type="PackedScene" path="res://skills/mark/mark.tscn" id="10_mark"]
 
+[sub_resource type="StandardMaterial3D" id="hover_material"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(1, 0.82, 0.48, 0.9)
+
+[sub_resource type="TorusMesh" id="hover_ring"]
+inner_radius = 0.42
+outer_radius = 0.52
+rings = 32
+
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 radius = 0.25
 height = 1.0
@@ -52,12 +62,19 @@ mesh = SubResource("arrow_mesh")
 
 [node name="Fireball" parent="." unique_id=877120161 instance=ExtResource("7_fireball")]
 
-[node name="Nova" parent="." instance=ExtResource("9_nova")]
+[node name="Nova" parent="." unique_id=1162292599 instance=ExtResource("9_nova")]
 
-[node name="Mark" parent="." instance=ExtResource("10_mark")]
+[node name="Mark" parent="." unique_id=1838541263 instance=ExtResource("10_mark")]
 
 [node name="SkillBar" type="Node" parent="." unique_id=807985351 node_paths=PackedStringArray("main_skill")]
 script = ExtResource("6_slot")
 main_skill = NodePath("../Attack")
 
-[node name="AimMarker" parent="." instance=ExtResource("8_aim_marker")]
+[node name="AimMarker" parent="." unique_id=359261295 instance=ExtResource("8_aim_marker")]
+
+[node name="HoverRing" type="MeshInstance3D" parent="."]
+visible = false
+top_level = true
+cast_shadow = 0
+material_override = SubResource("hover_material")
+mesh = SubResource("hover_ring")

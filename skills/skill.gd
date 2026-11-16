@@ -52,6 +52,35 @@ static func auto_aim(facing: Vector3, skill_range: float, enemy_offsets: Array[V
 	return best
 
 
+## Which of `enemies` (positions) is nearest `spot` on the ground and within `reach` of it, or -1.
+static func nearest_to(spot: Vector3, enemies: Array[Vector3], reach: float) -> int:
+	var best := -1
+	var best_distance := reach
+	for i in enemies.size():
+		var distance := Vector2(enemies[i].x - spot.x, enemies[i].z - spot.z).length()
+		if distance <= best_distance:
+			best = i
+			best_distance = distance
+	return best
+
+
+## Every Enemy in `world` whose body (`body` around its centre) is within `reach` of `centre`.
+## The physics engine finds them: the sphere masks only the `enemy` layer.
+static func enemies_around(world: World3D, centre: Vector3, reach: float, body: float) -> Array[Enemy]:
+	var sphere := SphereShape3D.new()
+	sphere.radius = reach + body
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape = sphere
+	query.transform = Transform3D(Basis.IDENTITY, centre + Vector3.UP * 0.5) # body height
+	query.collision_mask = 1 << 2 # layer 3, `enemy`
+	var enemies: Array[Enemy] = []
+	for result in world.direct_space_state.intersect_shape(query, 32):
+		var enemy := result.collider as Enemy
+		if enemy:
+			enemies.append(enemy)
+	return enemies
+
+
 ## Auto-aim from where the Character stands (see auto_aim()).
 func aim_toward(facing: Vector3) -> Vector3:
 	var offsets: Array[Vector3] = []
@@ -71,21 +100,9 @@ func target_for(_aim: Vector3) -> Node3D:
 	return null
 
 
-## Every Enemy whose body is within `reach` of the Character, in any direction. The physics
-## engine finds them: the sphere masks only the `enemy` layer.
+## Every Enemy whose body is within `reach` of the Character, in any direction.
 func _enemies_within(reach: float) -> Array[Enemy]:
-	var sphere := SphereShape3D.new()
-	sphere.radius = reach + body_radius
-	var query := PhysicsShapeQueryParameters3D.new()
-	query.shape = sphere
-	query.transform = Transform3D(Basis.IDENTITY, global_position + Vector3.UP * 0.5) # body height
-	query.collision_mask = 1 << 2 # layer 3, `enemy`
-	var enemies: Array[Enemy] = []
-	for result in get_world_3d().direct_space_state.intersect_shape(query, 32):
-		var enemy := result.collider as Enemy
-		if enemy:
-			enemies.append(enemy)
-	return enemies
+	return enemies_around(get_world_3d(), global_position, reach, body_radius)
 
 
 ## Lands one use's hits: each Enemy in `hits` is pushed along its direction (a unit vector on
