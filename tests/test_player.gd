@@ -121,7 +121,7 @@ func test_its_skills_are_the_skill_nodes_it_holds() -> void:
 	var titles: Array[String] = []
 	for skill in player.skills:
 		titles.append(skill.title)
-	assert_eq(titles, ["Attack", "Fireball"] as Array[String])
+	assert_eq(titles, ["Attack", "Fireball", "Nova", "Mark"] as Array[String])
 
 
 

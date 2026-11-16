@@ -8,6 +8,8 @@
 [ext_resource type="Script" uid="uid://y4k7t2l0tssu" path="res://skills/skill_bar.gd" id="6_slot"]
 [ext_resource type="PackedScene" path="res://skills/fireball/fireball.tscn" id="7_fireball"]
 [ext_resource type="PackedScene" path="res://characters/player/aim_marker.tscn" id="8_aim_marker"]
+[ext_resource type="PackedScene" path="res://skills/nova/nova.tscn" id="9_nova"]
+[ext_resource type="PackedScene" path="res://skills/mark/mark.tscn" id="10_mark"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 radius = 0.25
@@ -49,6 +51,10 @@ mesh = SubResource("arrow_mesh")
 [node name="Attack" parent="." unique_id=1240203622 instance=ExtResource("5_attack")]
 
 [node name="Fireball" parent="." unique_id=877120161 instance=ExtResource("7_fireball")]
+
+[node name="Nova" parent="." instance=ExtResource("9_nova")]
+
+[node name="Mark" parent="." instance=ExtResource("10_mark")]
 
 [node name="SkillBar" type="Node" parent="." unique_id=807985351 node_paths=PackedStringArray("main_skill")]
 script = ExtResource("6_slot")

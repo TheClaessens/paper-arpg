@@ -56,3 +56,5 @@ Rebinding, targeting a specific Enemy by tapping it, aim assist on the mouse, da
 - **A drag that has aimed can't turn back into a tap.** With "cancel slot", lifting on the slot after aiming cancels it, even inside the deadzone. Found in the sandbox check.
 - **Sizes in viewport units:** deadzone 22, full Range at 177 drag units, cancel button 88 in the top right of the safe area.
 - **The Range ring is the Skill's whole Range**, so Fireball's (10 units) mostly falls off screen. Mark's shorter Range shows it.
+- **The slot only cancels after the thumb has left it.** A short aim that stays on the slot still counts, so near spots can be aimed. Coming back onto the slot after leaving it cancels. Found in the sandbox check with Mark.
+- **Nova and Mark values:** Nova has Range 3, knockback 0.8, Stagger 0.15, cooldown 6 s, and reuses the swing shader as a full disc. Mark has Range 6, reach 1.5 around the spot, a 3 s amber tint, and Use time 0.3 s.

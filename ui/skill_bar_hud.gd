@@ -34,6 +34,7 @@ enum CancelStyle { SLOT, BUTTON }
 var _buttons: Array[SkillSlotButton] = []
 var _aiming_slot := SkillBar.NONE # the slot whose Skill is being dragged
 var _aimed := false # the drag has left the deadzone, so lifting is no longer a tap
+var _left_slot := false # the thumb has been off the slot, so coming back onto it cancels
 
 @onready var _cancel_button: Control = $CancelButton
 
@@ -99,6 +100,7 @@ func _on_touch_started(slot: int) -> void:
 	if skill.aim == Skill.Aim.AIMED:
 		_aiming_slot = slot # used when the thumb lifts
 		_aimed = false
+		_left_slot = false
 	else:
 		player.skill_bar.press(slot)
 
@@ -108,6 +110,7 @@ func _on_touch_moved(at: Vector2, slot: int) -> void:
 		return
 	var drag := at - _buttons[slot].centre()
 	_aimed = _aimed or drag.length() > drag_deadzone
+	_left_slot = _left_slot or not _buttons[slot].covers(at)
 	_cancel_button.visible = _aimed and cancel_style == CancelStyle.BUTTON
 	if not _aimed:
 		return
@@ -133,11 +136,12 @@ func _on_touch_ended(at: Vector2, slot: int) -> void:
 		player.skill_bar.press(slot, player.aim_from_drag(skill, drag, drag_full_range))
 
 
-## Whether a thumb at `at`, dragging `slot`, is over the cancel zone.
+## Whether a thumb at `at`, dragging `slot`, is over the cancel zone. The slot only cancels once
+## the thumb has left it and come back, so a short aim that stays on the slot still counts.
 func _over_cancel(slot: int, at: Vector2) -> bool:
 	if cancel_style == CancelStyle.BUTTON:
 		return _cancel_button.get_global_rect().grow(12.0).has_point(at)
-	return _buttons[slot].covers(at)
+	return _left_slot and _buttons[slot].covers(at)
 
 
 func _layout() -> void:
