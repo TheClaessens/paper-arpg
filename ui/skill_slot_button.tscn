@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" path="res://ui/skill_slot_button.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/kenney/kenney_mobile-controls/Sprites/Style C/Default/button_circle.png" id="2_circle"]
-[ext_resource type="Texture2D" path="res://assets/kenney/kenney_mobile-controls/Sprites/Icons/Default/icon_sword.png" id="3_sword"]
 
 [node name="SkillSlotButton" type="Control"]
 layout_mode = 3
@@ -28,4 +27,3 @@ action = "use_skill_slot"
 
 [node name="Icon" type="Sprite2D" parent="."]
 position = Vector2(48, 48)
-texture = ExtResource("3_sword")

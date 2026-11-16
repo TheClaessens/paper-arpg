@@ -6,8 +6,13 @@ extends Node
 ## The Character connects `used` and calls the Skill with its own Facing.
 
 signal used(skill: Skill)
+## A different Skill was put in the slot.
+signal skill_changed(skill: Skill)
 
-@export var skill: Skill
+@export var skill: Skill:
+	set(value):
+		skill = value
+		skill_changed.emit(skill)
 ## How early before the use time ends a press is still kept, in seconds.
 @export var buffer := 0.15
 

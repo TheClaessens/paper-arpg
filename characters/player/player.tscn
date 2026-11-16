@@ -47,7 +47,7 @@ mesh = SubResource("arrow_mesh")
 
 [node name="Attack" parent="." unique_id=1240203622 instance=ExtResource("5_attack")]
 
-[node name="Fireball" parent="." instance=ExtResource("7_fireball")]
+[node name="Fireball" parent="." unique_id=877120161 instance=ExtResource("7_fireball")]
 
 [node name="SkillSlot" type="Node" parent="." unique_id=807985351 node_paths=PackedStringArray("skill")]
 script = ExtResource("6_slot")
