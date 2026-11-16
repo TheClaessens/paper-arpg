@@ -1,0 +1,45 @@
+# Touch controls
+
+Status: ready-for-agent
+
+Movement on touch: the left thumb drags a **Touch stick** (see GLOSSARY.md). This was pulled forward from the playtest prep after step 3. Touch aiming for skills waits until combat exists. Agreed in a grilling session on 2026-11-16.
+
+## Requirements
+
+1. **iOS deploy.**
+   - An iOS export preset that uses Godot's one-click deploy: with a device connected, Remote Debug builds, signs, installs and launches the game, and output reaches the editor debugger.
+   - Bundle id `com.thomasclaessens.paperarpg`. `export_presets.cfg` is committed. Sensitive fields stay in `.godot/export_credentials.cfg`.
+   - Fallback if signing fights us: Legendary's route, exporting an Xcode project to `~/Documents/godot-exports/paper-arpg` and building from Xcode.
+2. **Console button.**
+   - A button in `console.tscn`, so it exists in debug builds only. It sits top-left, inset by `DisplayServer.get_display_safe_area()`.
+   - Tapping it toggles the Console, the same as the backtick key.
+   - Typing uses the iOS on-screen keyboard that appears when the `LineEdit` takes focus. Shortcut buttons only if that turns out to be painful.
+3. **Touch stick** `ui/touch_stick.tscn`, a `Control` under a `CanvasLayer`, instanced in `sandbox.tscn`.
+   - **Start:** a touch that begins on the left half of the screen. It reads `_unhandled_input`, so GUI such as the console button handles its own touches first.
+   - **One finger owns it:** the stick belongs to the touch index that started it. Other fingers are ignored. It ends when that finger lifts.
+   - **Origin:** fixed where the thumb lands. The knob clamps at the rim. Exported `radius`, starting at 80 px in the base viewport.
+   - **Output:** it presses the `move_*` actions with `Input.action_press(action, strength)`. `Player` stays unchanged, and the 0.2 Input Map deadzone, direction-only movement and camera-relative mapping all apply to touch as they do to the controller.
+   - **Visuals:** a base ring and a knob drawn at the touch, from Kenney art, shown only while the thumb is down.
+   - **Lost finger:** on pause (the Console opening) or `NOTIFICATION_APPLICATION_FOCUS_OUT`, it releases the actions and hides.
+   - **Follow toggle (temporary):** the console command `touchstick follow on|off` switches to a following origin, where the base is dragged along so it stays within one radius of the thumb. Default off. Removed once the device test settles the choice.
+   - GUT test `tests/test_touch_stick.gd`: thumb offset → stick vector, clamped to length 1 at the rim, and the origin dragged along in follow mode.
+4. **Mac testing.** `input_devices/pointing/emulate_touch_from_mouse` is on, so a mouse drag drives the stick.
+
+## Commits
+
+1. iOS preset and deploy, proven on the phone with the current build.
+2. Console button.
+3. Touch stick with its test, mouse emulation and the follow toggle.
+
+## Decisions
+
+- **Direction-only, like the controller.** Thumb distance only decides inside or outside the deadzone. If proportional speed ever comes, it changes for both sticks together.
+- **Fixed origin first.** Chosen for now. The follow toggle is there to pivot during the device test.
+- **Through the `move_*` actions.** `Player` doesn't know where its input comes from.
+- **Sandbox, not an autoload.** We're building systems, not the game. Only one scene needs the stick.
+- **One-click deploy over an exported Xcode project.** One tool per iteration, plus the editor debugger.
+
+## Open
+
+- Tune `radius` on the device.
+- Fixed or following origin, decided on the device.

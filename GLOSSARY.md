@@ -27,3 +27,7 @@ _Avoid_: Alert, agitated, hostile
 **Aggro radius**:
 The distance from an Enemy within which the player draws its Aggro.
 _Avoid_: Detection range, sight radius
+
+**Touch stick**:
+The on-screen stick a thumb drags to move the player. It appears where the thumb lands on the left half of the screen and acts like the controller's left stick.
+_Avoid_: Virtual joystick, thumbstick, d-pad

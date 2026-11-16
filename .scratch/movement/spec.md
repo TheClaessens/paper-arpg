@@ -24,7 +24,7 @@ README step 1, basic movement only. Built; waiting on the developer's controller
    - `Input.get_vector()` with a deadzone of 0.2.
    - **Direction only:** any tilt past the deadzone means full speed (the vector is normalised).
    - Directions are camera-relative: screen-up maps to the ground through the camera's basis, not a hard-coded 45°.
-   - No touch joystick yet. It comes in the playtest prep after step 3.
+   - No touch joystick yet. Pulled forward into `.scratch/touch-controls/spec.md`.
 5. **Camera.** It hard-locks to the player: the existing `Camera` becomes a child of the `Player` instance in `sandbox.tscn` and keeps its offset. No code.
 6. **Sandbox.**
    - The player instance replaces the bare `Player` node.
