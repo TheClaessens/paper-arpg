@@ -111,18 +111,10 @@ func _toggle_panel() -> void:
 		_field.release_focus()
 
 
-## Keeps the button and the panel clear of an iPhone's notch and rounded corners, with the
-## panel to the right of the button. The safe area is in screen pixels, so it's scaled to the
-## stretched viewport. In landscape the notch can flip sides when the phone turns, so the larger
-## side inset is used on both sides.
+## Keeps the button and the panel clear of an iPhone's notch and rounded corners (SafeArea),
+## with the panel to the right of the button.
 func _fit_safe_area() -> void:
-	var inset := Vector2.ZERO
-	# On desktop the safe area is the display's, not the window's: no inset.
-	if OS.has_feature("mobile"):
-		var safe := Rect2(DisplayServer.get_display_safe_area())
-		var screen := Vector2(DisplayServer.window_get_size())
-		var side := maxf(safe.position.x, screen.x - safe.end.x)
-		inset = Vector2(side, safe.position.y) * get_viewport().get_visible_rect().size / screen
+	var inset := SafeArea.of(get_viewport()).position
 	var height := _panel.offset_bottom - _panel.offset_top # set in the editor
 	_button.position = inset
 	_panel.offset_left = inset.x + _button.size.x

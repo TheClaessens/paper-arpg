@@ -49,11 +49,23 @@ The Skill that uses the equipped Weapon: a sword swings, a bow shoots. The playe
 _Avoid_: Basic attack, auto-attack, default attack
 
 **Skill slot**:
-A place that holds one Skill, with its own button. Using the slot uses the Skill in it.
+A place on the Skill bar that holds one Skill or is empty, with its own button. Using the slot uses the Skill in it; an empty slot does nothing. The same Skill may sit in several slots.
 _Avoid_: Hotbar, action slot, button
 
+**Skill bar**:
+The player's five Skill slots: the main slot, and four smaller ones fanned around it. Using any of them makes the player busy for that Skill's Use time, so no slot can be used until it has passed.
+_Avoid_: Hotbar, action bar, loadout
+
+**Main slot**:
+The large Skill slot of the Skill bar, under the right thumb. It works the same as the others.
+_Avoid_: Primary slot, attack button
+
+**Skill drawer**:
+The list of the player's Skills that opens when they choose a Skill slot to change, to pick what goes in it.
+_Avoid_: Skill picker, spellbook, inventory
+
 **Use time**:
-How long one use of a Skill takes. Its Skill slot takes no new use until it has passed. Each Skill has its own, and game systems such as attack speed may change it.
+How long one use of a Skill takes. The Skill bar takes no new use, from any slot, until it has passed. Each Skill has its own, and game systems such as attack speed may change it.
 _Avoid_: Cooldown, global cooldown, cast time, attack time
 
 **Range**:
