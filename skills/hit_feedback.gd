@@ -1,10 +1,11 @@
 class_name HitFeedback
 extends Resource
-## Hit feedback (see GLOSSARY.md): how strongly the game reacts the moment a Skill hits.
-## One shared set, `hit_feedback.tres`, serves every Skill: melee and ranged hits felt the
-## same in the tuning study the values started from (see .scratch/combat/spec.md).
-## Enemies read the per-Enemy part (flash, squash, knockback, Stagger); the Skill that hit
-## plays the impact (hitstop and screen shake) once per use.
+## Hit feedback (see GLOSSARY.md): how the game shows the moment a Skill hits. Game-wide, not
+## per Skill: no game system changes it, and melee and ranged hits felt the same in the tuning
+## study the values started from (see .scratch/combat/spec.md). One shared set,
+## `hit_feedback.tres`, serves everything. How hard a hit pushes (knockback, Stagger) belongs
+## to the Skill. The hit Enemy shows flash and squash; the Skill that hit plays the impact
+## (hitstop and screen shake) once per use.
 
 ## The whole game freezes this long.
 @export var hitstop := 0.06
@@ -12,14 +13,10 @@ extends Resource
 @export var flash := 0.1
 ## How far the hit Standee squashes at the peak: 0.3 is 30% wider and 30% shorter.
 @export var squash := 0.3
-## How far the hit Enemy is pushed, in world units.
-@export var knockback := 0.35
 ## How far the screen shakes, in world units.
 @export var shake := 0.12
 ## How long the screen shakes.
 @export var shake_time := 0.15
-## How long the hit Enemy slides without chasing.
-@export var stagger := 0.05
 
 # Hitstops started and not yet over. Overlapping ones keep the game frozen until the last ends.
 static var _hitstops := 0

@@ -14,6 +14,9 @@ size = Vector2(2, 2)
 
 [node name="Attack" type="Node3D"]
 script = ExtResource("1_attack")
+range = 1.6
+knockback = 0.35
+stagger = 0.05
 hit_feedback = ExtResource("3_feedback")
 
 [node name="Swing" type="MeshInstance3D" parent="."]

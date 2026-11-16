@@ -18,15 +18,18 @@ Baseline for the feedback: Seki & Ishikawa, *Quantifying Hit Feedback Preference
    - Press only. One press uses the Skill once along Facing. Holding does nothing extra.
    - Each Skill has a use time (Attack 0.4 s, Fireball 0.6 s). A press in the last 0.15 s is remembered and used when the time ends. Earlier presses are dropped.
    - The player can keep moving while using a Skill.
-3. **Attack** (sword): a 120° arc reaching 1.6 units along Facing. It hits every Enemy inside the arc once. A white arc flashes flat on the ground, and the Standee card gives a small hop or tilt.
+3. **Attack** (sword): a 120° Sweep with a Range of 1.6 units along Facing. It hits every Enemy inside the arc once. A white arc flashes flat on the ground, and the Standee card gives a small hop or tilt.
 4. **Fireball**: a plain circle moving along Facing at 12 units/s. It disappears after 10 units, or on the first Enemy or wall it touches. A hit on an Enemy gives the same Hit feedback as Attack.
-5. **Hit feedback**, one set of values for both Skills:
-   - hitstop: the whole game freezes briefly
-   - flash: the hit Enemy turns white
-   - squash: the hit Standee squashes
-   - knockback: the distance the Enemy is pushed
-   - screen shake: strength and duration
-   - **Stagger**: the Enemy slides with the knockback and doesn't chase, starting at 0.05 s. A hit during a Stagger restarts it.
+5. **What a hit does.**
+   - **Hit feedback**, game-wide and shared by every Skill:
+     - hitstop: the whole game freezes briefly
+     - flash: the hit Enemy turns white
+     - squash: the hit Standee squashes
+     - screen shake: strength and duration
+   - **Set by each Skill**, a default per Skill:
+     - knockback: the distance the Enemy is pushed
+     - **Stagger**: the Enemy slides with the knockback and doesn't chase. A hit during a Stagger restarts it.
+   - The ground rule: if a game system could change a value (gear, passives, Skill levels, Enemy resistances), it belongs to the Skill. If it's how the game presents every hit, it's game-wide.
    - Enemies have no health and don't die yet.
 6. **Swapping**: a small button in the bottom right, plus a `pause` action (Esc and controller Start).
    - It pauses the game and shows the pause screen with the Skill slot.
@@ -38,24 +41,33 @@ Baseline for the feedback: Seki & Ishikawa, *Quantifying Hit Feedback Preference
 
 These were tuned in the throwaway Combat Feel Lab artifact (https://claude.ai/artifact/6oK7kom3QL7aGN7vTkPR2N). The defaults felt right on the first device test, 2026-11-16.
 
+Game-wide:
+
 | Value | Start |
 |---|---|
 | hitstop | 0.06 s |
 | flash | 0.1 s |
 | squash | 0.3 (the Standee widens 30% and shortens 30% at the peak, over 0.18 s) |
-| knockback | 0.35 units |
 | shake strength | 0.12 units |
 | shake duration | 0.15 s |
-| stagger | 0.05 s (knockback speed falls linearly to zero over it) |
-| Attack arc / reach / use time | 120° / 1.6 units / 0.4 s |
-| Fireball speed / range / use time | 12 units/s / 10 units / 0.6 s |
 | press buffer | 0.15 s |
+
+Per Skill:
+
+| Skill | Use time | Range | Knockback | Stagger | Own |
+|---|---|---|---|---|---|
+| Attack | 0.4 s | 1.6 units | 0.35 units | 0.05 s | Sweep 120° |
+| Fireball | 0.6 s | 10 units | 0.35 units | 0.05 s | speed 12 units/s |
+
+The knockback speed falls linearly to zero over the Stagger.
 
 ## Out of scope
 
 Enemies hurting the player, health and death, sound, aiming on touch or controller, holding or channelling, more than one slot, saving the slot, a real loadout screen, Weapons other than the sword.
 
 ## Open
+
+- Once there is more than one slot, should a Skill's Use time block the other slots too, since the Character is busy, as in most ARPGs? Today it blocks only its own slot.
 
 - How cursor-style aiming carries over to touch and controller.
 - The final layout of the pause screen and Skill menu.
@@ -73,3 +85,4 @@ Enemies hurting the player, health and death, sound, aiming on touch or controll
 - **The slot button is a `TouchScreenButton`** that presses `use_skill_slot`. It hides when there's no touch screen.
 - **The tuning pane came early**, before Fireball: on trying the Attack, knockback and hitstop felt too strong. Its sliders don't take keyboard focus, so arrow keys keep walking the player.
 - **Knockback 0.35 and Stagger 0.05 after tuning in game** (2026-11-16). The lab's 0.8 and 0.2 felt excessive on the real Attack: a short, sharp shove instead of a slide.
+- **Skill values and game-wide values are split.** Use time, Range, knockback and Stagger are on every Skill, and Sweep on the Attack. `HitFeedback` keeps only what's game-wide. The press buffer stays on the Skill slot. The tuning pane shows "Game" and "Attack" sections, and the Attack's values are named `attack_*`.

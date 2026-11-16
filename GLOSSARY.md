@@ -52,8 +52,20 @@ _Avoid_: Basic attack, auto-attack, default attack
 A place that holds one Skill, with its own button. Using the slot uses the Skill in it.
 _Avoid_: Hotbar, action slot, button
 
+**Use time**:
+How long one use of a Skill takes. Its Skill slot takes no new use until it has passed. Each Skill has its own, and game systems such as attack speed may change it.
+_Avoid_: Cooldown, global cooldown, cast time, attack time
+
+**Range**:
+How far a Skill reaches from the Character using it: the length of a swing, or how far a projectile flies.
+_Avoid_: Reach, distance, radius
+
+**Sweep**:
+The angle a melee swing covers, centred on Facing.
+_Avoid_: Arc, cone, angle
+
 **Hit feedback**:
-What the game does the moment a Skill hits an Enemy so the hit feels solid: the world freezes for an instant, the Enemy flashes and squashes, gets knocked back, and the screen shakes.
+How the game shows the moment a Skill hits an Enemy so the hit feels solid: the world freezes for an instant, the Enemy flashes and squashes, and the screen shakes. It is the same for every Skill, and no game system changes it. How far the Enemy is knocked back, and its Stagger, belong to the Skill.
 _Avoid_: Juice, game feel, impact effects
 
 **Stagger**:

@@ -9,14 +9,14 @@ extends CharacterBody3D
 ## Chases again once the target is this far away. Larger than `reach_distance`, so a small
 ## step by the player doesn't flick the Enemy between walking and standing.
 @export var resume_distance := 1.3
-## How hard hits land. Shared with the Skills that hit (skills/hit_feedback.tres).
+## How hits show (game-wide, skills/hit_feedback.tres).
 @export var hit_feedback: HitFeedback
 
 var _target: Node3D
 var _chasing := false
 var _stagger_left := 0.0
 var _stagger_time := 0.0 # the full length of the current Stagger
-var _knockback_direction := Vector3.ZERO
+var _knockback := Vector3.ZERO # direction times distance
 
 @onready var _movement: Movement = $Movement
 @onready var _standee: Standee = $Standee
@@ -40,12 +40,13 @@ static func knockback_speed(distance: float, stagger: float, left: float) -> flo
 	return 2.0 * distance * left / (stagger * stagger)
 
 
-## Hit by a Skill, pushed along `direction` (a unit vector on the ground).
-func take_hit(direction: Vector3) -> void:
+## Hit by a Skill: pushed `knockback` world units along `direction` (a unit vector on the
+## ground), sliding without chasing for `stagger` seconds. The Skill decides both.
+func take_hit(direction: Vector3, knockback: float, stagger: float) -> void:
 	# ponytail: a Stagger of 0 would need an instant push; the shortest slide stands in for it.
-	_stagger_time = maxf(hit_feedback.stagger, 0.02)
+	_stagger_time = maxf(stagger, 0.02)
 	_stagger_left = _stagger_time
-	_knockback_direction = direction
+	_knockback = direction * knockback
 	_standee.flash(hit_feedback.flash)
 	_standee.squash(hit_feedback.squash)
 
@@ -90,7 +91,7 @@ func _on_velocity_computed(safe_velocity: Vector3) -> void:
 ## Staggered: slides with the knockback and doesn't steer. Skips the navigation agent, which
 ## would bend the slide around other Enemies a frame late.
 func _slide(delta: float) -> void:
-	velocity = _knockback_direction * knockback_speed(hit_feedback.knockback, _stagger_time, _stagger_left)
+	velocity = _knockback.normalized() * knockback_speed(_knockback.length(), _stagger_time, _stagger_left)
 	_stagger_left -= delta
 	move_and_slide()
 	if _stagger_left <= 0.0:

@@ -22,25 +22,37 @@ func _enter_tree() -> void:
 func _ready() -> void:
 	hide()
 	_tunables = [
+		# Game-wide: how every hit shows, and how presses are read.
 		_tunable(&"hitstop", hit_feedback, 0.0, 0.3, 0.01),
 		_tunable(&"flash", hit_feedback, 0.0, 0.3, 0.01),
 		_tunable(&"squash", hit_feedback, 0.0, 0.6, 0.02),
-		_tunable(&"knockback", hit_feedback, 0.0, 3.0, 0.05),
 		_tunable(&"shake", hit_feedback, 0.0, 0.5, 0.01),
 		_tunable(&"shake_time", hit_feedback, 0.0, 0.5, 0.01),
-		_tunable(&"stagger", hit_feedback, 0.0, 1.0, 0.01),
-		_tunable(&"attack_arc", attack, 30.0, 360.0, 5.0, &"arc"),
-		_tunable(&"attack_reach", attack, 0.5, 4.0, 0.1, &"reach"),
-		_tunable(&"attack_use_time", attack, 0.1, 1.5, 0.05, &"use_time"),
 		_tunable(&"buffer", skill_slot, 0.0, 0.4, 0.01),
+		# The Attack's own values, its defaults per Skill.
+		_tunable(&"attack_use_time", attack, 0.1, 1.5, 0.05, &"use_time"),
+		_tunable(&"attack_range", attack, 0.5, 4.0, 0.1, &"range"),
+		_tunable(&"attack_sweep", attack, 30.0, 360.0, 5.0, &"sweep"),
+		_tunable(&"attack_knockback", attack, 0.0, 3.0, 0.05, &"knockback"),
+		_tunable(&"attack_stagger", attack, 0.0, 1.0, 0.01, &"stagger"),
 	]
+	_add_heading("Game")
 	for tunable in _tunables:
+		if tunable.key == &"attack_use_time":
+			_add_heading("Attack")
 		_add_row(tunable)
 
 
 ## One tuned value: shown as `key`, stored in `target`'s `property` (the key itself if empty).
 func _tunable(key: StringName, target: Object, low: float, high: float, step: float, property := &"") -> Dictionary:
 	return {key = key, target = target, property = property if property else key, low = low, high = high, step = step}
+
+
+func _add_heading(text: String) -> void:
+	var heading := Label.new()
+	heading.text = text.to_upper()
+	heading.add_theme_color_override(&"font_color", Color(0.94, 0.65, 0.23))
+	_rows.add_child(heading)
 
 
 func _add_row(tunable: Dictionary) -> void:
