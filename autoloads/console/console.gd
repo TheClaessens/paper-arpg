@@ -90,6 +90,12 @@ func execute(line: String) -> String:
 	return callback.call(words.slice(1))
 
 
+## Whether the panel is showing. The game is paused meanwhile, and the Console restores the
+## pause state it found, so nothing else should pause or unpause while this is true.
+func is_open() -> bool:
+	return _enabled and _panel.visible
+
+
 func _input(event: InputEvent) -> void:
 	if _is_toggle(event):
 		get_viewport().set_input_as_handled() # keeps the ` out of the text field

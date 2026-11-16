@@ -32,8 +32,6 @@ const AUTO_AIM_ANGLE := 60.0
 @export var knockback := 0.0
 ## How long a hit Enemy slides without chasing (its Stagger), in seconds.
 @export var stagger := 0.0
-## How big an Enemy's body is around its centre; a Skill reaching any part of it reaches it.
-@export var body_radius := 0.25
 
 ## Seconds until the Skill can be used again. The Skill bar runs this clock.
 var cooldown_left := 0.0
@@ -79,7 +77,7 @@ static func auto_aim(facing: Vector3, skill_range: float, enemy_offsets: Array[V
 
 ## The Enemy nearest `spot` on the ground within `reach` of it, or null (see nearest_to()).
 static func enemy_nearest(world: World3D, spot: Vector3, reach: float) -> Enemy:
-	var enemies := enemies_around(world, spot, reach, 0.0)
+	var enemies := enemies_around(world, spot, reach)
 	var positions: Array[Vector3] = []
 	for enemy in enemies:
 		positions.append(enemy.global_position)
@@ -99,11 +97,12 @@ static func nearest_to(spot: Vector3, enemies: Array[Vector3], reach: float) -> 
 	return best
 
 
-## Every Enemy in `world` whose body (`body` around its centre) is within `reach` of `centre`.
-## The physics engine finds them: the sphere masks only the `enemy` layer.
-static func enemies_around(world: World3D, centre: Vector3, reach: float, body: float) -> Array[Enemy]:
+## Every Enemy in `world` with any part of its body within `reach` of `centre`.
+## The physics engine finds them: the sphere masks only the `enemy` layer, and an Enemy's body
+## is its collision shape.
+static func enemies_around(world: World3D, centre: Vector3, reach: float) -> Array[Enemy]:
 	var sphere := SphereShape3D.new()
-	sphere.radius = reach + body
+	sphere.radius = reach
 	var query := PhysicsShapeQueryParameters3D.new()
 	query.shape = sphere
 	query.transform = Transform3D(Basis.IDENTITY, centre + Vector3.UP * 0.5) # body height
@@ -116,12 +115,14 @@ static func enemies_around(world: World3D, centre: Vector3, reach: float, body: 
 	return enemies
 
 
-## Auto-aim from where the Character stands (see auto_aim()).
+## Auto-aim from where the Character stands (see auto_aim()). An Enemy whose body is in Range
+## but whose centre is past it is aimed at as far as the Range.
 func aim_toward(facing: Vector3) -> Vector3:
 	var offsets: Array[Vector3] = []
 	for enemy in _enemies_within(range):
-		offsets.append(enemy.global_position - global_position)
-	return auto_aim(facing, range + body_radius, offsets)
+		var offset := enemy.global_position - global_position
+		offsets.append(Vector3(offset.x, 0.0, offset.z).limit_length(range))
+	return auto_aim(facing, range, offsets)
 
 
 ## Uses the Skill, aimed at `aim`: an offset on the ground from the Character. Its direction is
@@ -137,7 +138,7 @@ func target_for(_aim: Vector3) -> Node3D:
 
 ## Every Enemy whose body is within `reach` of the Character, in any direction.
 func _enemies_within(reach: float) -> Array[Enemy]:
-	return enemies_around(get_world_3d(), global_position, reach, body_radius)
+	return enemies_around(get_world_3d(), global_position, reach)
 
 
 ## Lands one use's hits: each Enemy in `hits` is pushed along its direction (a unit vector on

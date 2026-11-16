@@ -37,6 +37,7 @@ var _buffered := NONE # a slot kept for when the Use time ends
 var _buffered_aim := NO_AIM
 var _busy := 0.0 # Use time left
 var _held: Dictionary[int, Vector3] = {} # held slots, each with its steered aim (or NO_AIM)
+var _cooling: Array[Skill] = [] # Skills used and not yet ready again, on the bar or off it
 
 
 func _init() -> void:
@@ -106,18 +107,17 @@ func advance(delta: float) -> void:
 		if skill and skill.is_ready(): # emptied, or used from another slot, since the press
 			_busy = skill.use_time
 			skill.start_cooldown()
+			if not skill.is_ready() and skill not in _cooling:
+				_cooling.append(skill)
 			used.emit(skill, _buffered_aim)
 			slot_used.emit(slot)
 
 
-## Runs the cooldown of each Skill on the bar once, however many slots it sits in.
+## Runs the cooldown of each Skill the bar has used, whether or not it still sits in a slot.
 func _cool_down(delta: float) -> void:
-	var seen: Array[Skill] = []
-	for skill in _slots:
-		if skill == null or skill in seen:
-			continue
-		seen.append(skill)
+	for skill: Skill in _cooling.duplicate(): # a copy, since ready ones leave the list
 		if skill.cool_down(delta):
+			_cooling.erase(skill)
 			ready_again.emit(skill)
 
 

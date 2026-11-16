@@ -18,9 +18,14 @@ extends Resource
 ## How long the screen shakes.
 @export var shake_time := 0.15
 
-## The game's one set of Hit feedback.
+static var _shared: HitFeedback
+
+## The game's one set of Hit feedback. Kept once loaded: load() alone forgets a resource
+## nothing holds, and would read the file again on every hit.
 static func shared() -> HitFeedback:
-	return load("res://skills/hit_feedback.tres") # cached, so always the same instance
+	if _shared == null:
+		_shared = load("res://skills/hit_feedback.tres")
+	return _shared
 
 
 # Hitstops started and not yet over. Overlapping ones keep the game frozen until the last ends.

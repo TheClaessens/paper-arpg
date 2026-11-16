@@ -7,6 +7,9 @@ extends Area3D
 ## The player came within `radius`. Aggro never ends, so this fires once.
 signal aggroed(target: Node3D)
 
+## The group every Aggro's ring is in, so the `aggro` command reaches them all at once.
+const RING_GROUP := &"aggro_rings"
+
 ## Shows every Aggro's ring on the ground. Toggled by the `aggro` console command.
 static var rings_visible := false
 
@@ -28,15 +31,15 @@ func _ready() -> void:
 	var ring := _ring.mesh as TorusMesh
 	ring.outer_radius = radius
 	ring.inner_radius = radius - 0.08
+	_ring.add_to_group(RING_GROUP)
+	_ring.visible = rings_visible # an Aggro placed while they show starts shown
 	body_entered.connect(_on_body_entered)
 
 
-func _process(_delta: float) -> void:
-	_ring.visible = rings_visible
-
-
+# Static, so it has no node to find the tree through: the engine's main loop is the tree.
 static func _toggle_rings(_args: PackedStringArray) -> String:
 	rings_visible = not rings_visible
+	(Engine.get_main_loop() as SceneTree).set_group(RING_GROUP, &"visible", rings_visible)
 	return "aggro %s" % ("on" if rings_visible else "off")
 
 

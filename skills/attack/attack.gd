@@ -15,13 +15,12 @@ const SWING_FADE := 0.16
 @onready var _swing_material: ShaderMaterial = _swing.material_override
 
 
-## Whether an Enemy at `offset` from the player is inside a swing along `facing`.
-static func in_sweep(offset: Vector3, facing: Vector3, sweep_degrees: float, swing_range: float, radius: float) -> bool:
+## Whether an Enemy at `offset` from the player is inside the Sweep of a swing along `facing`.
+## Only the angle: use() asks for the Enemies within Range first.
+static func in_sweep(offset: Vector3, facing: Vector3, sweep_degrees: float) -> bool:
 	var flat := Vector3(offset.x, 0.0, offset.z)
 	if flat.length() < POINT_BLANK:
 		return true
-	if flat.length() - radius > swing_range:
-		return false
 	return rad_to_deg(flat.angle_to(facing)) <= sweep_degrees / 2.0
 
 
@@ -31,7 +30,7 @@ func use(aim: Vector3) -> void:
 	var hits: Dictionary[Enemy, Vector3] = {}
 	for enemy in _enemies_within(range):
 		var offset := enemy.global_position - global_position
-		if in_sweep(offset, facing, sweep, range, body_radius):
+		if in_sweep(offset, facing, sweep):
 			# Pushed straight away from the player; one right on top goes along Facing.
 			hits[enemy] = Vector3(offset.x, 0.0, offset.z).normalized() if offset.length() > 0.01 else facing
 	_land_hits(hits)

@@ -66,3 +66,13 @@ func test_the_touch_command_taps_or_drags_a_slot() -> void:
 	assert_eq(aims.size(), 2)
 	assert_false(aims[0].is_finite(), "a tap: auto-aimed")
 	assert_true(aims[1].is_finite(), "a drag: aimed by hand")
+
+
+func test_a_second_finger_on_another_slot_leaves_a_hold_alone() -> void:
+	var main: SkillSlotButton = hud.get_node("Slot0") # the Attack: repeats while held
+	main.touch_started.emit(main.centre())
+	button.touch_started.emit(button.centre()) # a second finger lands on the Fireball
+	main.touch_moved.emit(main.centre() + Vector2(2.0, 0.0)) # the first only wobbles
+	player.skill_bar.advance(0.016)
+	player.skill_bar.advance(1.0) # past the Attack's Use time: the hold repeats it
+	assert_eq(aims, [SkillBar.NO_AIM, SkillBar.NO_AIM] as Array[Vector3], "still auto-aimed, not steered")

@@ -67,6 +67,8 @@ func back() -> void:
 
 # Runs while paused (process_mode ALWAYS).
 func _unhandled_input(event: InputEvent) -> void:
+	if Console.is_open(): # it owns the pause while open
+		return
 	if _view == View.PLAY:
 		if event.is_action_pressed(&"pause"):
 			get_viewport().set_input_as_handled()
@@ -77,6 +79,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _on_corner_pressed() -> void:
+	if Console.is_open():
+		return
 	if _view == View.PLAY:
 		open()
 	else:
