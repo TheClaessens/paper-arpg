@@ -8,10 +8,8 @@ const POINT_BLANK := 0.6
 ## How long the wedge on the ground takes to fade.
 const SWING_FADE := 0.16
 
-## The Sweep: how wide the swing is, centred on Facing.
+## The Sweep: how wide the swing is, centred on where it is aimed.
 @export_range(10.0, 360.0, 5.0, "suffix:°") var sweep := 120.0
-## How big an Enemy's body is around its centre; the swing hits any part of it.
-@export var body_radius := 0.25
 
 @onready var _swing: MeshInstance3D = $Swing
 @onready var _swing_material: ShaderMaterial = _swing.material_override
@@ -27,32 +25,16 @@ static func in_sweep(offset: Vector3, facing: Vector3, sweep_degrees: float, swi
 	return rad_to_deg(flat.angle_to(facing)) <= sweep_degrees / 2.0
 
 
-func use(facing: Vector3) -> void:
+func use(aim: Vector3) -> void:
+	var facing := aim.normalized()
 	_show_swing(facing)
 	var hits: Dictionary[Enemy, Vector3] = {}
-	for enemy in _enemies_in_range():
+	for enemy in _enemies_within(range):
 		var offset := enemy.global_position - global_position
 		if in_sweep(offset, facing, sweep, range, body_radius):
 			# Pushed straight away from the player; one right on top goes along Facing.
 			hits[enemy] = Vector3(offset.x, 0.0, offset.z).normalized() if offset.length() > 0.01 else facing
 	_land_hits(hits)
-
-
-## Every Enemy whose body is within Range, in any direction. The physics engine finds them:
-## the sphere masks only the `enemy` layer.
-func _enemies_in_range() -> Array[Enemy]:
-	var sphere := SphereShape3D.new()
-	sphere.radius = range + body_radius
-	var query := PhysicsShapeQueryParameters3D.new()
-	query.shape = sphere
-	query.transform = Transform3D(Basis.IDENTITY, global_position + Vector3.UP * 0.5) # body height
-	query.collision_mask = 1 << 2 # layer 3, `enemy`
-	var enemies: Array[Enemy] = []
-	for result in get_world_3d().direct_space_state.intersect_shape(query, 32):
-		var enemy := result.collider as Enemy
-		if enemy:
-			enemies.append(enemy)
-	return enemies
 
 
 func _show_swing(facing: Vector3) -> void:

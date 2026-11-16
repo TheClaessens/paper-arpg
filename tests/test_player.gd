@@ -107,21 +107,15 @@ func test_a_touch_does_not_use_a_slot() -> void:
 	assert_eq(Player.pressed_slot(_click(MOUSE_BUTTON_LEFT, InputEvent.DEVICE_ID_EMULATION)), -1)
 
 
-func test_the_right_stick_leaves_the_cursor_in_charge() -> void:
-	var camera := _tilted_camera()
+func test_the_right_stick_aims_apart_from_walking() -> void:
+	_tilted_camera()
 	player.set_physics_process(true)
-	var motion := InputEventMouseMotion.new()
-	motion.position = camera.unproject_position(Vector3(3.0, 0.0, 0.0)) # cursor right of the player
-	get_viewport().push_input(motion, true)
-	var right_stick := InputEventJoypadMotion.new()
-	right_stick.axis = JOY_AXIS_RIGHT_X
-	right_stick.axis_value = 1.0
-	get_viewport().push_input(right_stick, true)
 	Input.action_press(&"move_up")
+	Input.action_press(&"aim_right")
 	await wait_physics_frames(2)
 	Input.action_release(&"move_up")
-	assert_almost_eq(player.facing, Vector3(1.0, 0.0, 0.0), Vector3.ONE * 0.05)
-
+	Input.action_release(&"aim_right")
+	assert_almost_eq(player.facing, Vector3(1.0, 0.0, 0.0), Vector3.ONE * 0.05, "aims right while walking up")
 
 func test_its_skills_are_the_skill_nodes_it_holds() -> void:
 	var titles: Array[String] = []

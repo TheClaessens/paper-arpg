@@ -2,13 +2,14 @@ class_name Player
 extends CharacterBody3D
 ## The player's Character (see GLOSSARY.md). Walks where the left stick or the keys point,
 ## relative to the camera: pushing up walks up the screen. The `use_skill_slot_1` to `_5`
-## actions use the Skills on its Skill bar along its Facing.
+## actions use the Skills on its Skill bar: at the mouse cursor, along the right stick while it
+## is pushed, or else auto-aimed (see Skill.Aim).
 
 ## How far the card stretches when the player uses a Skill.
 const USE_STRETCH := -0.15
 
-## The player's Facing (see GLOSSARY.md): a unit direction on the ground. It follows the mouse
-## cursor once the mouse moves, otherwise the stick or keys.
+## The player's Facing (see GLOSSARY.md): a unit direction on the ground. It follows the right
+## stick while that is pushed, the mouse cursor once the mouse moves, otherwise the movement.
 var facing := Vector3.RIGHT
 
 ## The player's Skill bar.
@@ -27,6 +28,7 @@ var skills: Array[Skill]:
 
 var _cursor := Vector2.ZERO # mouse position in this viewport
 var _aim_with_mouse := false
+var _aim_with_stick := false # the right stick is pushed
 
 @onready var _movement: Movement = $Movement
 @onready var _standee: Standee = $Standee
@@ -64,8 +66,28 @@ static func slot_action(slot: int) -> StringName:
 
 
 func _on_skill_used(skill: Skill) -> void:
-	skill.use(facing)
+	var aim := _aim_for(skill)
+	if not aim.is_zero_approx():
+		facing = aim.normalized() # turn to what it was aimed at
+	skill.use(aim)
 	_standee.squash(USE_STRETCH)
+
+
+## Where `skill` goes, as an offset on the ground: exactly at the mouse cursor, along a pushed
+## right stick, or else auto-aimed. A Skill used around the player ignores it.
+func _aim_for(skill: Skill) -> Vector3:
+	if skill.aim == Skill.Aim.AROUND:
+		return facing * skill.range
+	if _aim_with_mouse:
+		var point: Variant = _cursor_on_ground()
+		if point != null:
+			var offset := (point as Vector3) - global_position
+			offset.y = 0.0
+			if offset.length() > 0.05:
+				return offset
+	if _aim_with_stick:
+		return facing * skill.range
+	return skill.aim_toward(facing)
 
 
 # Registered while in the tree, so a reloaded scene's new Player takes the command over.
@@ -89,9 +111,9 @@ static func facing_toward(from: Vector3, to: Vector3, current: Vector3) -> Vecto
 
 
 # _input, not _unhandled_input: the full-screen PixelatedView would claim mouse motion as GUI
-# input first. The mouse leads Facing once it moves; the keys only walk. A movement stick
-# (the gamepad's left stick, or touch) aims by itself, so pushing one takes Facing back. A touch also moves the emulated
-# mouse, which mustn't count as the mouse.
+# input first. The mouse leads Facing once it moves; the keys only walk. A gamepad stick or a
+# touch takes Facing back from the mouse. A touch also moves the emulated mouse, which mustn't
+# count as the mouse.
 func _input(event: InputEvent) -> void:
 	var motion := event as InputEventMouseMotion
 	if motion and motion.device != InputEvent.DEVICE_ID_EMULATION:
@@ -101,15 +123,19 @@ func _input(event: InputEvent) -> void:
 		_aim_with_mouse = false
 	elif event is InputEventJoypadMotion:
 		var stick := event as InputEventJoypadMotion
-		if stick.axis in [JOY_AXIS_LEFT_X, JOY_AXIS_LEFT_Y] and absf(stick.axis_value) > 0.2:
+		if stick.axis in [JOY_AXIS_LEFT_X, JOY_AXIS_LEFT_Y, JOY_AXIS_RIGHT_X, JOY_AXIS_RIGHT_Y] and absf(stick.axis_value) > 0.2:
 			_aim_with_mouse = false
 
 
 func _physics_process(delta: float) -> void:
-	var direction := _input_direction()
+	var direction := _stick_direction(&"move_left", &"move_right", &"move_up", &"move_down")
 	velocity = _movement.next_velocity(velocity, direction, delta)
 	move_and_slide()
-	if _aim_with_mouse:
+	var aim := _stick_direction(&"aim_left", &"aim_right", &"aim_up", &"aim_down")
+	_aim_with_stick = not aim.is_zero_approx()
+	if _aim_with_stick:
+		facing = aim
+	elif _aim_with_mouse:
 		facing = _facing_toward_cursor()
 	elif not direction.is_zero_approx():
 		facing = direction
@@ -120,17 +146,22 @@ func _physics_process(delta: float) -> void:
 
 ## Facing toward the ground under the mouse cursor, at the player's feet height.
 func _facing_toward_cursor() -> Vector3:
+	var point: Variant = _cursor_on_ground()
+	return facing if point == null else facing_toward(global_position, point as Vector3, facing)
+
+
+## The spot on the ground under the mouse cursor, at the player's feet height, or null.
+func _cursor_on_ground() -> Variant:
 	var camera := get_viewport().get_camera_3d()
 	var ground := Plane(Vector3.UP, global_position.y)
-	var hit: Variant = ground.intersects_ray(camera.project_ray_origin(_cursor), camera.project_ray_normal(_cursor))
-	return facing if hit == null else facing_toward(global_position, hit as Vector3, facing)
+	return ground.intersects_ray(camera.project_ray_origin(_cursor), camera.project_ray_normal(_cursor))
 
 
-## The pushed direction as a unit vector on the ground, or zero inside the deadzone.
-## Direction only: any push past the deadzone means full speed, so the vector is normalised.
-func _input_direction() -> Vector3:
-	# Deadzone comes from the move_* actions in the Input Map (0.2).
-	var input := Input.get_vector(&"move_left", &"move_right", &"move_up", &"move_down")
+## A stick's pushed direction as a unit vector on the ground, or zero inside the deadzone.
+## Direction only: any push past the deadzone counts in full, so the vector is normalised.
+func _stick_direction(to_left: StringName, to_right: StringName, to_up: StringName, to_down: StringName) -> Vector3:
+	# Deadzone comes from the actions in the Input Map (0.2).
+	var input := Input.get_vector(to_left, to_right, to_up, to_down)
 	# Screen right and screen down on the ground: the camera's right and back axes, flattened.
 	# Flattening each axis before mixing them keeps diagonals at 45° on the ground.
 	var camera := get_viewport().get_camera_3d().global_basis

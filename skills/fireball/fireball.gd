@@ -1,6 +1,6 @@
 class_name Fireball
 extends Skill
-## Fireball: throws a ball of fire straight along Facing. It flies at `speed` until it has flown
+## Fireball: throws a ball of fire straight where it is aimed. It flies at `speed` until it has flown
 ## the Skill's Range, or touches a wall or an Enemy. An Enemy it touches is knocked back, with
 ## the same Hit feedback as any other Skill.
 
@@ -14,7 +14,8 @@ const FLIGHT_HEIGHT := 0.5
 @export var speed := 12.0
 
 
-func use(facing: Vector3) -> void:
+func use(aim: Vector3) -> void:
+	var facing := aim.normalized()
 	var ball: Projectile = ProjectileScene.instantiate()
 	ball.direction = facing
 	ball.speed = speed
