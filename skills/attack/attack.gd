@@ -20,7 +20,7 @@ const SWING_FADE := 0.16
 
 
 ## Whether an Enemy at `offset` from the player is inside a swing along `facing`.
-static func in_arc(offset: Vector3, facing: Vector3, sweep_degrees: float, swing_range: float, radius: float) -> bool:
+static func in_sweep(offset: Vector3, facing: Vector3, sweep_degrees: float, swing_range: float, radius: float) -> bool:
 	var flat := Vector3(offset.x, 0.0, offset.z)
 	if flat.length() < POINT_BLANK:
 		return true
@@ -32,9 +32,9 @@ static func in_arc(offset: Vector3, facing: Vector3, sweep_degrees: float, swing
 func use(facing: Vector3) -> void:
 	_show_swing(facing)
 	var hit := false
-	for enemy in _enemies_in_reach():
+	for enemy in _enemies_in_range():
 		var offset := enemy.global_position - global_position
-		if in_arc(offset, facing, sweep, range, body_radius):
+		if in_sweep(offset, facing, sweep, range, body_radius):
 			var direction := Vector3(offset.x, 0.0, offset.z).normalized() if offset.length() > 0.01 else facing
 			enemy.take_hit(direction, knockback, stagger)
 			hit = true
@@ -44,7 +44,7 @@ func use(facing: Vector3) -> void:
 
 ## Every Enemy whose body is within Range, in any direction. The physics engine finds them:
 ## the sphere masks only the `enemy` layer.
-func _enemies_in_reach() -> Array[Enemy]:
+func _enemies_in_range() -> Array[Enemy]:
 	var sphere := SphereShape3D.new()
 	sphere.radius = range + body_radius
 	var query := PhysicsShapeQueryParameters3D.new()
@@ -61,6 +61,6 @@ func _enemies_in_reach() -> Array[Enemy]:
 
 func _show_swing(facing: Vector3) -> void:
 	_swing.basis = Basis.looking_at(facing).scaled(Vector3.ONE * range)
-	_swing_material.set_shader_parameter("half_arc", deg_to_rad(sweep) / 2.0)
+	_swing_material.set_shader_parameter("half_sweep", deg_to_rad(sweep) / 2.0)
 	var fade := _swing.create_tween()
 	fade.tween_method(func(alpha: float) -> void: _swing_material.set_shader_parameter("alpha", alpha), 0.55, 0.0, SWING_FADE)

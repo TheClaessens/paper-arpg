@@ -92,3 +92,8 @@ Enemies hurting the player, health and death, sound, aiming on touch or controll
 - **The pause screen** (`ui/pause_menu.tscn`) runs while paused. Esc and Start, plus the controller's B button (`ui_cancel`), step back: from the Skill menu to the pause screen, from there to the game. Focus lands on the slot, then on the slotted Skill, so the D-pad works right away.
 - **The Skill menu's buttons are built each time it opens**, from the `skills` list the sandbox gives it, so it always matches the slot.
 - **The tuning pane is removed** after the review. The values have settled, and the pane broke "scenes live in the editor". Tuning now happens in the editor: the Hit feedback in `skills/hit_feedback.tres`, and each Skill's values in its own scene.
+- **From the review (2026-11-16):**
+  - **Point blank:** an Enemy closer than 0.6 units, pressed against the player, is hit by the Attack from any side, even behind. Otherwise a crowded player would miss the Enemies touching them.
+  - **The Range counts the Enemy's body:** the swing hits any part of an Enemy within 1.6 units. Its centre can be up to 1.85 units away (body radius 0.25).
+  - **Knockback direction:** the Attack pushes an Enemy straight away from the player; Fireball pushes it along the throw.
+  - **A touch's emulated mouse click doesn't use the slot**, so a thumb landing on the Touch stick doesn't swing. Only the gamepad's left stick takes Facing back from the mouse, not the right stick or the triggers.

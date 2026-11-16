@@ -28,8 +28,14 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed(&"use_skill_slot"):
+	if uses_skill_slot(event):
 		_skill_slot.press()
+
+
+## Whether `event` presses the Skill slot. Godot also turns every touch into a left click,
+## which would use the slot wherever a thumb lands, so those emulated clicks don't count.
+static func uses_skill_slot(event: InputEvent) -> bool:
+	return event.is_action_pressed(&"use_skill_slot") and event.device != InputEvent.DEVICE_ID_EMULATION
 
 
 func _on_skill_used(skill: Skill) -> void:
@@ -58,8 +64,8 @@ static func facing_toward(from: Vector3, to: Vector3, current: Vector3) -> Vecto
 
 
 # _input, not _unhandled_input: the full-screen PixelatedView would claim mouse motion as GUI
-# input first. The mouse leads Facing once it moves; the keys only walk. A stick (gamepad or
-# touch) aims by itself, so pushing one takes Facing back. A touch also moves the emulated
+# input first. The mouse leads Facing once it moves; the keys only walk. A movement stick
+# (the gamepad's left stick, or touch) aims by itself, so pushing one takes Facing back. A touch also moves the emulated
 # mouse, which mustn't count as the mouse.
 func _input(event: InputEvent) -> void:
 	var motion := event as InputEventMouseMotion
@@ -68,8 +74,10 @@ func _input(event: InputEvent) -> void:
 		_aim_with_mouse = true
 	elif event is InputEventScreenTouch:
 		_aim_with_mouse = false
-	elif event is InputEventJoypadMotion and absf((event as InputEventJoypadMotion).axis_value) > 0.2:
-		_aim_with_mouse = false
+	elif event is InputEventJoypadMotion:
+		var stick := event as InputEventJoypadMotion
+		if stick.axis in [JOY_AXIS_LEFT_X, JOY_AXIS_LEFT_Y] and absf(stick.axis_value) > 0.2:
+			_aim_with_mouse = false
 
 
 func _physics_process(delta: float) -> void:
