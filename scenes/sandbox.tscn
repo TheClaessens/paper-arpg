@@ -150,7 +150,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0, -2)
 
 [node name="SkillSlotButton" parent="HUD" instance=ExtResource("17_slot_button")]
 
-[node name="TuningPane" parent="HUD" node_paths=PackedStringArray("attack", "skill_slot") instance=ExtResource("18_tuning_pane")]
+[node name="TuningPane" parent="HUD" node_paths=PackedStringArray("attack", "fireball", "skill_slot") instance=ExtResource("18_tuning_pane")]
 hit_feedback = ExtResource("19_feedback")
 attack = NodePath("../../PixelatedView/SubViewport/World/Player/Attack")
+fireball = NodePath("../../PixelatedView/SubViewport/World/Player/Fireball")
 skill_slot = NodePath("../../PixelatedView/SubViewport/World/Player/SkillSlot")

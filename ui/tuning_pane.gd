@@ -7,6 +7,7 @@ extends PanelContainer
 
 @export var hit_feedback: HitFeedback
 @export var attack: Attack
+@export var fireball: Fireball
 @export var skill_slot: SkillSlot
 
 var _tunables: Array[Dictionary] = []
@@ -35,11 +36,19 @@ func _ready() -> void:
 		_tunable(&"attack_sweep", attack, 30.0, 360.0, 5.0, &"sweep"),
 		_tunable(&"attack_knockback", attack, 0.0, 3.0, 0.05, &"knockback"),
 		_tunable(&"attack_stagger", attack, 0.0, 1.0, 0.01, &"stagger"),
+		# Fireball's own values.
+		_tunable(&"fireball_use_time", fireball, 0.1, 1.5, 0.05, &"use_time"),
+		_tunable(&"fireball_range", fireball, 2.0, 20.0, 0.5, &"range"),
+		_tunable(&"fireball_speed", fireball, 2.0, 30.0, 0.5, &"speed"),
+		_tunable(&"fireball_knockback", fireball, 0.0, 3.0, 0.05, &"knockback"),
+		_tunable(&"fireball_stagger", fireball, 0.0, 1.0, 0.01, &"stagger"),
 	]
 	_add_heading("Game")
 	for tunable in _tunables:
 		if tunable.key == &"attack_use_time":
 			_add_heading("Attack")
+		elif tunable.key == &"fireball_use_time":
+			_add_heading("Fireball")
 		_add_row(tunable)
 
 

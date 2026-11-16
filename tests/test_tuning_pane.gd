@@ -6,16 +6,19 @@ const PaneScene := preload("res://ui/tuning_pane.tscn")
 var pane: TuningPane
 var feedback: HitFeedback
 var attack: Attack
+var fireball: Fireball
 var slot: SkillSlot
 
 
 func before_each() -> void:
 	feedback = HitFeedback.new()
 	attack = autofree(Attack.new())
+	fireball = autofree(Fireball.new())
 	slot = autofree(SkillSlot.new())
 	pane = PaneScene.instantiate()
 	pane.hit_feedback = feedback
 	pane.attack = attack
+	pane.fireball = fireball
 	pane.skill_slot = slot
 	add_child_autofree(pane)
 
