@@ -78,3 +78,32 @@ func test_back_steps_out_one_level_at_a_time() -> void:
 	assert_not_null(_button("SkillBarItem"), "then the pause menu")
 	menu.back()
 	assert_false(get_tree().paused, "then the game")
+
+
+# A controller moves through the screens by focus alone, so each step must leave focus somewhere.
+
+func _focused() -> Control:
+	return get_viewport().gui_get_focus_owner()
+
+
+func test_controller_focus_follows_each_step() -> void:
+	menu.open()
+	assert_eq(_focused(), _button("SkillBarItem"), "the menu's first item")
+	_button("SkillBarItem").pressed.emit()
+	assert_eq(_focused(), hud.find_child("Slot0", true, false).find_child("Choose", true, false), "the main slot")
+	_choose_slot(1)
+	assert_eq(_focused(), _button("Empty"), "the slot's current tile in the drawer")
+	_button("Fireball").pressed.emit()
+	assert_eq(_focused(), hud.find_child("Slot1", true, false).find_child("Choose", true, false), "back on the slot")
+
+
+func _pad(button: JoyButton) -> InputEventJoypadButton:
+	var event := InputEventJoypadButton.new()
+	event.button_index = button
+	event.pressed = true
+	return event
+
+
+func test_the_controller_chooses_with_a_and_steps_back_with_b() -> void:
+	assert_true(InputMap.event_is_action(_pad(JOY_BUTTON_A), &"ui_accept"), "A chooses")
+	assert_true(InputMap.event_is_action(_pad(JOY_BUTTON_B), &"ui_cancel"), "B steps back")

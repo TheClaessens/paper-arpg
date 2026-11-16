@@ -68,3 +68,4 @@ Showing Use time on the buttons (a cooldown sweep), button prompts, unlocking Sk
 - **The Skill bar is drawn above the dimmed screen.** It's darkened behind the pause menu and at full brightness in the Skill bar view.
 - **The current Skill's tile is tinted amber** instead of outlined. The adventure pack has no outline piece for its hexagons.
 - **The Kenney UI Pack Adventure is added** to `assets/kenney/`.
+- **A chooses and B steps back on a controller.** Godot's built-in `ui_accept` and `ui_cancel` have no controller buttons, so A did nothing in the menus. Found in the device test. Both are now in the project's input map with their keys plus A and B.
