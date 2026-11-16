@@ -24,7 +24,7 @@ Enforced: `project.godot` treats untyped declarations and unsafe (unchecked) pro
 
 Autoloads are reserved for global services: `Settings` (runtime settings) and `Console` (developer console). Game state and gameplay logic belong in scenes and components.
 
-The Console holds only engine debug toggles (`collisions`, `nav`). A game system registers its own commands with `Console.register()` in `_enter_tree`, as `Aggro` does with `aggro` and `Player` with `tp`. The Console drops a command when the node that owns its callback leaves the tree, so registering in `_enter_tree` (not `_ready`) brings it back after a re-entry. A static callback has no node and stays until the game quits.
+Besides `help` and the Settings commands (`settings`, `get`, `set`), the Console holds only engine debug toggles (`collisions`, `nav`). A game system registers its own commands with `Console.register()` in `_enter_tree`, as `Aggro` does with `aggro` and `Player` with `tp`. The Console drops a command when the node that owns its callback leaves the tree, so registering in `_enter_tree` (not `_ready`) brings it back after a re-entry. A static callback has no node and stays until the game quits.
 
 ## Tests and checks
 

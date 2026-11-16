@@ -23,7 +23,8 @@ func test_tp_needs_two_numbers() -> void:
 	assert_eq(player.global_position, Vector3.ZERO)
 
 
-func test_tp_leaves_with_the_player() -> void:
+func test_tp_leaves_and_returns_with_the_player() -> void:
 	remove_child(player)
 	assert_string_starts_with(Console.execute("tp 1 1"), "Unknown command")
 	add_child(player)
+	assert_eq(Console.execute("tp 1 1"), "tp 1 1", "re-entering registers it again")

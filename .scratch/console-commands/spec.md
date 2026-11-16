@@ -6,7 +6,7 @@ A system registers a console command once, and the Console drops it when the sys
 
 ## Requirements
 
-1. **Auto-unregister.** `Console.register(command, callback, help)` keeps its call shape. When `callback.get_object()` is a Node, the Console connects that node's `tree_exiting` with `CONNECT_ONE_SHOT`. On exit it erases the command only if the entry still holds that same callback, so an old owner never removes a newer registration of the same name.
+1. **Auto-unregister.** `Console.register(command, callback, help)` keeps its call shape. When `callback.get_object()` is a Node, the Console connects that node's `tree_exiting` with `CONNECT_ONE_SHOT`, once per node however many commands it owns. On exit it erases every command whose callback belongs to that node, and only those.
 2. **Duplicates.** Registering a name that already holds an equal Callable does nothing. Registering a name with a different callback still asserts.
 3. **Unbound callbacks stay.** A static callback, or one bound to an object that isn't a Node, stays registered until the game quits. A lambda written inside a node method is bound to that node and behaves like a method. The `register()` doc comment states both rules.
 4. **No public `unregister()`.** The erase becomes private. Add a public one back only when a node needs to drop a command while it stays in the tree.
@@ -18,15 +18,18 @@ A system registers a console command once, and the Console drops it when the sys
 7. **Release builds are unchanged.** `register()` still does nothing there and connects nothing.
 8. **Tests** in `tests/test_console.gd`:
    - A node's command disappears when the node leaves the tree. This replaces `test_unregister_removes_command`.
+   - A node leaving drops only its own commands; another node's command keeps working.
+   - A static callback's command outlives the node that registered it.
    - Registering the same callback twice is a no-op: `help` lists the command once and it still runs.
-   - An old owner leaving the tree does not erase a newer registration of the same name.
-   - `test_tp_leaves_with_the_player` in `tests/test_player.gd` stays as the end-to-end check.
+   - Another callback under a taken name asserts (checked with GUT's `assert_engine_error`), and the first registration stays.
+   - `test_tp_leaves_and_returns_with_the_player` in `tests/test_player.gd` is the end-to-end check: `tp` goes with the Player and comes back when it re-enters.
 9. **Docs.** The Autoloads paragraph in `docs/agents/godot-conventions.md` says: register in `_enter_tree`, the Console drops the command when the node leaves the tree, and static callbacks stay registered. `GLOSSARY.md` doesn't change, because a console command isn't a domain term.
 
 ## Decisions
 
-- **The trigger is leaving the tree, not being freed.** `Callable.is_valid()` turns false only once the object is freed. `test_tp_leaves_with_the_player` removes the Player without freeing it and expects `tp` to go.
+- **The trigger is leaving the tree, not being freed.** `Callable.is_valid()` turns false only once the object is freed. `test_tp_leaves_and_returns_with_the_player` removes the Player without freeing it and expects `tp` to go.
 - **No owner parameter.** The Callable already carries its object, so callers learn nothing new.
 - **Same callback is a no-op, a different one asserts.** This lets every Aggro register the same static callback, and two live Players still fail loudly. "Last one wins" was rejected because it hides name clashes.
-- **The different-callback assert is not tested.** A failed assert halts the debug run instead of failing a GUT test.
+- **Drop by owner, not by callback.** Found during the build: Godot treats `bind()`s of one method as the same connection, so one connection per command fails for a node with several commands. One connection per node replaces it. An old owner can no longer erase a newer registration of the same name, since a second owner asserts while the first still holds the name.
+- **The different-callback assert is tested.** A failed assert in a headless run logs an engine error and carries on, and GUT's `assert_engine_error` checks it.
 - **Movement deepening (candidate B) is deferred.** Godot's scene-organization guide keeps children unaware of their parent and siblings, and Enemy's avoidance follows Godot's documented `velocity_computed` pattern. The shared idle/walk/face logic may move into Standee once combat adds poses (step 3).

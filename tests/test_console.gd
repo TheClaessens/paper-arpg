@@ -16,6 +16,10 @@ class CommandOwner:
 	func ping(_args: PackedStringArray) -> String:
 		return "pong"
 
+	# Static, like Aggro's `aggro` command: it belongs to no node.
+	static func version(_args: PackedStringArray) -> String:
+		return "1"
+
 
 func before_each() -> void:
 	settings = autofree(GameSettings.new())
@@ -53,13 +57,30 @@ func test_a_node_leaving_keeps_other_nodes_commands() -> void:
 	assert_eq(console.execute("pong"), "pong")
 
 
+func test_static_command_outlives_the_node_that_registered_it() -> void:
+	var owner_node: CommandOwner = add_child_autofree(CommandOwner.new())
+	console.register(&"version", CommandOwner.version, "Version.")
+	remove_child(owner_node)
+	assert_eq(console.execute("version"), "1")
+
+
 func test_registering_the_same_callback_again_does_nothing() -> void:
-	# Every Aggro registers the same static callback for `aggro`.
 	var owner_node: CommandOwner = add_child_autofree(CommandOwner.new())
 	console.register(&"ping", owner_node.ping, "Ping.")
 	console.register(&"ping", owner_node.ping, "Ping.")
 	assert_eq(console.execute("ping"), "pong")
 	assert_eq(console.execute("help").count("ping  Ping."), 1)
+
+
+func test_another_callback_under_a_taken_name_asserts_and_keeps_the_first() -> void:
+	# Two live Players would both register `tp`.
+	var first: CommandOwner = add_child_autofree(CommandOwner.new())
+	var second: CommandOwner = add_child_autofree(CommandOwner.new())
+	console.register(&"ping", first.ping, "Ping.")
+	console.register(&"ping", second.ping, "Ping.")
+	assert_engine_error("Console command registered twice: ping")
+	remove_child(second)
+	assert_eq(console.execute("ping"), "pong", "the first registration is still there")
 
 
 func test_help_lists_commands_with_descriptions() -> void:

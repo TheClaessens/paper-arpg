@@ -25,6 +25,8 @@ var _game_was_paused := false
 @onready var _button: Button = %Button
 
 
+# The Console's own commands belong to the Console, so they would go if it left the tree.
+# As an autoload it never does, which is why they can be registered once, here.
 func _init() -> void:
 	register(&"help", _cmd_help, "List all commands.")
 	register(&"settings", _cmd_settings, "List every setting with its value.")
@@ -61,6 +63,8 @@ func register(command: StringName, callback: Callable, help: String) -> void:
 		return
 	_commands[command] = {callback = callback, help = help}
 	var owner_node := callback.get_object() as Node
+	# One connection per node, however many commands it owns. is_connected matches the
+	# bound connection below by its method, ignoring the bound argument.
 	if owner_node and not owner_node.tree_exiting.is_connected(_drop_commands_of):
 		owner_node.tree_exiting.connect(_drop_commands_of.bind(owner_node), CONNECT_ONE_SHOT)
 
