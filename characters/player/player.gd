@@ -67,7 +67,7 @@ func _unhandled_input(event: InputEvent) -> void:
 static func pressed_slot(event: InputEvent) -> int:
 	if event.device == InputEvent.DEVICE_ID_EMULATION:
 		return SkillBar.NONE
-	for slot in SkillBar.SLOTS:
+	for slot in SLOT_ACTIONS.size():
 		if event.is_action_pressed(SLOT_ACTIONS[slot]):
 			return slot
 	return SkillBar.NONE
@@ -77,7 +77,7 @@ static func pressed_slot(event: InputEvent) -> int:
 static func released_slot(event: InputEvent) -> int:
 	if event.device == InputEvent.DEVICE_ID_EMULATION:
 		return SkillBar.NONE
-	for slot in SkillBar.SLOTS:
+	for slot in SLOT_ACTIONS.size():
 		if event.is_action_released(SLOT_ACTIONS[slot]):
 			return slot
 	return SkillBar.NONE

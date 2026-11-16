@@ -26,6 +26,8 @@ func before_each() -> void:
 
 
 func after_each() -> void:
+	if Console.is_open(): # a failed test may have left it open
+		Console._toggle_panel()
 	get_tree().paused = false
 
 
@@ -120,3 +122,12 @@ func test_the_corner_button_waits_for_the_console_to_close() -> void:
 	assert_false(get_tree().paused, "the game runs again")
 	_button("Corner").pressed.emit()
 	assert_not_null(_button("SkillBarItem"), "now it pauses")
+
+
+func test_resume_waits_for_the_console_to_close() -> void:
+	menu.open()
+	Console._toggle_panel() # open, over the pause menu
+	_button("Resume").pressed.emit()
+	assert_not_null(_button("Resume"), "still in the pause menu")
+	Console._toggle_panel() # close
+	assert_true(get_tree().paused, "and still paused")

@@ -61,16 +61,16 @@ func cooldown_fraction() -> float:
 
 
 ## Where auto-aim points, as an offset on the ground from the Character: the nearest of
-## `enemy_offsets` within `skill_range` and AUTO_AIM_ANGLE of `facing`, or else along `facing`
-## as far as `skill_range`.
+## `enemy_offsets` within AUTO_AIM_ANGLE of `facing`, or else along `facing`. Never farther
+## than `skill_range`. Which Enemies are within Range is the caller's to ask (see aim_toward()).
 static func auto_aim(facing: Vector3, skill_range: float, enemy_offsets: Array[Vector3]) -> Vector3:
 	var best := facing * skill_range
 	var best_distance := INF
 	for offset in enemy_offsets:
 		var flat := Vector3(offset.x, 0.0, offset.z)
 		var distance := flat.length()
-		if distance <= skill_range and distance < best_distance and rad_to_deg(flat.angle_to(facing)) <= AUTO_AIM_ANGLE:
-			best = flat
+		if distance < best_distance and rad_to_deg(flat.angle_to(facing)) <= AUTO_AIM_ANGLE:
+			best = flat.limit_length(skill_range)
 			best_distance = distance
 	return best
 
@@ -120,8 +120,7 @@ static func enemies_around(world: World3D, centre: Vector3, reach: float) -> Arr
 func aim_toward(facing: Vector3) -> Vector3:
 	var offsets: Array[Vector3] = []
 	for enemy in _enemies_within(range):
-		var offset := enemy.global_position - global_position
-		offsets.append(Vector3(offset.x, 0.0, offset.z).limit_length(range))
+		offsets.append(enemy.global_position - global_position)
 	return auto_aim(facing, range, offsets)
 
 

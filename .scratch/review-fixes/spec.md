@@ -13,7 +13,7 @@ Fixes from the architecture review of 2026-11-16. No new behaviour beyond what e
    - Auto-aim at an Enemy whose body is in Range but whose centre is past it aims as far as the Range.
    - Nova no longer reaches a body's width past its disc.
 3. **Each Skill slot's touch has its own landing point**, so a second finger on another slot doesn't move the first one's drag origin.
-4. **The pause menu doesn't react while the Console is open**, so closing the Console can't unpause the game under an open menu, and the menu can't unpause it under an open Console.
+4. **The pause menu neither pauses nor unpauses while the Console is open**, so closing the Console can't unpause the game under an open menu, and the menu can't unpause it under an open Console.
 5. **Small ones:**
    - `HitFeedback.shared()` keeps the resource it loaded.
    - The Skill slot input actions are named once, in a constant.

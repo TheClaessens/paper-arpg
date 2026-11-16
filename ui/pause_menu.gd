@@ -43,14 +43,19 @@ func _ready() -> void:
 	_show(View.PLAY)
 
 
-## Pauses the game and shows the pause menu.
+## Pauses the game and shows the pause menu. Not while the Console is open: it has paused the
+## game and restores the pause it found, so open() and close() both wait for it.
 func open() -> void:
+	if Console.is_open():
+		return
 	get_tree().paused = true
 	_show(View.MENU)
 
 
 ## Lets the game run again.
 func close() -> void:
+	if Console.is_open():
+		return
 	get_tree().paused = false
 	_show(View.PLAY)
 
@@ -67,8 +72,6 @@ func back() -> void:
 
 # Runs while paused (process_mode ALWAYS).
 func _unhandled_input(event: InputEvent) -> void:
-	if Console.is_open(): # it owns the pause while open
-		return
 	if _view == View.PLAY:
 		if event.is_action_pressed(&"pause"):
 			get_viewport().set_input_as_handled()
@@ -79,8 +82,6 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _on_corner_pressed() -> void:
-	if Console.is_open():
-		return
 	if _view == View.PLAY:
 		open()
 	else:
