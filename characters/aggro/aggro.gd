@@ -9,7 +9,6 @@ signal aggroed(target: Node3D)
 
 ## Shows every Aggro's ring on the ground. Toggled by the `aggro` console command.
 static var rings_visible := false
-static var _command_registered := false
 
 ## The Aggro radius, in world units.
 @export var radius := 6.0
@@ -18,17 +17,18 @@ static var _command_registered := false
 @onready var _ring: MeshInstance3D = $Ring
 
 
+# Every Aggro registers the same static callback: the first registers the command and the rest
+# do nothing. A static callback has no node to leave with, so the command outlives every Aggro.
+func _enter_tree() -> void:
+	Console.register(&"aggro", Aggro._toggle_rings, "Toggle drawing every Enemy's Aggro radius.")
+
+
 func _ready() -> void:
 	_sphere.radius = radius
 	var ring := _ring.mesh as TorusMesh
 	ring.outer_radius = radius
 	ring.inner_radius = radius - 0.08
 	body_entered.connect(_on_body_entered)
-	# One command serves every Aggro, so the first to arrive registers it. It stays registered
-	# after that Aggro is gone: the callback is static and needs no instance.
-	if not _command_registered:
-		_command_registered = true
-		Console.register(&"aggro", Aggro._toggle_rings, "Toggle drawing every Enemy's Aggro radius.")
 
 
 func _process(_delta: float) -> void:
