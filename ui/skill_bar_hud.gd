@@ -24,8 +24,10 @@ enum CancelStyle { SLOT, BUTTON }
 @export_range(60.0, 130.0, 5.0, "suffix:°") var fan_spread := 110.0
 ## Gap between the main slot and the safe area's right and bottom edges.
 @export var edge_margin := Vector2(26.0, 22.0)
-## How far a thumb drags off a slot before it aims (closer, the lift is a tap).
-@export var drag_deadzone := 22.0
+## How far a thumb may wander and still be a tap; past it, the drag aims. Kept just above a
+## thumb's wobble: the spot follows the drag from the player outward, so a larger one would
+## leave the ground right around the player out of reach.
+@export var drag_deadzone := 8.0
 ## How far a thumb drags to aim a spot Skill its whole Range.
 @export var drag_full_range := 177.0
 ## How a drag-aimed Skill is cancelled. Temporary: switched with the `aim` console command.

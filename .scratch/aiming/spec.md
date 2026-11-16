@@ -54,7 +54,8 @@ Rebinding, targeting a specific Enemy by tapping it, aim assist on the mouse, da
 - **A use is aimed at an offset on the ground** (`Skill.use(aim)`): its direction for every Skill, plus how far for a spot Skill. The Player picks it: exactly at the cursor, along a pushed right stick, otherwise auto-aimed. A drag carries its own aim through `SkillBar.press(slot, aim)`.
 - **The slot buttons follow their own touches**, like the Touch stick, instead of a `TouchScreenButton`, so a drag can be followed. A non-aimed Skill is used the moment the finger lands. An aimed one waits for the lift.
 - **A drag that has aimed can't turn back into a tap.** With "cancel slot", lifting on the slot after aiming cancels it, even inside the deadzone. Found in the sandbox check.
-- **Sizes in viewport units:** deadzone 22, full Range at 177 drag units, cancel button 88 in the top right of the safe area.
+- **Sizes in viewport units:** deadzone 22 (8 after the device test, below), full Range at 177 drag units, cancel button 88 in the top right of the safe area.
 - **The Range ring is the Skill's whole Range**, so Fireball's (10 units) mostly falls off screen. Mark's shorter Range shows it.
 - **The slot only cancels after the thumb has left it.** A short aim that stays on the slot still counts, so near spots can be aimed. Coming back onto the slot after leaving it cancels. Found in the sandbox check with Mark.
 - **Nova and Mark values:** Nova has Range 3, knockback 0.8, Stagger 0.15, cooldown 6 s, and reuses the swing shader as a full disc. Mark has Range 6, reach 1.5 around the spot, a 3 s amber tint, and Use time 0.3 s.
+- **Deadzone 8 instead of 22, from the device test (2026-11-16).** Mark couldn't be dragged onto zombies hugging the player: the spot only appeared 0.75 units out, past where they stand. Now the deadzone only tells a tap from a drag.
