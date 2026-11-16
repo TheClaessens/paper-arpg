@@ -1,0 +1,25 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://ui/touch_stick.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_mobile-controls/Sprites/Style C/Default/joystick_circle_pad_a.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/kenney/kenney_mobile-controls/Sprites/Style C/Default/joystick_circle_nub_a.png" id="3"]
+
+[node name="TouchStick" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1")
+
+[node name="Pad" type="Sprite2D" parent="."]
+visible = false
+modulate = Color(1, 1, 1, 0.6)
+texture = ExtResource("2")
+
+[node name="Nub" type="Sprite2D" parent="."]
+visible = false
+modulate = Color(1, 1, 1, 0.8)
+texture = ExtResource("3")

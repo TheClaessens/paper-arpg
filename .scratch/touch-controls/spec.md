@@ -39,6 +39,15 @@ Movement on touch: the left thumb drags a **Touch stick** (see GLOSSARY.md). Thi
 - **Sandbox, not an autoload.** We're building systems, not the game. Only one scene needs the stick.
 - **One-click deploy over an exported Xcode project.** One tool per iteration, plus the editor debugger.
 
+## Decisions made during the build
+
+- **Free developer profile: 3 sideloaded apps.** The first install failed because the iPhone already held three. One was removed to make room.
+- **ETC2/ASTC texture import is on.** iOS export with the Mobile renderer refuses to run without it.
+- **Landscape only** (`window/handheld/orientation` sensor landscape), and iPhone + iPad as targets.
+- **Style C from Kenney's Mobile Controls** (white outlines): `joystick_circle_pad_a` and `joystick_circle_nub_a`, scaled so the ring sits on `radius`.
+- **The GUI already claims touches on the console button.** A Control with the default mouse filter consumes a screen touch over it, so the button needs no extra code. `test_touch_stick.gd` guards it. The full-screen `PixelatedView` doesn't block the stick.
+- **The stick sets raw action strengths.** `Input.get_vector()` applies the 0.2 deadzone and rescales past it, the same as for the controller.
+
 ## Open
 
 - Tune `radius` on the device.
