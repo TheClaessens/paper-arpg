@@ -83,7 +83,7 @@ func _on_ready_again(skill: Skill) -> void:
 func _on_touch_started(at: Vector2, slot: int) -> void:
 	_landed = at
 	var skill := player.skill_bar.skill_in(slot)
-	if skill == null or skill.cooldown_left > 0.0:
+	if skill == null or not skill.is_ready():
 		return
 	if skill.aim == Skill.Aim.AIMED:
 		_aiming_slot = slot # used when the thumb lifts

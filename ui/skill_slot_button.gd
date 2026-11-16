@@ -111,4 +111,4 @@ func _input(event: InputEvent) -> void:
 
 
 func _process(_delta: float) -> void:
-	_sweep.left = _skill.cooldown_left / _skill.cooldown if _skill and _skill.cooldown > 0.0 else 0.0
+	_sweep.left = _skill.cooldown_fraction() if _skill else 0.0

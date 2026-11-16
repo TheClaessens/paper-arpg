@@ -3,16 +3,16 @@ extends Control
 ## The dark pie over a Skill slot's button while its Skill cools down. It starts full and
 ## empties clockwise, from 12 o'clock, as the Skill comes back.
 
+## Points along the pie's curve; enough to look round at slot sizes.
+const ARC_POINTS := 48
+const SHADE := Color(0.05, 0.04, 0.03, 0.65)
+
 ## How much of the cooldown is left, 1 (all) to 0 (ready).
 var left := 0.0:
 	set(value):
 		if not is_equal_approx(value, left):
 			left = value
 			queue_redraw()
-
-## Points along the pie's curve; enough to look round at slot sizes.
-const ARC_POINTS := 48
-const SHADE := Color(0.05, 0.04, 0.03, 0.65)
 
 
 func _draw() -> void:

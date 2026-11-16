@@ -64,7 +64,7 @@ func set_skill(slot: int, skill: Skill) -> void:
 ## cooling down, does nothing.
 func press(slot: int, aim := NO_AIM) -> void:
 	var skill := _slots[slot]
-	if skill and skill.cooldown_left <= 0.0:
+	if skill and skill.is_ready():
 		_pressed = slot
 		_pressed_aim = aim
 
@@ -103,9 +103,9 @@ func advance(delta: float) -> void:
 		var skill := _slots[_buffered]
 		var slot := _buffered
 		_buffered = NONE
-		if skill and skill.cooldown_left <= 0.0: # emptied, or used from another slot, since the press
+		if skill and skill.is_ready(): # emptied, or used from another slot, since the press
 			_busy = skill.use_time
-			skill.cooldown_left = skill.cooldown
+			skill.start_cooldown()
 			used.emit(skill, _buffered_aim)
 			slot_used.emit(slot)
 
@@ -114,11 +114,10 @@ func advance(delta: float) -> void:
 func _cool_down(delta: float) -> void:
 	var seen: Array[Skill] = []
 	for skill in _slots:
-		if skill == null or skill in seen or skill.cooldown_left <= 0.0:
+		if skill == null or skill in seen:
 			continue
 		seen.append(skill)
-		skill.cooldown_left = maxf(0.0, skill.cooldown_left - delta)
-		if skill.cooldown_left == 0.0:
+		if skill.cool_down(delta):
 			ready_again.emit(skill)
 
 
@@ -126,7 +125,7 @@ func _cool_down(delta: float) -> void:
 func _repeat_held() -> void:
 	for slot: int in _held:
 		var skill := _slots[slot]
-		if skill and skill.repeats_while_held and skill.cooldown_left <= 0.0:
+		if skill and skill.repeats_while_held and skill.is_ready():
 			_buffered = slot
 			_buffered_aim = _held[slot]
 			return

@@ -39,6 +39,29 @@ const AUTO_AIM_ANGLE := 60.0
 var cooldown_left := 0.0
 
 
+## Whether its cooldown has run out (or it has none).
+func is_ready() -> bool:
+	return cooldown_left <= 0.0
+
+
+## Starts the cooldown, for a use.
+func start_cooldown() -> void:
+	cooldown_left = cooldown
+
+
+## Runs the cooldown on by `delta` seconds. True the moment it runs out.
+func cool_down(delta: float) -> bool:
+	if is_ready():
+		return false
+	cooldown_left = maxf(0.0, cooldown_left - delta)
+	return is_ready()
+
+
+## How much of the cooldown is left: 1 just used, 0 ready.
+func cooldown_fraction() -> float:
+	return cooldown_left / cooldown if cooldown > 0.0 else 0.0
+
+
 ## Where auto-aim points, as an offset on the ground from the Character: the nearest of
 ## `enemy_offsets` within `skill_range` and AUTO_AIM_ANGLE of `facing`, or else along `facing`
 ## as far as `skill_range`.
@@ -52,6 +75,16 @@ static func auto_aim(facing: Vector3, skill_range: float, enemy_offsets: Array[V
 			best = flat
 			best_distance = distance
 	return best
+
+
+## The Enemy nearest `spot` on the ground within `reach` of it, or null (see nearest_to()).
+static func enemy_nearest(world: World3D, spot: Vector3, reach: float) -> Enemy:
+	var enemies := enemies_around(world, spot, reach, 0.0)
+	var positions: Array[Vector3] = []
+	for enemy in enemies:
+		positions.append(enemy.global_position)
+	var i := nearest_to(spot, positions, reach)
+	return enemies[i] if i >= 0 else null
 
 
 ## Which of `enemies` (positions) is nearest `spot` on the ground and within `reach` of it, or -1.

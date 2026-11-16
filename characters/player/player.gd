@@ -207,15 +207,7 @@ func _facing_toward_cursor() -> Vector3:
 ## Enemy a precision Skill such as Mark would pick.
 func _highlight_hovered() -> void:
 	var point: Variant = _cursor_on_ground() if _aim_with_mouse else null
-	var hovered: Enemy = null
-	if point != null:
-		var spot := point as Vector3
-		var enemies := Skill.enemies_around(get_world_3d(), spot, HOVER_REACH, 0.0)
-		var positions: Array[Vector3] = []
-		for enemy in enemies:
-			positions.append(enemy.global_position)
-		var i := Skill.nearest_to(spot, positions, HOVER_REACH)
-		hovered = enemies[i] if i >= 0 else null
+	var hovered := Skill.enemy_nearest(get_world_3d(), point as Vector3, HOVER_REACH) if point != null else null
 	_hover_ring.visible = hovered != null
 	if hovered:
 		_hover_ring.global_position = hovered.global_position + Vector3.UP * 0.05

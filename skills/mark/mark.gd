@@ -18,9 +18,4 @@ func use(aim: Vector3) -> void:
 ## The Enemy a use aimed at `aim` would mark, or null.
 func target_for(aim: Vector3) -> Node3D:
 	var spot := global_position + Vector3(aim.x, 0.0, aim.z).limit_length(range)
-	var enemies := _enemies_within(range + REACH)
-	var positions: Array[Vector3] = []
-	for enemy in enemies:
-		positions.append(enemy.global_position)
-	var i := nearest_to(spot, positions, REACH)
-	return enemies[i] if i >= 0 else null
+	return enemy_nearest(get_world_3d(), spot, REACH)

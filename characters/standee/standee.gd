@@ -24,7 +24,7 @@ var _frame := 0
 var _frame_elapsed := 0.0
 var _wobble_phase := 0.0
 var _flash_left := 0.0
-var _tint := Color(0.0, 0.0, 0.0, 0.0)
+var _tint := Color.TRANSPARENT
 var _tint_left := 0.0
 var _squash_amount := 0.0
 var _squash_elapsed := SQUASH_TIME # done
@@ -108,7 +108,7 @@ func _show_hit(delta: float) -> void:
 	_flash_left = maxf(0.0, _flash_left - delta)
 	_material.set_shader_parameter("flash", _flash_left > 0.0)
 	_tint_left = maxf(0.0, _tint_left - delta)
-	_material.set_shader_parameter("tint", _tint if _tint_left > 0.0 else Color(0.0, 0.0, 0.0, 0.0))
+	_material.set_shader_parameter("tint", _tint if _tint_left > 0.0 else Color.TRANSPARENT)
 	_squash_elapsed = minf(SQUASH_TIME, _squash_elapsed + delta)
 	var s := _squash_amount * sin(PI * _squash_elapsed / SQUASH_TIME)
 	_card.scale = Vector3(1.0 + s, 1.0 - s, 1.0)
