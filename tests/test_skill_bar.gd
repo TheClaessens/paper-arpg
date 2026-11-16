@@ -84,3 +84,51 @@ func test_changing_a_slot_says_so() -> void:
 	bar.set_skill(0, null)
 	assert_eq(changes, [2, 0] as Array[int])
 	assert_null(bar.skill_in(0), "emptied")
+
+
+# Cooldowns: a Skill's own clock, started by a use. While it runs, the Skill can't be used from
+# any slot it sits in; a press is ignored, not kept.
+
+func test_a_cooling_skill_ignores_presses_in_every_slot() -> void:
+	fire.cooldown = 4.0
+	bar.set_skill(3, fire)
+	bar.press(1)
+	bar.advance(0.016)
+	bar.advance(1.0) # past its Use time, still cooling
+	bar.press(3)
+	bar.advance(0.016)
+	bar.advance(3.1) # cooled down now, but the press was not kept
+	assert_eq(used, [fire] as Array[Skill])
+	bar.press(3)
+	bar.advance(0.016)
+	assert_eq(used, [fire, fire] as Array[Skill])
+
+
+func test_another_skill_works_while_one_cools() -> void:
+	fire.cooldown = 4.0
+	bar.press(1)
+	bar.advance(0.016)
+	bar.advance(0.7)
+	bar.press(0)
+	bar.advance(0.016)
+	assert_eq(used, [fire, sword] as Array[Skill])
+
+
+func test_it_says_when_a_skill_is_ready_again() -> void:
+	fire.cooldown = 1.0
+	var ready: Array[Skill] = []
+	bar.ready_again.connect(func(skill: Skill) -> void: ready.append(skill))
+	bar.press(1)
+	bar.advance(0.016)
+	bar.advance(0.5)
+	assert_eq(ready, [] as Array[Skill])
+	bar.advance(0.6)
+	assert_eq(ready, [fire] as Array[Skill])
+
+
+func test_it_says_which_slot_was_used() -> void:
+	var slots: Array[int] = []
+	bar.slot_used.connect(func(slot: int) -> void: slots.append(slot))
+	bar.press(1)
+	bar.advance(0.016)
+	assert_eq(slots, [1] as Array[int])

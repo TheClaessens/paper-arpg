@@ -19,6 +19,9 @@ const AUTO_AIM_ANGLE := 60.0
 @export var aim := Aim.AUTO
 ## The Skill's Use time: how long one use takes. The Skill bar takes no new use until it has passed.
 @export var use_time := 0.4
+## The Skill's cooldown: how long after a use starts before it can be used again, from any slot.
+## 0 for none. Its Use time still blocks the whole Skill bar meanwhile.
+@export var cooldown := 0.0
 ## The Skill's Range: how far it reaches from the Character's centre, in world units.
 @export var range := 1.0
 ## How far a hit pushes an Enemy, in world units.
@@ -27,6 +30,9 @@ const AUTO_AIM_ANGLE := 60.0
 @export var stagger := 0.0
 ## How big an Enemy's body is around its centre; a Skill reaching any part of it reaches it.
 @export var body_radius := 0.25
+
+## Seconds until the Skill can be used again. The Skill bar runs this clock.
+var cooldown_left := 0.0
 
 
 ## Where auto-aim points, as an offset on the ground from the Character: the nearest of

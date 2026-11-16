@@ -3,7 +3,7 @@ extends Control
 ## The Skill bar on screen (see GLOSSARY.md): the main slot in the bottom right and the four
 ## small slots fanned around it, inside the phone's safe area. It follows the player's Skill bar.
 ## While the Skill bar is being changed (`editing`), each slot can be chosen; `slot_chosen` says
-## which. Sizes are in viewport units: on an iPhone 17 Pro, 1 pt is about 1.6 of them.
+## which. Each slot shows its Skill's cooldown, presses in when used and flashes when ready. Sizes are in viewport units: on an iPhone 17 Pro, 1 pt is about 1.6 of them.
 
 signal slot_chosen(slot: int)
 
@@ -28,6 +28,8 @@ func _ready() -> void:
 		button.show_skill(player.skill_bar.skill_in(slot))
 		_buttons.append(button)
 	player.skill_bar.changed.connect(_on_slot_changed)
+	player.skill_bar.slot_used.connect(func(slot: int) -> void: _buttons[slot].press_in())
+	player.skill_bar.ready_again.connect(_on_ready_again)
 	get_viewport().size_changed.connect(_layout)
 	_layout()
 
@@ -50,6 +52,13 @@ func focus_slot(slot: int) -> void:
 
 func _on_slot_changed(slot: int, skill: Skill) -> void:
 	_buttons[slot].show_skill(skill)
+
+
+## Flashes every slot holding `skill`.
+func _on_ready_again(skill: Skill) -> void:
+	for slot in _buttons.size():
+		if player.skill_bar.skill_in(slot) == skill:
+			_buttons[slot].flash()
 
 
 func _layout() -> void:

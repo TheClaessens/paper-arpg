@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://ui/skill_slot_button.gd" id="1_script"]
+[ext_resource type="Script" path="res://ui/cooldown_sweep.gd" id="4_sweep"]
 [ext_resource type="Texture2D" path="res://assets/kenney/kenney_ui-pack-adventure/PNG/Double/round_brown_dark.png" id="2_round"]
 [ext_resource type="Texture2D" path="res://assets/kenney/kenney_mobile-controls/Sprites/Highlights A/Large (2×)/button_circle_highlight.png" id="3_ring"]
 
@@ -48,6 +49,16 @@ grow_vertical = 2
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
+
+[node name="Sweep" type="Control" parent="Face"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("4_sweep")
 
 [node name="Ring" type="TextureRect" parent="."]
 visible = false

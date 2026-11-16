@@ -5,9 +5,14 @@ extends Node
 ## several. The slots share one clock: a use makes the player busy for that Skill's Use time, and
 ## no slot is used until it has passed. A press in its final `buffer` seconds, from any slot, is
 ## kept and used the moment it ends (the latest such press wins); an earlier one is dropped.
-## The Character connects `used` and calls the Skill with its own Facing.
+## A Skill on cooldown can't be used from any slot; a press on it is ignored, not kept.
+## The Character connects `used` and aims the Skill.
 
 signal used(skill: Skill)
+## `slot` was used (the HUD presses its button in).
+signal slot_used(slot: int)
+## `skill`'s cooldown has run out.
+signal ready_again(skill: Skill)
 ## The Skill in `slot` changed; `skill` is null when the slot was emptied.
 signal changed(slot: int, skill: Skill)
 
@@ -45,9 +50,11 @@ func set_skill(slot: int, skill: Skill) -> void:
 	changed.emit(slot, skill)
 
 
-## Asks to use `slot`. Takes effect on the next physics frame; an empty slot does nothing.
+## Asks to use `slot`. Takes effect on the next physics frame. An empty slot, or one whose Skill
+## is cooling down, does nothing.
 func press(slot: int) -> void:
-	if _slots[slot]:
+	var skill := _slots[slot]
+	if skill and skill.cooldown_left <= 0.0:
 		_pressed = slot
 
 
@@ -58,13 +65,29 @@ func _physics_process(delta: float) -> void:
 ## Moves the clock on by `delta` seconds and uses a Skill if a press is due. Presses are
 ## handled here, in the physics step, so a Skill can query the physics world.
 func advance(delta: float) -> void:
+	_cool_down(delta)
 	_busy = maxf(0.0, _busy - delta)
 	if _pressed != NONE and _busy <= buffer:
 		_buffered = _pressed
 	_pressed = NONE
 	if _buffered != NONE and _busy == 0.0:
 		var skill := _slots[_buffered]
+		var slot := _buffered
 		_buffered = NONE
-		if skill: # it may have been emptied since the press
+		if skill and skill.cooldown_left <= 0.0: # emptied, or used from another slot, since the press
 			_busy = skill.use_time
+			skill.cooldown_left = skill.cooldown
 			used.emit(skill)
+			slot_used.emit(slot)
+
+
+## Runs the cooldown of each Skill on the bar once, however many slots it sits in.
+func _cool_down(delta: float) -> void:
+	var seen: Array[Skill] = []
+	for skill in _slots:
+		if skill == null or skill in seen or skill.cooldown_left <= 0.0:
+			continue
+		seen.append(skill)
+		skill.cooldown_left = maxf(0.0, skill.cooldown_left - delta)
+		if skill.cooldown_left == 0.0:
+			ready_again.emit(skill)
