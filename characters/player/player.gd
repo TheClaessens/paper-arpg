@@ -1,18 +1,14 @@
 class_name Player
 extends CharacterBody3D
-## The player's Character (see GLOSSARY.md). Walks where the left stick or the keys point,
-## relative to the camera: pushing up walks up the screen. The `use_skill_slot_1` to `_5`
-## actions use the Skills on its Skill bar: at the mouse cursor, along the right stick while it
-## is pushed, or else auto-aimed (see Skill.Aim).
+## The player's Character (see GLOSSARY.md). Its Controls tell it where to walk, relative to the
+## camera (pushing up walks up the screen), and which Skill slots of its Skill bar the player
+## uses. It aims each use at the mouse cursor, along the right stick while it is pushed, or else
+## auto-aimed (see Skill.Aim).
 
 ## How far the card stretches when the player uses a Skill.
 const USE_STRETCH := -0.15
 ## How near the mouse cursor's spot an Enemy must be to be highlighted.
 const HOVER_REACH := 1.0
-## The input action that uses each Skill slot, the main slot first.
-const SLOT_ACTIONS: Array[StringName] = [
-	&"use_skill_slot_1", &"use_skill_slot_2", &"use_skill_slot_3", &"use_skill_slot_4", &"use_skill_slot_5",
-]
 ## How long the player keeps facing what a Skill was aimed at before the walk takes Facing back.
 const FACE_AIM_TIME := 0.35
 
@@ -34,11 +30,9 @@ var skills: Array[Skill]:
 				found.append(child as Skill)
 		return found
 
-var _cursor := Vector2.ZERO # mouse position in this viewport
-var _aim_with_mouse := false
-var _aim_with_stick := false # the right stick is pushed
 var _face_aim_left := 0.0 # time left facing the last use's aim
 
+@onready var _controls: Controls = $Controls
 @onready var _movement: Movement = $Movement
 @onready var _standee: Standee = $Standee
 @onready var _facing_arrow: Node3D = $FacingArrow
@@ -46,41 +40,39 @@ var _face_aim_left := 0.0 # time left facing the last use's aim
 @onready var _hover_ring: Node3D = $HoverRing
 
 
+# Registered while in the tree, so a reloaded scene's new Player takes the command over.
+func _enter_tree() -> void:
+	Console.register(&"tp", _cmd_tp, "tp <x> <z>: move the player to a spot on the ground.")
+	Console.register(&"bar", _cmd_bar, "bar <1-5> <skill|empty>: put a Skill in a Skill slot (1 is the main slot), or empty it.")
+	Console.register(&"use", _cmd_use, "use <1-5> [<x> <z>]: use a Skill slot, auto-aimed or aimed at an offset on the ground.")
+
+
 func _ready() -> void:
-	facing = _ground_axes()[0] # screen right
+	facing = _controls.ground_axes()[0] # screen right
 	skill_bar.used.connect(_on_skill_used)
+	_controls.slot_pressed.connect(skill_bar.press)
+	_controls.slot_pressed.connect(skill_bar.set_held.bind(true))
+	_controls.slot_released.connect(skill_bar.set_held.bind(false))
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	var slot := pressed_slot(event)
-	if slot != SkillBar.NONE:
-		skill_bar.press(slot)
-		skill_bar.set_held(slot, true)
-	slot = released_slot(event)
-	if slot != SkillBar.NONE:
-		skill_bar.set_held(slot, false)
-
-
-## Which Skill slot `event` presses: 0 for the main slot, 1 to 4 for the small ones, or
-## SkillBar.NONE. Godot also turns every touch into a left click, which would use the main slot
-## wherever a thumb lands, so those emulated clicks don't count.
-static func pressed_slot(event: InputEvent) -> int:
-	if event.device == InputEvent.DEVICE_ID_EMULATION:
-		return SkillBar.NONE
-	for slot in SLOT_ACTIONS.size():
-		if event.is_action_pressed(SLOT_ACTIONS[slot]):
-			return slot
-	return SkillBar.NONE
-
-
-## Which Skill slot letting go of `event` releases, or SkillBar.NONE (see pressed_slot()).
-static func released_slot(event: InputEvent) -> int:
-	if event.device == InputEvent.DEVICE_ID_EMULATION:
-		return SkillBar.NONE
-	for slot in SLOT_ACTIONS.size():
-		if event.is_action_released(SLOT_ACTIONS[slot]):
-			return slot
-	return SkillBar.NONE
+func _physics_process(delta: float) -> void:
+	var direction := _controls.move_direction()
+	velocity = _movement.next_velocity(velocity, direction, delta)
+	move_and_slide()
+	var aim := _controls.aim_direction()
+	_face_aim_left = maxf(0.0, _face_aim_left - delta)
+	if not aim.is_zero_approx():
+		facing = aim
+	elif _face_aim_left > 0.0:
+		pass # still facing the last use's aim
+	elif _controls.leads_with_mouse():
+		facing = _facing_toward_cursor()
+	elif not direction.is_zero_approx():
+		facing = direction
+	_highlight_hovered()
+	_facing_arrow.basis = Basis.looking_at(facing)
+	_standee.face(facing)
+	_standee.play(&"idle" if velocity.is_zero_approx() else &"walk")
 
 
 func _on_skill_used(skill: Skill, given_aim: Vector3) -> void:
@@ -94,7 +86,7 @@ func _on_skill_used(skill: Skill, given_aim: Vector3) -> void:
 
 ## The aim on the ground for a thumb `drag` on screen (see ground_aim()).
 func aim_from_drag(skill: Skill, drag: Vector2, full_drag: float) -> Vector3:
-	var axes := _ground_axes()
+	var axes := _controls.ground_axes()
 	return ground_aim(drag, axes[0], axes[1], skill.range, full_drag, skill.aims_at_spot)
 
 
@@ -122,23 +114,16 @@ func hide_aim() -> void:
 func _aim_for(skill: Skill) -> Vector3:
 	if skill.aim == Skill.Aim.AROUND:
 		return facing * skill.range
-	if _aim_with_mouse:
-		var point: Variant = _cursor_on_ground()
+	if _controls.leads_with_mouse():
+		var point: Variant = _controls.cursor_on_ground(global_position.y)
 		if point != null:
 			var offset := (point as Vector3) - global_position
 			offset.y = 0.0
 			if offset.length() > 0.05:
 				return offset
-	if _aim_with_stick:
+	if not _controls.aim_direction().is_zero_approx():
 		return facing * skill.range
 	return skill.aim_toward(facing)
-
-
-# Registered while in the tree, so a reloaded scene's new Player takes the command over.
-func _enter_tree() -> void:
-	Console.register(&"tp", _cmd_tp, "tp <x> <z>: move the player to a spot on the ground.")
-	Console.register(&"bar", _cmd_bar, "bar <1-5> <skill|empty>: put a Skill in a Skill slot (1 is the main slot), or empty it.")
-	Console.register(&"use", _cmd_use, "use <1-5> [<x> <z>]: use a Skill slot, auto-aimed or aimed at an offset on the ground.")
 
 
 func _cmd_tp(args: PackedStringArray) -> String:
@@ -182,84 +167,17 @@ static func facing_toward(from: Vector3, to: Vector3, current: Vector3) -> Vecto
 	return current if flat.length() < 0.05 else flat.normalized()
 
 
-# _input, not _unhandled_input: the full-screen PixelatedView would claim mouse motion as GUI
-# input first. The mouse leads Facing once it moves; the keys only walk. A gamepad stick or a
-# touch takes Facing back from the mouse. A touch also moves the emulated mouse, which mustn't
-# count as the mouse.
-func _input(event: InputEvent) -> void:
-	var motion := event as InputEventMouseMotion
-	if motion and motion.device != InputEvent.DEVICE_ID_EMULATION:
-		_cursor = motion.position
-		_aim_with_mouse = true
-	elif event is InputEventScreenTouch:
-		_aim_with_mouse = false
-	elif event is InputEventJoypadMotion:
-		var stick := event as InputEventJoypadMotion
-		if stick.axis in [JOY_AXIS_LEFT_X, JOY_AXIS_LEFT_Y, JOY_AXIS_RIGHT_X, JOY_AXIS_RIGHT_Y] and absf(stick.axis_value) > 0.2:
-			_aim_with_mouse = false
-
-
-func _physics_process(delta: float) -> void:
-	var direction := _stick_direction(&"move_left", &"move_right", &"move_up", &"move_down")
-	velocity = _movement.next_velocity(velocity, direction, delta)
-	move_and_slide()
-	var aim := _stick_direction(&"aim_left", &"aim_right", &"aim_up", &"aim_down")
-	_aim_with_stick = not aim.is_zero_approx()
-	_face_aim_left = maxf(0.0, _face_aim_left - delta)
-	if _aim_with_stick:
-		facing = aim
-	elif _face_aim_left > 0.0:
-		pass # still facing the last use's aim
-	elif _aim_with_mouse:
-		facing = _facing_toward_cursor()
-	elif not direction.is_zero_approx():
-		facing = direction
-	_highlight_hovered()
-	_facing_arrow.basis = Basis.looking_at(facing)
-	_standee.face(facing)
-	_standee.play(&"idle" if velocity.is_zero_approx() else &"walk")
-
-
 ## Facing toward the ground under the mouse cursor, at the player's feet height.
 func _facing_toward_cursor() -> Vector3:
-	var point: Variant = _cursor_on_ground()
+	var point: Variant = _controls.cursor_on_ground(global_position.y)
 	return facing if point == null else facing_toward(global_position, point as Vector3, facing)
 
 
 ## Rings the Enemy nearest the spot under the mouse cursor, while the mouse aims: on PC, the
 ## Enemy a precision Skill such as Mark would pick.
 func _highlight_hovered() -> void:
-	var point: Variant = _cursor_on_ground() if _aim_with_mouse else null
+	var point: Variant = _controls.cursor_on_ground(global_position.y) if _controls.leads_with_mouse() else null
 	var hovered := Skill.enemy_nearest(get_world_3d(), point as Vector3, HOVER_REACH) if point != null else null
 	_hover_ring.visible = hovered != null
 	if hovered:
 		_hover_ring.global_position = hovered.global_position + Vector3.UP * 0.05
-
-
-## The spot on the ground under the mouse cursor, at the player's feet height, or null.
-func _cursor_on_ground() -> Variant:
-	var camera := get_viewport().get_camera_3d()
-	if camera == null:
-		return null
-	var ground := Plane(Vector3.UP, global_position.y)
-	return ground.intersects_ray(camera.project_ray_origin(_cursor), camera.project_ray_normal(_cursor))
-
-
-## A stick's pushed direction as a unit vector on the ground, or zero inside the deadzone.
-## Direction only: any push past the deadzone counts in full, so the vector is normalised.
-func _stick_direction(to_left: StringName, to_right: StringName, to_up: StringName, to_down: StringName) -> Vector3:
-	# Deadzone comes from the actions in the Input Map (0.2).
-	var input := Input.get_vector(to_left, to_right, to_up, to_down)
-	var axes := _ground_axes()
-	return (axes[0] * input.x + axes[1] * input.y).normalized()
-
-
-## Screen right and screen down on the ground, in that order: the camera's right and back axes,
-## flattened. Flattening each axis before mixing them keeps diagonals at 45° on the ground.
-## With no camera (a test without one), the world's own right and back.
-func _ground_axes() -> Array[Vector3]:
-	var camera := get_viewport().get_camera_3d()
-	if camera == null:
-		return [Vector3.RIGHT, Vector3.BACK]
-	var view := camera.global_basis
-	return [Vector3(view.x.x, 0.0, view.x.z).normalized(), Vector3(view.z.x, 0.0, view.z.z).normalized()]
