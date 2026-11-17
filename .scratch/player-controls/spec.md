@@ -51,7 +51,13 @@ After this, `player.gd` has no `Input.` or `InputEvent` in it. Expected sizes: `
 - The Facing tests stay in `test_player.gd`: they press real actions and push real mouse motion, so they cover the two nodes together.
 - A sandbox check with `tools/simulate.gd` and `tools/screenshot.gd`: walk, a drag-aimed Fireball, and the hover ring.
 
-## Open questions
+## Settled
 
-1. **The name.** Components carry glossary names and there is none for this yet. `Controls` is my pick; `PlayerInput` is the common Godot name but isn't domain language.
-2. **The scene edit.** `player.tscn` gains one node. Add it in the editor yourself, or let me edit the file while the editor has the project closed?
+1. **The name** is `Controls`, with a glossary entry.
+2. **The scene edit** was made in `player.tscn` directly: one `Controls` node after `Movement`.
+
+## Checked
+
+- `tools/check.sh`: 126 tests pass.
+- Sandbox, by console commands and a script pressing real actions: walking, a Fireball used with `use`, and slot 3 used with its key all behave as on `master`. A screenshot shows the Fireball in flight with the Facing arrow along its aim.
+- Not checked: the hover ring (no console command moves the mouse) and a drag-aimed Fireball on a device.

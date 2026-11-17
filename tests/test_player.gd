@@ -147,3 +147,19 @@ func test_use_presses_a_slot_with_or_without_an_aim() -> void:
 	player.skill_bar.advance(0.016)
 	assert_eq(aims, [Vector3(3.0, 0.0, -1.0), SkillBar.NO_AIM] as Array[Vector3])
 	assert_eq(Console.execute("use x"), "Usage: use <1-5> [<x> <z>]")
+
+
+# The Controls' signals reach the Skill bar: a press uses the slot and holds it, and letting go
+# stops the repeats.
+
+func test_the_controls_press_hold_and_let_go_of_a_slot() -> void:
+	var used: Array[Skill] = []
+	player.skill_bar.used.connect(func(skill: Skill, _aim: Vector3) -> void: used.append(skill))
+	var controls: Controls = player.get_node("Controls")
+	controls.slot_pressed.emit(0) # the Attack: repeats while held
+	player.skill_bar.advance(0.016)
+	player.skill_bar.advance(1.0) # past its Use time
+	assert_eq(used.size(), 2, "pressed, then repeated while held")
+	controls.slot_released.emit(0)
+	player.skill_bar.advance(1.0)
+	assert_eq(used.size(), 2, "let go")

@@ -1,8 +1,8 @@
 class_name Controls
 extends Node
 ## The player's Controls (see GLOSSARY.md): reads the keys and mouse, a controller and touch.
-## The Player asks it each physics frame where the player walks and aims, and connects its
-## signals to the Skill bar. The `use_skill_slot_1` to `_5` actions press and let go of the
+## The Player asks it where the player walks and aims, each physics frame and when a Skill is
+## used, and connects its signals to the Skill bar. The `use_skill_slot_1` to `_5` actions press and let go of the
 ## Skill slots; it knows the slots only by number.
 
 ## The player pressed the binding of `slot`.
