@@ -43,14 +43,19 @@ func _ready() -> void:
 	_show(View.PLAY)
 
 
-## Pauses the game and shows the pause menu.
+## Pauses the game and shows the pause menu. Not while the Console is open: it has paused the
+## game and restores the pause it found, so open() and close() both wait for it.
 func open() -> void:
+	if Console.is_open():
+		return
 	get_tree().paused = true
 	_show(View.MENU)
 
 
 ## Lets the game run again.
 func close() -> void:
+	if Console.is_open():
+		return
 	get_tree().paused = false
 	_show(View.PLAY)
 

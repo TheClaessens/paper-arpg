@@ -9,6 +9,10 @@ extends CharacterBody3D
 const USE_STRETCH := -0.15
 ## How near the mouse cursor's spot an Enemy must be to be highlighted.
 const HOVER_REACH := 1.0
+## The input action that uses each Skill slot, the main slot first.
+const SLOT_ACTIONS: Array[StringName] = [
+	&"use_skill_slot_1", &"use_skill_slot_2", &"use_skill_slot_3", &"use_skill_slot_4", &"use_skill_slot_5",
+]
 ## How long the player keeps facing what a Skill was aimed at before the walk takes Facing back.
 const FACE_AIM_TIME := 0.35
 
@@ -43,9 +47,7 @@ var _face_aim_left := 0.0 # time left facing the last use's aim
 
 
 func _ready() -> void:
-	var camera := get_viewport().get_camera_3d()
-	if camera:
-		facing = Vector3(camera.global_basis.x.x, 0.0, camera.global_basis.x.z).normalized() # screen right
+	facing = _ground_axes()[0] # screen right
 	skill_bar.used.connect(_on_skill_used)
 
 
@@ -65,8 +67,8 @@ func _unhandled_input(event: InputEvent) -> void:
 static func pressed_slot(event: InputEvent) -> int:
 	if event.device == InputEvent.DEVICE_ID_EMULATION:
 		return SkillBar.NONE
-	for slot in SkillBar.SLOTS:
-		if event.is_action_pressed(slot_action(slot)):
+	for slot in SLOT_ACTIONS.size():
+		if event.is_action_pressed(SLOT_ACTIONS[slot]):
 			return slot
 	return SkillBar.NONE
 
@@ -75,15 +77,10 @@ static func pressed_slot(event: InputEvent) -> int:
 static func released_slot(event: InputEvent) -> int:
 	if event.device == InputEvent.DEVICE_ID_EMULATION:
 		return SkillBar.NONE
-	for slot in SkillBar.SLOTS:
-		if event.is_action_released(slot_action(slot)):
+	for slot in SLOT_ACTIONS.size():
+		if event.is_action_released(SLOT_ACTIONS[slot]):
 			return slot
 	return SkillBar.NONE
-
-
-## The input action that uses `slot`: `use_skill_slot_1` for the main slot, up to `_5`.
-static func slot_action(slot: int) -> StringName:
-	return StringName("use_skill_slot_%d" % (slot + 1))
 
 
 func _on_skill_used(skill: Skill, given_aim: Vector3) -> void:
@@ -97,10 +94,8 @@ func _on_skill_used(skill: Skill, given_aim: Vector3) -> void:
 
 ## The aim on the ground for a thumb `drag` on screen (see ground_aim()).
 func aim_from_drag(skill: Skill, drag: Vector2, full_drag: float) -> Vector3:
-	var camera := get_viewport().get_camera_3d().global_basis
-	var right := Vector3(camera.x.x, 0.0, camera.x.z).normalized()
-	var back := Vector3(camera.z.x, 0.0, camera.z.z).normalized()
-	return ground_aim(drag, right, back, skill.range, full_drag, skill.aims_at_spot)
+	var axes := _ground_axes()
+	return ground_aim(drag, axes[0], axes[1], skill.range, full_drag, skill.aims_at_spot)
 
 
 ## The aim on the ground, as an offset from the Character, for a thumb `drag` on screen.
@@ -244,6 +239,8 @@ func _highlight_hovered() -> void:
 ## The spot on the ground under the mouse cursor, at the player's feet height, or null.
 func _cursor_on_ground() -> Variant:
 	var camera := get_viewport().get_camera_3d()
+	if camera == null:
+		return null
 	var ground := Plane(Vector3.UP, global_position.y)
 	return ground.intersects_ray(camera.project_ray_origin(_cursor), camera.project_ray_normal(_cursor))
 
@@ -253,9 +250,16 @@ func _cursor_on_ground() -> Variant:
 func _stick_direction(to_left: StringName, to_right: StringName, to_up: StringName, to_down: StringName) -> Vector3:
 	# Deadzone comes from the actions in the Input Map (0.2).
 	var input := Input.get_vector(to_left, to_right, to_up, to_down)
-	# Screen right and screen down on the ground: the camera's right and back axes, flattened.
-	# Flattening each axis before mixing them keeps diagonals at 45° on the ground.
-	var camera := get_viewport().get_camera_3d().global_basis
-	var right := Vector3(camera.x.x, 0.0, camera.x.z).normalized()
-	var back := Vector3(camera.z.x, 0.0, camera.z.z).normalized()
-	return (right * input.x + back * input.y).normalized()
+	var axes := _ground_axes()
+	return (axes[0] * input.x + axes[1] * input.y).normalized()
+
+
+## Screen right and screen down on the ground, in that order: the camera's right and back axes,
+## flattened. Flattening each axis before mixing them keeps diagonals at 45° on the ground.
+## With no camera (a test without one), the world's own right and back.
+func _ground_axes() -> Array[Vector3]:
+	var camera := get_viewport().get_camera_3d()
+	if camera == null:
+		return [Vector3.RIGHT, Vector3.BACK]
+	var view := camera.global_basis
+	return [Vector3(view.x.x, 0.0, view.x.z).normalized(), Vector3(view.z.x, 0.0, view.z.z).normalized()]

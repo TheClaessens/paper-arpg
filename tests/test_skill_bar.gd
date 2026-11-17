@@ -130,6 +130,15 @@ func test_it_says_when_a_skill_is_ready_again() -> void:
 	assert_eq(ready, [fire] as Array[Skill])
 
 
+func test_a_skill_cools_down_off_the_bar_too() -> void:
+	fire.cooldown = 1.0
+	bar.press(1)
+	bar.advance(0.016)
+	bar.set_skill(1, null) # taken off the bar while cooling
+	bar.advance(1.1)
+	assert_true(fire.is_ready())
+
+
 func test_it_says_which_slot_was_used() -> void:
 	var slots: Array[int] = []
 	bar.slot_used.connect(func(slot: int) -> void: slots.append(slot))

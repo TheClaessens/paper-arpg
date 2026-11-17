@@ -34,7 +34,7 @@ var _aiming_slot := SkillBar.NONE # the slot whose Skill is being dragged
 var _aimed := false # the drag has left the deadzone, so lifting is no longer a tap
 var _left_slot := false # the thumb has been off the slot, so coming back onto it cancels
 var _held_slot := SkillBar.NONE # the slot held down to repeat its Skill
-var _landed := Vector2.ZERO # where the thumb landed; drags are measured from here
+var _landed: Array[Vector2] = [] # where each slot's thumb landed; its drags are measured from here
 
 
 func _enter_tree() -> void:
@@ -42,6 +42,7 @@ func _enter_tree() -> void:
 
 
 func _ready() -> void:
+	_landed.resize(SkillBar.SLOTS)
 	for slot in SkillBar.SLOTS:
 		var button := get_node("Slot%d" % slot) as SkillSlotButton
 		button.chosen.connect(slot_chosen.emit.bind(slot))
@@ -100,7 +101,7 @@ func _cmd_touch(args: PackedStringArray) -> String:
 
 
 func _on_touch_started(at: Vector2, slot: int) -> void:
-	_landed = at
+	_landed[slot] = at
 	var skill := player.skill_bar.skill_in(slot)
 	if skill == null or not skill.is_ready():
 		return
@@ -120,7 +121,7 @@ func _on_touch_moved(at: Vector2, slot: int) -> void:
 		_steer(slot, at)
 	if slot != _aiming_slot:
 		return
-	var drag := at - _landed
+	var drag := at - _landed[slot]
 	_aimed = _aimed or drag.length() > drag_deadzone
 	_left_slot = _left_slot or not _buttons[slot].covers(at)
 	if not _aimed:
@@ -145,13 +146,13 @@ func _on_touch_ended(at: Vector2, slot: int) -> void:
 	if not _aimed:
 		player.skill_bar.press(slot) # a tap: auto-aimed
 	elif not _over_cancel(slot, at):
-		player.skill_bar.press(slot, player.aim_from_drag(skill, at - _landed, drag_full_range))
+		player.skill_bar.press(slot, player.aim_from_drag(skill, at - _landed[slot], drag_full_range))
 
 
 ## Steers a held slot's repeats along the drag, showing where they go; inside the deadzone
 ## they are auto-aimed again.
 func _steer(slot: int, at: Vector2) -> void:
-	var drag := at - _landed
+	var drag := at - _landed[slot]
 	if drag.length() <= drag_deadzone:
 		player.skill_bar.set_held(slot, true)
 		player.hide_aim()
