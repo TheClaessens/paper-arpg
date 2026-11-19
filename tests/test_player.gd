@@ -78,42 +78,6 @@ func _tilted_camera() -> Camera3D:
 	return camera
 
 
-func _key(code: Key) -> InputEventKey:
-	var key := InputEventKey.new()
-	key.physical_keycode = code
-	key.pressed = true
-	return key
-
-
-func _click(button: MouseButton, device: int) -> InputEventMouseButton:
-	var click := InputEventMouseButton.new()
-	click.button_index = button
-	click.device = device
-	click.pressed = true
-	return click
-
-
-func test_each_binding_presses_its_slot() -> void:
-	assert_eq(Player.pressed_slot(_click(MOUSE_BUTTON_LEFT, 0)), 0, "left click: main slot")
-	assert_eq(Player.pressed_slot(_click(MOUSE_BUTTON_RIGHT, 0)), 1, "right click")
-	assert_eq(Player.pressed_slot(_key(KEY_Q)), 2)
-	assert_eq(Player.pressed_slot(_key(KEY_E)), 3)
-	assert_eq(Player.pressed_slot(_key(KEY_R)), 4)
-	assert_eq(Player.pressed_slot(_key(KEY_W)), -1, "walking presses no slot")
-
-
-func test_letting_go_of_a_binding_releases_its_slot() -> void:
-	var key := _key(KEY_Q)
-	key.pressed = false
-	assert_eq(Player.released_slot(key), 2)
-	assert_eq(Player.released_slot(_key(KEY_Q)), -1, "a press releases nothing")
-
-
-func test_a_touch_does_not_use_a_slot() -> void:
-	# The mouse click Godot makes from every touch.
-	assert_eq(Player.pressed_slot(_click(MOUSE_BUTTON_LEFT, InputEvent.DEVICE_ID_EMULATION)), -1)
-
-
 func test_the_right_stick_aims_apart_from_walking() -> void:
 	_tilted_camera()
 	player.set_physics_process(true)
@@ -183,3 +147,19 @@ func test_use_presses_a_slot_with_or_without_an_aim() -> void:
 	player.skill_bar.advance(0.016)
 	assert_eq(aims, [Vector3(3.0, 0.0, -1.0), SkillBar.NO_AIM] as Array[Vector3])
 	assert_eq(Console.execute("use x"), "Usage: use <1-5> [<x> <z>]")
+
+
+# The Controls' signals reach the Skill bar: a press uses the slot and holds it, and letting go
+# stops the repeats.
+
+func test_the_controls_press_hold_and_let_go_of_a_slot() -> void:
+	var used: Array[Skill] = []
+	player.skill_bar.used.connect(func(skill: Skill, _aim: Vector3) -> void: used.append(skill))
+	var controls: Controls = player.get_node("Controls")
+	controls.slot_pressed.emit(0) # the Attack: repeats while held
+	player.skill_bar.advance(0.016)
+	player.skill_bar.advance(1.0) # past its Use time
+	assert_eq(used.size(), 2, "pressed, then repeated while held")
+	controls.slot_released.emit(0)
+	player.skill_bar.advance(1.0)
+	assert_eq(used.size(), 2, "let go")

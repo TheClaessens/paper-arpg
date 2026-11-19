@@ -28,6 +28,10 @@ _Avoid_: Alert, agitated, hostile
 The distance from an Enemy within which the player draws its Aggro.
 _Avoid_: Detection range, sight radius
 
+**Controls**:
+How the player tells their Character what to do: where to walk, where to aim and which Skill slot to use, by keys and mouse, a controller or touch.
+_Avoid_: Input, player input, input handler
+
 **Touch stick**:
 The on-screen stick a thumb drags to move the player. It appears where the thumb lands on the left half of the screen and acts like the controller's left stick.
 _Avoid_: Virtual joystick, thumbstick, d-pad
