@@ -6,12 +6,12 @@
 
 **Status:** ready-for-agent
 
-- [ ] Effects that add, replace and remove a tag.
-- [ ] An added tag lets another Modifier's filter match.
-- [ ] A removed tag can't be added back in the same use, whichever Modifier comes first.
-- [ ] A Modifier whose filter needs a tag that was removed doesn't apply ("Skills that chain can no longer pierce": a chaining Fireball doesn't pierce, and anything needing Pierce misses).
-- [ ] Two Modifiers that would switch each other off and on still end the pass.
-- [ ] Replacing Fire with a non-elemental tag drops Elemental; a Modifier filtering on Elemental then misses.
-- [ ] Tag changes happen before number changes, so a number Modifier filtering on a granted tag applies.
-- [ ] The Snapshot's "why" list records tag changes and Modifiers that dropped out.
-- [ ] GUT tests at the Snapshot seam cover the above; `tools/check.sh` passes.
+- [x] Effects that add, replace and remove a tag.
+- [x] An added tag lets another Modifier's filter match.
+- [x] A removed tag can't be added back in the same use, whichever Modifier comes first.
+- [x] A Modifier whose filter needs a tag that was removed doesn't apply ("Skills that chain can no longer pierce": a chaining Fireball doesn't pierce, and anything needing Pierce misses).
+- [x] Two Modifiers that would switch each other off and on still end the pass.
+- [x] Replacing Fire with a non-elemental tag drops Elemental; a Modifier filtering on Elemental then misses.
+- [x] Tag changes happen before number changes, so a number Modifier filtering on a granted tag applies.
+- [x] The Snapshot's "why" list records tag changes and Modifiers that dropped out.
+- [x] GUT tests at the Snapshot seam cover the above; `tools/check.sh` passes.

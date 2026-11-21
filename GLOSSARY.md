@@ -56,6 +56,10 @@ _Avoid_: Keyword, category, skill type
 A change that a game system, such as gear or a talent, makes to Skills. It picks the Skills it applies to by their Skill tags, or applies to every Skill.
 _Avoid_: Mod, affix, stat
 
+**Tag pass**:
+The first step of making a Snapshot: Modifiers that add, replace or remove Skill tags apply, so every other Modifier is judged on the final tags. A removed tag can't come back in the same activation, and a Modifier that loses a tag it needs to another Modifier drops out.
+_Avoid_: Tag resolution, tag phase
+
 **Damage type**:
 What kind of damage a hit deals, such as fire. It is separate from the Skill's Skill tags: a Fire Skill can deal frost damage, and a tag never sets the damage.
 _Avoid_: Element, damage tag

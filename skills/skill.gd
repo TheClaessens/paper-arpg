@@ -125,31 +125,33 @@ func try_activate(aim: Vector3, modifiers: Array[Modifier]) -> bool:
 	return true
 
 
-## The Skill as one activation sees it: a Snapshot with every one of `modifiers` whose filter
-## matches its tags, implied ones included.
+## The Skill as one activation sees it: a Snapshot made by the tag pass (see TagPass) with every
+## one of `modifiers` that applies.
 func snapshot(modifiers: Array[Modifier]) -> Snapshot:
-	var all_tags := with_implied(tags)
+	var tag_pass := TagPass.new(tags, modifiers)
 	var why: Array[String] = []
 	for modifier in modifiers:
-		why.append(modifier.explain(all_tags))
-	return Snapshot.new(all_tags, _numbers_with(all_tags, modifiers), why)
+		why.append(tag_pass.explain(modifier))
+	return Snapshot.new(tag_pass.tags, _numbers_with(tag_pass, modifiers), why)
 
 
 ## The number called `name` as it stands now with `modifiers`, outside any activation: for
 ## aiming, which follows the Modifiers as they come and go.
 func number(name: StringName, modifiers: Array[Modifier]) -> float:
-	return _numbers_with(with_implied(tags), modifiers)[name]
+	return _numbers_with(TagPass.new(tags, modifiers), modifiers)[name]
 
 
-## Each of the Skill's numbers with every one of `modifiers` whose filter matches `all_tags`.
-func _numbers_with(all_tags: Array[StringName], modifiers: Array[Modifier]) -> Dictionary[StringName, float]:
-	var applied: Array[NumberChange] = []
+## Each of the Skill's numbers with every one of `modifiers` that applies after `tag_pass`, in
+## two pools: the number changes of Modifiers that change tags, then every other's.
+func _numbers_with(tag_pass: TagPass, modifiers: Array[Modifier]) -> Dictionary[StringName, float]:
+	var tag_pool: Array[NumberChange] = []
+	var number_pool: Array[NumberChange] = []
 	for modifier in modifiers:
-		if modifier.missing(all_tags).is_empty():
-			applied.append_array(modifier.number_changes)
+		if tag_pass.applies(modifier):
+			(number_pool if modifier.tag_changes.is_empty() else tag_pool).append_array(modifier.number_changes)
 	var result := numbers()
 	for name in result:
-		result[name] = stack(result[name], name, applied)
+		result[name] = stack(stack(result[name], name, tag_pool), name, number_pool)
 	return result
 
 
