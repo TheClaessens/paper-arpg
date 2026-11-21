@@ -126,19 +126,19 @@ func test_replacing_fire_with_a_non_elemental_tag_drops_elemental() -> void:
 
 
 func test_a_removed_tag_cannot_be_added_back_whichever_comes_first() -> void:
-	var adds := _tagger("Projectiles pierce 2 Enemies", [&"Projectile"], TagChange.Kind.ADD, &"Pierce")
+	var adds := _tagger("Projectiles pierce an Enemy", [&"Projectile"], TagChange.Kind.ADD, &"Pierce")
 	var removes := _tagger("Spells can no longer pierce", [&"Spell"], TagChange.Kind.REMOVE, &"Pierce")
 	assert_does_not_have(_snapshot(FireballScene, [adds, removes]).tags, &"Pierce")
 	assert_does_not_have(_snapshot(FireballScene, [removes, adds]).tags, &"Pierce")
 	assert_eq(_snapshot(FireballScene, [adds, removes]).why, [
-		"Projectiles pierce 2 Enemies: applied, Pierce stays removed",
+		"Projectiles pierce an Enemy: applied, Pierce stays removed",
 		"Spells can no longer pierce: applied, removes Pierce",
 	] as Array[String])
 
 
 func test_skills_that_chain_can_no_longer_pierce() -> void:
 	var chains := _tagger("Projectiles chain", [&"Projectile"], TagChange.Kind.ADD, &"Chain")
-	var pierces := _tagger("Projectiles pierce 2 Enemies", [&"Projectile"], TagChange.Kind.ADD, &"Pierce")
+	var pierces := _tagger("Projectiles pierce an Enemy", [&"Projectile"], TagChange.Kind.ADD, &"Pierce")
 	var no_pierce := _tagger("Skills that chain can no longer pierce", [&"Chain"], TagChange.Kind.REMOVE, &"Pierce")
 	var piercing := _modifier([&"Pierce"], Skill.RANGE, NumberChange.Kind.FLAT, 1.0)
 	piercing.title = "Piercing Skills have +1 Range"
@@ -211,3 +211,13 @@ func test_a_replace_of_a_tag_the_skill_lacks_says_so() -> void:
 	var snapshot := _snapshot(AttackScene, [_tagger("Fire is Cold", [], TagChange.Kind.REPLACE, &"Fire", &"Cold")])
 	assert_eq(snapshot.tags, [&"Attack", &"Melee"] as Array[StringName])
 	assert_eq(snapshot.why, ["Fire is Cold: applied, no Fire to replace"] as Array[String])
+
+
+func test_the_pierce_proof_modifier_gives_fireball_pierce_and_not_attack() -> void:
+	var pierce: Modifier = load("res://skills/modifiers/pierce.tres")
+	var fireball := _snapshot(FireballScene, [pierce])
+	assert_has(fireball.tags, &"Pierce")
+	assert_eq(fireball.why, ["Projectiles pierce an Enemy: applied, adds Pierce"])
+	var attack := _snapshot(AttackScene, [pierce])
+	assert_does_not_have(attack.tags, &"Pierce")
+	assert_eq(attack.why, ["Projectiles pierce an Enemy: missed, not Projectile"])

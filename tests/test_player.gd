@@ -192,12 +192,19 @@ func _fireball() -> Skill:
 
 
 func test_modifier_lists_the_proof_modifiers_and_why_each_applies() -> void:
-	assert_eq(Console.execute("modifier"), "spell-cooldown: off (Spells have 50% reduced cooldown)")
+	assert_eq(Console.execute("modifier"), "\n".join([
+		"spell-cooldown: off (Spells have 50% reduced cooldown)",
+		"pierce: off (Projectiles pierce an Enemy)",
+	]))
 	Console.execute("modifier spell-cooldown on")
+	Console.execute("modifier pierce on")
 	assert_eq(Console.execute("modifier"), "\n".join([
 		"spell-cooldown: on (Spells have 50% reduced cooldown)",
+		"pierce: on (Projectiles pierce an Enemy)",
 		"Attack › Spells have 50% reduced cooldown: missed, not Spell",
+		"Attack › Projectiles pierce an Enemy: missed, not Projectile",
 		"Fireball › Spells have 50% reduced cooldown: applied",
+		"Fireball › Projectiles pierce an Enemy: applied, adds Pierce",
 	]))
 
 
@@ -208,9 +215,13 @@ func test_modifier_switches_a_proof_modifier_on_and_off() -> void:
 	assert_eq(player.modifiers.size(), 1, "switching on twice adds it once")
 	assert_eq(Console.execute("modifier spell-cooldown off"), "modifier spell-cooldown off")
 	assert_eq(_fireball().snapshot(player.modifiers).number(Skill.COOLDOWN), 4.0)
+	assert_eq(Console.execute("modifier pierce on"), "modifier pierce on")
+	assert_has(_fireball().snapshot(player.modifiers).tags, &"Pierce")
+	Console.execute("modifier pierce off")
+	assert_does_not_have(_fireball().snapshot(player.modifiers).tags, &"Pierce")
 
 
 func test_modifier_needs_a_known_name_and_on_or_off() -> void:
-	assert_eq(Console.execute("modifier pierce on"), "Usage: modifier [<spell-cooldown> on|off]")
-	assert_eq(Console.execute("modifier spell-cooldown maybe"), "Usage: modifier [<spell-cooldown> on|off]")
+	assert_eq(Console.execute("modifier chain on"), "Usage: modifier [<spell-cooldown|pierce> on|off]")
+	assert_eq(Console.execute("modifier spell-cooldown maybe"), "Usage: modifier [<spell-cooldown|pierce> on|off]")
 	assert_eq(player.modifiers.size(), 0)

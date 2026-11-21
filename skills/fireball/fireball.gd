@@ -2,8 +2,8 @@
 class_name Fireball
 extends Skill
 ## Fireball: throws a ball of fire straight where it is aimed. It flies at `speed` until it has flown
-## the Skill's Range, or touches a wall or an Enemy. An Enemy it touches is knocked back, with
-## the same Hit feedback as any other Skill.
+## the Skill's Range, or touches a wall or an Enemy (with Pierce, a second Enemy). Each Enemy it
+## touches is knocked back, with the same Hit feedback as any other Skill.
 
 const ProjectileScene := preload("res://skills/fireball/projectile.tscn")
 

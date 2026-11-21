@@ -18,6 +18,7 @@ const FACE_AIM_TIME := 0.35
 ## The proof Modifiers the `modifier` console command switches, by the name it takes.
 const PROOF_MODIFIERS: Dictionary[String, Modifier] = {
 	"spell-cooldown": preload("res://skills/modifiers/spell_cooldown.tres"),
+	"pierce": preload("res://skills/modifiers/pierce.tres"),
 }
 
 ## The player's Facing (see GLOSSARY.md): a unit direction on the ground. It follows the right

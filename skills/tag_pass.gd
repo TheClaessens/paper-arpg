@@ -57,7 +57,7 @@ func applies(modifier: Modifier) -> bool:
 
 
 ## One line saying whether `modifier` applied, what it did to the tags, and why not when it
-## missed: "Projectiles pierce 2 Enemies: applied, adds Pierce", "…: missed, Pierce was
+## missed: "Projectiles pierce an Enemy: applied, adds Pierce", "…: missed, Pierce was
 ## removed", "…: missed, not Spell".
 func explain(modifier: Modifier) -> String:
 	if applies(modifier):

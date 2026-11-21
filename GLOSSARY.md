@@ -52,6 +52,10 @@ _Avoid_: Use, cast, invoke, trigger (kept for a Skill set off by another event)
 A word on a Skill that says what kind of Skill it is, such as Spell, Projectile or Fire. Some Skill tags imply others: a Fire Skill is also Elemental.
 _Avoid_: Keyword, category, skill type
 
+**Pierce**:
+A Skill tag that is also a behaviour: a Pierce projectile passes through the first Enemy it hits and stops at the next. It never passes through a wall.
+_Avoid_: Penetrate, pass-through
+
 **Modifier**:
 A change that a game system, such as gear or a talent, makes to Skills. It picks the Skills it applies to by their Skill tags, or applies to every Skill.
 _Avoid_: Mod, affix, stat
