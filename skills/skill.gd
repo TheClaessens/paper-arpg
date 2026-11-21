@@ -166,10 +166,11 @@ func _enemies_within(reach: float) -> Array[Enemy]:
 
 ## Lands one activation's hits: each Enemy in `hits` is pushed along its direction (a unit
 ## vector on the ground) with the Knockback and Stagger of the activation's `snapshot`. The
-## impact (hitstop, screen shake) plays once for the whole activation, however many Enemies it hit. For the Skills themselves.
-func _land_hits(hits: Dictionary[Enemy, Vector3], snapshot: Snapshot) -> void:
+## impact (screen shake, and a hitstop if `freezes`) plays once per call, however many Enemies
+## it hit, so a Skill whose hits come at once lands them in one call. For the Skills themselves.
+func _land_hits(hits: Dictionary[Enemy, Vector3], snapshot: Snapshot, freezes := true) -> void:
 	if hits.is_empty():
 		return
 	for enemy in hits:
 		enemy.take_hit(hits[enemy], snapshot.number(KNOCKBACK), snapshot.number(STAGGER))
-	HitFeedback.shared().play_impact(get_viewport())
+	HitFeedback.shared().play_impact(get_viewport(), freezes)

@@ -5,7 +5,7 @@ extends Resource
 ## study the values started from (see .scratch/combat/spec.md). One shared set,
 ## `hit_feedback.tres`, serves everything: shared() returns it. Tune it in the editor. How hard a hit pushes (knockback, Stagger) belongs
 ## to the Skill. The hit Enemy shows flash and squash; the Skill that hit plays the impact
-## (hitstop and screen shake) once per activation.
+## (hitstop and screen shake). A projectile's hit shakes the screen but doesn't freeze the world.
 
 ## The whole game freezes this long.
 @export var hitstop := 0.06
@@ -32,9 +32,9 @@ static func shared() -> HitFeedback:
 static var _hitstops := 0
 
 
-## The impact of a hit: freezes the game for `hitstop` and shakes the viewport's camera.
-func play_impact(viewport: Viewport) -> void:
-	if hitstop > 0.0:
+## The impact of a hit: freezes the game for `hitstop` if `freezes`, and shakes the viewport's camera.
+func play_impact(viewport: Viewport, freezes := true) -> void:
+	if freezes and hitstop > 0.0:
 		_hitstops += 1
 		Engine.time_scale = 0.0
 		# The timer ignores the time scale, or it would never run out.

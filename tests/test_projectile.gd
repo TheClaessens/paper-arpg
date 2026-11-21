@@ -125,3 +125,17 @@ func test_a_piercing_ball_still_ends_at_its_range() -> void:
 	await wait_physics_frames(60)
 	assert_eq(hits, [first])
 	assert_freed(ball)
+
+
+func test_a_fireball_hit_knocks_back_without_freezing_the_world() -> void:
+	var fireball: Fireball = preload("res://skills/fireball/fireball.tscn").instantiate()
+	add_child_autoqfree(fireball)
+	var zombie := _zombie_at(2.0)
+	fireball.try_activate(Vector3.RIGHT, [])
+	var ball: Projectile = fireball.get_child(0)
+	var time_scales: Array[float] = []
+	ball.hit_enemy.connect(func(_enemy: Enemy) -> void: time_scales.append(Engine.time_scale)) # after Fireball lands the hit
+	await wait_physics_frames(20)
+	Engine.time_scale = 1.0 # in case it froze, for the tests after this one
+	assert_eq(time_scales, [1.0] as Array[float], "hit once, and the world kept running")
+	assert_gt(zombie.global_position.x, 2.0, "knocked back")

@@ -1,6 +1,6 @@
 extends GutTest
 ## Landing a Skill's hits: each Enemy is pushed along its own direction with the Skill's
-## Knockback and Stagger, and the impact plays once per activation, not per Enemy.
+## Knockback and Stagger, and the impact plays once per call, not per Enemy.
 
 const ZombieScene := preload("res://characters/enemy/zombie.tscn")
 

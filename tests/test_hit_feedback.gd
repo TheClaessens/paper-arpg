@@ -23,3 +23,11 @@ func test_overlapping_hitstops_freeze_until_the_last_ends() -> void:
 	assert_eq(Engine.time_scale, 0.0, "still frozen")
 	await _wait(0.08)
 	assert_eq(Engine.time_scale, 1.0, "running again")
+
+
+func test_an_impact_that_does_not_freeze_leaves_the_game_running() -> void:
+	var feedback := HitFeedback.new()
+	feedback.hitstop = 0.1
+	feedback.shake = 0.0
+	feedback.play_impact(get_viewport(), false)
+	assert_eq(Engine.time_scale, 1.0)
