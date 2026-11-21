@@ -1,0 +1,60 @@
+# Skill tags
+
+Status: ready-for-agent
+
+A framework that later game systems use to change Skills: **Skill tags** say what a Skill is, **Modifiers** change Skills by their tags, and each use builds a **Snapshot** (see GLOSSARY.md). The framework is the point; the Modifiers and tags here are examples that prove it and may not ship. Comes after `.scratch/remove-use-time/spec.md`. Worked out on the Skill Tags whiteboard (https://claude.ai/artifact/KWxxh9kBRFQeMnqhwE7Kr4) and the Skill Tag Rules page with its sandbox (https://claude.ai/artifact/CPo9u5o4VqzvxPbCE7CVQH), then grilled on 2026-11-21. Why the rules are shaped this way: `docs/adr/0002-skill-modifiers-resolve-in-pools.md`.
+
+## The rules
+
+1. **Skill tags say what a Skill is; Damage types say what it deals.** Neither changes the other on its own. A Fire Skill can deal frost damage, and removing a tag never removes damage.
+2. **A Modifier is an optional filter plus one or more effects.** The filter checks Skill tags; with none, the Modifier applies to every Skill. Effects change a number, add a behaviour, or add, replace or remove a tag. (Adding and converting damage come with damage.)
+3. **A tag changes only when an effect adds, replaces or removes it.** Prefer replacing a damage-type tag over removing it.
+4. **Filters judge the final tags, and removal wins.**
+   - A Modifier applies only if its filter matches the Skill's tags after every tag change.
+   - A removed tag can't come back in the same use.
+   - A Modifier that drops out because a tag it needs was removed stays out for that use, so the tag pass always ends. Example: with "Projectiles pierce 2 Enemies" and "Skills that chain can no longer pierce", a Fireball that chains doesn't pierce, and anything that needs Pierce doesn't apply.
+   - Each Modifier applies at most once per use.
+5. **Conversion and tag replacement only move forward along one ordered list of Damage types.** The list is data in one place, so types can be renamed or added and nothing can loop. (Needed once damage exists; nothing to build now.)
+6. **Modifiers apply in pools, one pool at a time**: tag changes (with all their effects), added damage, conversion, scaling, other numbers. Inside a pool, a number takes flat additions first, then the sum of every **Increased** percentage, then each **More** percentage on its own. Conversions from one type cap at 100% in total and are shared proportionally above that.
+
+## Requirements
+
+1. **Skill tags on every Skill**, set in its scene.
+   - Fireball: Spell, Projectile, Fire.
+   - Attack: Attack, Melee. These are the sword's tags until Weapons bring them through Modifiers.
+2. **Implied tags** come from one table (for now: Fire → Elemental) and are worked out again whenever tags change, including during the tag pass, so a filter on Elemental can match. A Modifier can't add or remove an implied tag directly; it changes the tag that implies it.
+3. **Modifiers** as data: a filter (Skill tags, or none) and a list of effects. Effects for this step:
+   - change a number: flat, Increased or More, on a named Skill number (Cooldown, Range, …); a number the Skill doesn't have is ignored.
+   - add a tag, replace a tag, remove a tag.
+   - add a behaviour that the Skill reads from its Snapshot (Pierce).
+4. **The Character keeps one list of Modifiers.** How it gathers Modifiers from several sources (gear, talents, buffs) is a decision for later; see Deferred decisions.
+5. **Each use builds a Snapshot** from the Skill and the Character's Modifiers, following the rules: tag pass, then the pools for the numbers that exist today.
+   - `use()` receives the Snapshot. Fireball hands it to its projectile; Attack reads it for its swing.
+   - The Snapshot never changes after it is made. A projectile in flight keeps its Snapshot when Modifiers change.
+   - The Cooldown that starts on a use is the Snapshot's.
+6. **Proof Modifiers**, switched with a console command `modifier <name> on|off` (and listed without arguments):
+   - **"Spells have 50% reduced cooldown"**: filter Spell, Increased −50% on Cooldown. Fireball's goes from 4 s to 2 s; Attack's is unchanged.
+   - **"Projectiles pierce 2 Enemies"**: filter Projectile, adds the Pierce tag and the behaviour. Fireball's projectile passes through the first two Enemies it hits and stops at the third (or at a wall, or its Range).
+7. **Why a Modifier applied or not** is available on the Snapshot (a list like the sandbox's), for tests and the console. No player-facing display yet.
+
+## Out of scope
+
+- Damage, Damage types, adding and converting damage, scaling damage. Next step, with health and mana.
+- Gear, talents, buffs, supports and Weapons as sources of Modifiers.
+- Showing players where a number came from.
+
+## Deferred decisions
+
+- **Where Modifiers come from.** Decide when a second real source exists (say gear next to talents): whether the Character asks each source on every use, or keeps a combined list. The framework only needs "a list of Modifiers" either way.
+- Whether converted damage is also scaled by its old type's Modifiers (with damage).
+- What the Damage types are, how many, and their order (with damage).
+
+## Tests
+
+- Implied tags: Fireball has Elemental; replacing Fire with a non-elemental tag drops it.
+- Filters: a Modifier with a Spell filter applies to Fireball and not to Attack; one with no filter applies to both.
+- Tag pass: an added tag lets another Modifier match; a removed tag can't be added back; a Modifier that needs a removed tag drops out; two Modifiers that switch each other off and on still end.
+- Numbers: flat, then Increased summed, then More each on its own: Range 10, +2, +20% and +10% Increased, 50% More gives 23.4.
+- Snapshot: changing Modifiers after a use doesn't change that use's projectile.
+- Proof: with the cooldown Modifier on, Fireball's Cooldown is 2 s; with Pierce on, its projectile passes through two Enemies and stops at the third; with both off, Fireball is as made.
+- The console command switches each proof Modifier on and off.

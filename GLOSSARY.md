@@ -44,6 +44,26 @@ _Avoid_: Heading, orientation
 Something the player uses from a Skill slot, such as Fireball or Attack.
 _Avoid_: Ability, spell, action, power
 
+**Skill tag**:
+A word on a Skill that says what kind of Skill it is, such as Spell, Projectile or Fire. Some Skill tags imply others: a Fire Skill is also Elemental.
+_Avoid_: Keyword, category, skill type
+
+**Modifier**:
+A change that a game system, such as gear or a talent, makes to Skills. It picks the Skills it applies to by their Skill tags, or applies to every Skill.
+_Avoid_: Mod, affix, stat
+
+**Damage type**:
+What kind of damage a hit deals, such as fire. It is separate from the Skill's Skill tags: a Fire Skill can deal frost damage, and a tag never sets the damage.
+_Avoid_: Element, damage tag
+
+**Increased**:
+A Modifier's percentage that is added to every other increased or reduced percentage on the same number, before they change it together.
+_Avoid_: Additive, bonus
+
+**More**:
+A Modifier's percentage that changes a number on its own, after every Increased percentage. Less is its negative.
+_Avoid_: Multiplicative, compound
+
 **Weapon**:
 The item a Character fights with, such as a sword or a bow. Using it is the Attack.
 _Avoid_: Gear, equipment
@@ -71,6 +91,10 @@ _Avoid_: Skill picker, spellbook, inventory
 **Cooldown**:
 How long after a use starts before a Skill can be used again, from any slot it sits in. Every Skill has one, and it is the only thing that limits how often a Skill is used. Modifiers such as attack speed change it.
 _Avoid_: Recharge, refresh, timer, global cooldown, use time
+
+**Snapshot**:
+A Skill with every Modifier that applied when it was used, fixed from that moment for everything the use causes, such as a projectile in flight or a burn left on an Enemy.
+_Avoid_: Use, cast, invocation, instance
 
 **Range**:
 How far a Skill reaches from the Character using it: the length of a swing, or how far a projectile flies.
