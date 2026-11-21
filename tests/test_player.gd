@@ -2,6 +2,7 @@ extends GutTest
 ## The `tp` console command, which the Player registers while it is in the tree.
 
 const PlayerScene := preload("res://characters/player/player.tscn")
+const ZombieScene := preload("res://characters/enemy/zombie.tscn")
 
 var player: Player
 
@@ -225,3 +226,34 @@ func test_modifier_needs_a_known_name_and_on_or_off() -> void:
 	assert_eq(Console.execute("modifier chain on"), "Usage: modifier [<spell-cooldown|pierce> on|off]")
 	assert_eq(Console.execute("modifier spell-cooldown maybe"), "Usage: modifier [<spell-cooldown|pierce> on|off]")
 	assert_eq(player.modifiers.size(), 0)
+
+
+# Auto-aim: the nearest Enemy within 60° of Facing, no farther than the Range; with none, along
+# Facing. Its caller hands it the Enemies within Range.
+
+func test_auto_aim_picks_the_nearest_enemy_near_facing() -> void:
+	var near := Vector3(2.0, 0.0, 0.5)
+	var far := Vector3(4.0, 0.0, 0.0)
+	assert_eq(Player.auto_aim(Vector3.RIGHT, 5.0, [far, near]), near)
+
+
+func test_auto_aim_ignores_enemies_behind_or_wide_of_facing() -> void:
+	var behind := Vector3(-1.0, 0.0, 0.0)
+	var wide := Vector3(1.0, 0.0, 2.0) # 63° off Facing
+	assert_eq(Player.auto_aim(Vector3.RIGHT, 5.0, [behind, wide]), Vector3.RIGHT * 5.0, "along Facing, as far as the Range")
+
+
+func test_auto_aim_ignores_height() -> void:
+	assert_eq(Player.auto_aim(Vector3.RIGHT, 5.0, [Vector3(2.0, 0.5, 0.0)]), Vector3(2.0, 0.0, 0.0))
+
+
+func test_auto_aim_at_a_body_in_range_goes_as_far_as_the_range() -> void:
+	var attack: Skill = player.get_node("Attack") # Range 1.6, which a 32-bit length can't hold exactly
+	player.set_physics_process(false) # off once in the tree, or _ready turns it back on: the player stays put
+	player.facing = Vector3.RIGHT
+	var zombie: Enemy = ZombieScene.instantiate()
+	add_child_autofree(zombie)
+	zombie.global_position = Vector3(1.5, 0.0, 0.7) # 25° off Facing, centre 1.66 away, body inside the Range
+	await wait_physics_frames(2)
+	var aim := player._aim_for(attack)
+	assert_almost_eq(aim, Vector3(1.5, 0.0, 0.7).normalized() * 1.6, Vector3.ONE * 0.001, "at the Enemy, not along Facing")

@@ -14,9 +14,6 @@ signal ready_again
 ## near Facing. AIMED: auto-aimed too, and on touch it can also be aimed by hand.
 enum Aim { AROUND, AUTO, AIMED }
 
-## Auto-aim takes an Enemy at most this far either side of Facing.
-const AUTO_AIM_ANGLE := 60.0
-
 ## The names of the Skill's numbers (see numbers()), as Modifiers and Snapshots know them.
 const COOLDOWN := &"Cooldown"
 const RANGE := &"Range"
@@ -119,31 +116,6 @@ func snapshot(modifiers: Array[Modifier]) -> Snapshot:
 ## aiming, which follows the Modifiers as they come and go.
 func number(name: StringName, modifiers: Array[Modifier]) -> float:
 	return snapshot(modifiers).number(name)
-
-
-## Where auto-aim points, as an offset on the ground from the Character: the nearest of
-## `enemy_offsets` within AUTO_AIM_ANGLE of `facing`, or else along `facing`. Never farther
-## than `skill_range`. Which Enemies are within Range is the caller's to ask (see aim_toward()).
-static func auto_aim(facing: Vector3, skill_range: float, enemy_offsets: Array[Vector3]) -> Vector3:
-	var best := facing * skill_range
-	var best_distance := INF
-	for offset in enemy_offsets:
-		var flat := Vector3(offset.x, 0.0, offset.z)
-		var distance := flat.length()
-		if distance < best_distance and rad_to_deg(flat.angle_to(facing)) <= AUTO_AIM_ANGLE:
-			best = flat.limit_length(skill_range)
-			best_distance = distance
-	return best
-
-
-## Auto-aim from where the Character stands (see auto_aim()), as far as `reach`: the Skill's
-## Range as it stands now. An Enemy whose body is within reach but whose centre is past it is
-## aimed at as far as the reach.
-func aim_toward(facing: Vector3, reach: float) -> Vector3:
-	var offsets: Array[Vector3] = []
-	for enemy in _enemies_within(reach):
-		offsets.append(enemy.global_position - global_position)
-	return auto_aim(facing, reach, offsets)
 
 
 ## What the Skill does when activated, as `snapshot` says, aimed at `aim`: an offset on the
