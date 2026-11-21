@@ -1,3 +1,4 @@
+@tool
 class_name Skill
 extends Node3D
 ## A Skill (see GLOSSARY.md): something the player uses from a Skill slot. Each Skill is a
@@ -19,12 +20,10 @@ const AUTO_AIM_ANGLE := 60.0
 @export var aim := Aim.AUTO
 ## Whether it lands on a spot (aimed by how far, too) rather than going a direction.
 @export var aims_at_spot := false
-## Whether holding its slot uses it again each time its Use time ends.
+## Whether holding its slot uses it again each time its Cooldown ends.
 @export var repeats_while_held := false
-## The Skill's Use time: how long one use takes. The Skill bar takes no new use until it has passed.
-@export var use_time := 0.4
-## The Skill's cooldown: how long after a use starts before it can be used again, from any slot.
-## 0 for none. Its Use time still blocks the whole Skill bar meanwhile.
+## The Skill's Cooldown: how long after a use starts before it can be used again, from any slot.
+## The only thing that limits how often it is used, so every Skill needs one above 0.
 @export var cooldown := 0.0
 ## The Skill's Range: how far it reaches from the Character's centre, in world units.
 @export var range := 1.0
@@ -37,7 +36,7 @@ const AUTO_AIM_ANGLE := 60.0
 var cooldown_left := 0.0
 
 
-## Whether its cooldown has run out (or it has none).
+## Whether its cooldown has run out.
 func is_ready() -> bool:
 	return cooldown_left <= 0.0
 
@@ -58,6 +57,11 @@ func cool_down(delta: float) -> bool:
 ## How much of the cooldown is left: 1 just used, 0 ready.
 func cooldown_fraction() -> float:
 	return cooldown_left / cooldown if cooldown > 0.0 else 0.0
+
+
+## Warns in the editor about a Skill without a Cooldown: nothing would limit its uses.
+func _get_configuration_warnings() -> PackedStringArray:
+	return ["Every Skill needs a Cooldown above 0."] if cooldown <= 0.0 else []
 
 
 ## Where auto-aim points, as an offset on the ground from the Character: the nearest of

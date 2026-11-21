@@ -174,7 +174,7 @@ func _facing_toward_cursor() -> Vector3:
 
 
 ## Rings the Enemy nearest the spot under the mouse cursor, while the mouse aims: on PC, the
-## Enemy a precision Skill such as Mark would pick.
+## Enemy a Skill that lands on a spot would pick.
 func _highlight_hovered() -> void:
 	var point: Variant = _controls.cursor_on_ground(global_position.y) if _controls.leads_with_mouse() else null
 	var hovered := Skill.enemy_nearest(get_world_3d(), point as Vector3, HOVER_REACH) if point != null else null

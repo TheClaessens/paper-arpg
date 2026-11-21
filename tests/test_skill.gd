@@ -75,3 +75,12 @@ func test_auto_aim_at_a_body_in_range_goes_as_far_as_the_range() -> void:
 	await wait_physics_frames(2)
 	var aim := skill.aim_toward(Vector3.RIGHT)
 	assert_almost_eq(aim, Vector3(1.5, 0.0, 0.7).normalized() * 1.6, Vector3.ONE * 0.001, "at the Enemy, not along Facing")
+
+
+# Every Skill needs a Cooldown: it is the only thing that limits how often a Skill is used.
+
+func test_a_skill_without_a_cooldown_warns() -> void:
+	skill.cooldown = 0.0
+	assert_eq(skill._get_configuration_warnings().size(), 1)
+	skill.cooldown = 0.4
+	assert_eq(skill._get_configuration_warnings().size(), 0)

@@ -74,5 +74,5 @@ func test_a_second_finger_on_another_slot_leaves_a_hold_alone() -> void:
 	button.touch_started.emit(button.centre()) # a second finger lands on the Fireball
 	main.touch_moved.emit(main.centre() + Vector2(2.0, 0.0)) # the first only wobbles
 	player.skill_bar.advance(0.016)
-	player.skill_bar.advance(1.0) # past the Attack's Use time: the hold repeats it
+	player.skill_bar.advance(0.4) # the Attack's Cooldown ends: the hold repeats it
 	assert_eq(aims, [SkillBar.NO_AIM, SkillBar.NO_AIM] as Array[Vector3], "still auto-aimed, not steered")
