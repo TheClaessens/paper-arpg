@@ -6,10 +6,10 @@
 
 **Status:** ready-for-agent
 
-- [ ] The Skill reads the Pierce behaviour from its Snapshot's tags.
-- [ ] `modifier pierce on`: Fireball's Snapshot has the Pierce tag; Attack's doesn't.
-- [ ] With Pierce on, Fireball's projectile hits the first Enemy, passing through it, and stops on the second. It hits an Enemy it already hit only once.
-- [ ] Walls and Range still stop it.
-- [ ] Switching Pierce off while a projectile flies leaves that projectile piercing.
-- [ ] With every proof Modifier off, Fireball behaves as made.
-- [ ] GUT tests cover the above; `tools/check.sh` passes; checked once in game.
+- [x] The Skill reads the Pierce behaviour from its Snapshot's tags.
+- [x] `modifier pierce on`: Fireball's Snapshot has the Pierce tag; Attack's doesn't.
+- [x] With Pierce on, Fireball's projectile hits the first Enemy, passing through it, and stops on the second. It hits an Enemy it already hit only once.
+- [x] Walls and Range still stop it.
+- [x] Switching Pierce off while a projectile flies leaves that projectile piercing.
+- [x] With every proof Modifier off, Fireball behaves as made.
+- [x] GUT tests cover the above; `tools/check.sh` passes; checked once in game.
