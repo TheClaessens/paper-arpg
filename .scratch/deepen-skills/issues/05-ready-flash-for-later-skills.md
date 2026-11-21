@@ -4,7 +4,7 @@
 
 **Status:** ready-for-agent
 
-- [ ] A Skill added to the player after `_ready` and slotted flashes its button when its Cooldown ends.
-- [ ] A button whose Skill was swapped out no longer flashes for the old Skill.
-- [ ] A Skill sitting in two slots flashes both.
-- [ ] `tools/check.sh` passes.
+- [x] A Skill added to the player after `_ready` and slotted flashes its button when its Cooldown ends.
+- [x] A button whose Skill was swapped out no longer flashes for the old Skill.
+- [x] A Skill sitting in two slots flashes both.
+- [x] `tools/check.sh` passes.
