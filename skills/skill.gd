@@ -13,6 +13,14 @@ enum Aim { AROUND, AUTO, AIMED }
 ## Auto-aim takes an Enemy at most this far either side of Facing.
 const AUTO_AIM_ANGLE := 60.0
 
+## The one table of implied Skill tags: a Skill with the key tag also has each tag it lists.
+const IMPLIED_TAGS: Dictionary[StringName, Array] = {
+	&"Fire": [&"Elemental"],
+}
+
+## The Skill's Skill tags, as set in its scene: what kind of Skill it is. Implied tags are
+## left out here; with_implied() works them out.
+@export var tags: Array[StringName] = []
 ## The Skill's name, as the player sees it.
 @export var title := ""
 ## The Skill's picture on its Skill slot's button and in the Skill drawer.
@@ -66,6 +74,17 @@ func cooldown_fraction() -> float:
 ## Warns in the editor about a Skill without a Cooldown: nothing would limit its uses.
 func _get_configuration_warnings() -> PackedStringArray:
 	return ["Every Skill needs a Cooldown above 0."] if cooldown <= 0.0 else []
+
+
+## `given` plus every tag IMPLIED_TAGS says they imply. Worked out from the tags given, so a
+## set without Fire has no Elemental. One level deep: an implied tag implies nothing further.
+static func with_implied(given: Array[StringName]) -> Array[StringName]:
+	var all := given.duplicate()
+	for tag in given:
+		for implied: StringName in IMPLIED_TAGS.get(tag, []):
+			if implied not in all:
+				all.append(implied)
+	return all
 
 
 ## Where auto-aim points, as an offset on the ground from the Character: the nearest of
