@@ -57,7 +57,7 @@ A place on the Skill bar that holds one Skill or is empty, with its own button. 
 _Avoid_: Hotbar, action slot, button
 
 **Skill bar**:
-The player's five Skill slots: the main slot, and four smaller ones fanned around it. Using any of them makes the player busy for that Skill's Use time, so no slot can be used until it has passed.
+The player's five Skill slots: the main slot, and four smaller ones fanned around it.
 _Avoid_: Hotbar, action bar, loadout
 
 **Main slot**:
@@ -68,13 +68,9 @@ _Avoid_: Primary slot, attack button
 The list of the player's Skills that opens when they choose a Skill slot to change, to pick what goes in it.
 _Avoid_: Skill picker, spellbook, inventory
 
-**Use time**:
-How long one use of a Skill takes. The Skill bar takes no new use, from any slot, until it has passed. Each Skill has its own, and game systems such as attack speed may change it.
-_Avoid_: Global cooldown, cast time, attack time
-
 **Cooldown**:
-How long after a use starts before a Skill can be used again, from any slot it sits in. It is the Skill's own clock, separate from Use time; many Skills have none.
-_Avoid_: Recharge, refresh, timer
+How long after a use starts before a Skill can be used again, from any slot it sits in. Every Skill has one, and it is the only thing that limits how often a Skill is used. Modifiers such as attack speed change it.
+_Avoid_: Recharge, refresh, timer, global cooldown, use time
 
 **Range**:
 How far a Skill reaches from the Character using it: the length of a swing, or how far a projectile flies.
