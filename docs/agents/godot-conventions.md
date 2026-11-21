@@ -30,6 +30,8 @@ Besides `help` and the Settings commands (`settings`, `get`, `set`), the Console
 
 Logic with branches (parsing, validation, rules) gets a [GUT](https://gut.readthedocs.io) test in `tests/`, named `test_<subject>.gd`.
 
+One test file: `godot --headless --path . -s addons/gut/gut_cmdln.gd -gselect=test_<subject>.gd -gexit`. (`-gtest` adds to the `.gutconfig.json` dirs and runs the whole suite.)
+
 `tools/check.sh` loads every script and scene, then runs all tests; it exits non-zero on any failure. The pre-commit hook runs it once enabled per clone with `git config core.hooksPath .githooks`.
 
 To check a change visually, `tools/screenshot.gd` opens a scene, runs console commands, and saves a screenshot after each one (usage in its header). To check behaviour without playing, `tools/simulate.gd` runs a scene headless after console commands and prints every Character's position once per second. Commands that set the scene up:
