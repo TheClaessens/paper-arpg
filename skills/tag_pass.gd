@@ -7,7 +7,7 @@ extends RefCounted
 ## tags as they stand, applied together. Each applies at most once, and once applied it stays
 ## applied, with all its effects, even if a later wave removes a tag its filter needs. Removal
 ## wins: a tag removed in the pass can't be added back, whichever Modifier comes first. Every
-## other Modifier is judged on the final tags.
+## other Modifier is judged on the final tags. Why it works this way: docs/adr/0003.
 
 ## The Skill's tags after the pass, implied ones included.
 var tags: Array[StringName]

@@ -10,7 +10,7 @@ A framework that later game systems use to change Skills: **Skill tags** say wha
 2. **A Modifier is an optional filter plus one or more effects.** The filter checks Skill tags; with none, the Modifier applies to every Skill. Effects change a number, add a behaviour, or add, replace or remove a tag. (Adding and converting damage come with damage.)
 3. **A tag changes only when an effect adds, replaces or removes it.** Prefer replacing a damage-type tag over removing it.
 4. **Tag changes apply in waves, and removal wins.**
-   - Modifiers that change tags apply in waves: each wave is every one whose filter matches the tags as they stand. Once applied, a Modifier stays applied, with all its effects, even if a later wave removes a tag its filter needs. The pass never starts over (decided 2026-11-21).
+   - Modifiers that change tags apply in waves: each wave is every one whose filter matches the tags as they stand. Once applied, a Modifier stays applied, with all its effects, even if a later wave removes a tag its filter needs. The pass never starts over (decided 2026-11-21; see `docs/adr/0003-tag-changes-apply-in-waves.md`).
    - Every other Modifier applies only if its filter matches the Skill's tags after every tag change.
    - A removed tag can't come back in the same activation. Example: with "Projectiles pierce 2 Enemies" and "Skills that chain can no longer pierce", a Fireball that chains doesn't pierce, and anything that needs Pierce doesn't apply.
    - Each Modifier applies at most once per activation, so the tag pass always ends.
