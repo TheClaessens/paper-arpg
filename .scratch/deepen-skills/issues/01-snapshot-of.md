@@ -4,8 +4,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] `Snapshot.of` runs the tag pass, puts the changes in the pools in order, stacks them and writes the "why" lines. `Skill.snapshot` and `Skill.number` call it.
-- [ ] `IMPLIED_TAGS` and `with_implied` are on `TagPass`; nothing on `Skill` refers to them.
-- [ ] `Skill` no longer has `_numbers_with` or `stack`.
-- [ ] Tests that only check the rules build Snapshots from plain data, without instancing a Skill scene.
-- [ ] A search for the old names comes back clean in code, tests and docs; `tools/check.sh` passes.
+- [x] `Snapshot.of` runs the tag pass, puts the changes in the pools in order, stacks them and writes the "why" lines. `Skill.snapshot` and `Skill.number` call it.
+- [x] `IMPLIED_TAGS` and `with_implied` are on `TagPass`; nothing on `Skill` refers to them.
+- [x] `Skill` no longer has `_numbers_with` or `stack`.
+- [x] Tests that only check the rules build Snapshots from plain data, without instancing a Skill scene.
+- [x] A search for the old names comes back clean in code, tests and docs; `tools/check.sh` passes.

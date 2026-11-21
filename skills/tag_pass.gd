@@ -9,6 +9,11 @@ extends RefCounted
 ## wins: a tag removed in the pass can't be added back, whichever Modifier comes first. Every
 ## other Modifier is judged on the final tags. Why it works this way: docs/adr/0003.
 
+## The one table of implied Skill tags: a Skill with the key tag also has each tag it lists.
+const IMPLIED_TAGS: Dictionary[StringName, Array] = {
+	&"Fire": [&"Elemental"],
+}
+
 ## The Skill's tags after the pass, implied ones included.
 var tags: Array[StringName]
 
@@ -24,7 +29,7 @@ func _init(own_tags: Array[StringName], modifiers: Array[Modifier]) -> void:
 	var changers := modifiers.filter(func(m: Modifier) -> bool: return not m.tag_changes.is_empty())
 	var working: Array[StringName] = own_tags.duplicate() # the tags so far, without implied ones
 	while true:
-		tags = Skill.with_implied(working)
+		tags = with_implied(working)
 		var matching := changers.filter(func(m: Modifier) -> bool:
 			return m not in _applied and m.missing(tags).is_empty())
 		if matching.is_empty():
@@ -49,6 +54,17 @@ func _init(own_tags: Array[StringName], modifiers: Array[Modifier]) -> void:
 				working.append(tag)
 		for tag in _removed:
 			working.erase(tag)
+
+
+## `given` plus every tag IMPLIED_TAGS says they imply. Worked out from the tags given, so a
+## set without Fire has no Elemental. One level deep: an implied tag implies nothing further.
+static func with_implied(given: Array[StringName]) -> Array[StringName]:
+	var all := given.duplicate()
+	for tag in given:
+		for implied: StringName in IMPLIED_TAGS.get(tag, []):
+			if implied not in all:
+				all.append(implied)
+	return all
 
 
 ## Whether `modifier` applies: it changed tags in the pass, or its filter matches the final tags.
@@ -77,7 +93,7 @@ func explain(modifier: Modifier) -> String:
 ## Why `change` does nothing to a Skill whose tags so far are `working`, or empty when it acts.
 ## A Modifier can't change an implied tag directly, and a replace needs the tag it replaces.
 static func _why_skip(change: TagChange, working: Array[StringName]) -> String:
-	for implied: Array in Skill.IMPLIED_TAGS.values():
+	for implied: Array in IMPLIED_TAGS.values():
 		for tag: StringName in [change.removed(), change.gained()]:
 			if tag in implied:
 				return "can't change %s, it comes from another tag" % tag

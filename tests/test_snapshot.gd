@@ -1,17 +1,21 @@
 extends GutTest
-## Snapshots: each activation of a Skill is built from the Skill and its Character's Modifiers. A
-## Modifier applies when its filter matches the Skill's tags (implied ones included), or always
-## with no filter. Numbers stack flat, then Increased summed, then each More on its own.
+## Snapshots: each activation of a Skill is built from the Skill's own tags and numbers and its
+## Character's Modifiers. A Modifier applies when its filter matches the Skill's tags (implied
+## ones included), or always with no filter. Numbers stack flat, then Increased summed, then each
+## More on its own. The rules are checked on plain data; Skill.number() is checked on Fireball.
 
 const FireballScene := preload("res://skills/fireball/fireball.tscn")
-const AttackScene := preload("res://skills/attack/attack.tscn")
+
+## The tags of a fire projectile spell, as Fireball's, and of a melee attack, as Attack's.
+const SPELL: Array[StringName] = [&"Spell", &"Projectile", &"Fire"]
+const MELEE: Array[StringName] = [&"Attack", &"Melee"]
+## The own numbers every test Skill starts from.
+const NUMBERS: Dictionary[StringName, float] = {Skill.COOLDOWN: 4.0, Skill.RANGE: 10.0}
 
 
-## The Snapshot an activation of the Skill in `scene` would make with `modifiers`.
-func _snapshot(scene: PackedScene, modifiers: Array[Modifier]) -> Snapshot:
-	var skill: Skill = scene.instantiate()
-	autofree(skill)
-	return skill.snapshot(modifiers)
+## The Snapshot of a Skill with `tags` and NUMBERS, with `modifiers`.
+func _snapshot(tags: Array[StringName], modifiers: Array[Modifier]) -> Snapshot:
+	return Snapshot.of(tags, NUMBERS, modifiers)
 
 
 func _modifier(filter: Array[StringName], number: StringName, kind: NumberChange.Kind, amount: float) -> Modifier:
@@ -26,20 +30,20 @@ func _modifier(filter: Array[StringName], number: StringName, kind: NumberChange
 	return modifier
 
 
-func test_a_spell_filter_applies_to_fireball_and_not_to_attack() -> void:
+func test_a_spell_filter_applies_to_a_spell_and_not_to_an_attack() -> void:
 	var halved := _modifier([&"Spell"], Skill.COOLDOWN, NumberChange.Kind.INCREASED, -50.0)
-	assert_eq(_snapshot(FireballScene, [halved]).number(Skill.COOLDOWN), 2.0)
-	assert_eq(_snapshot(AttackScene, [halved]).number(Skill.COOLDOWN), 0.4)
+	assert_eq(_snapshot(SPELL, [halved]).number(Skill.COOLDOWN), 2.0)
+	assert_eq(_snapshot(MELEE, [halved]).number(Skill.COOLDOWN), 4.0)
 
 
 func test_no_filter_applies_to_every_skill() -> void:
 	var halved := _modifier([], Skill.COOLDOWN, NumberChange.Kind.INCREASED, -50.0)
-	assert_eq(_snapshot(FireballScene, [halved]).number(Skill.COOLDOWN), 2.0)
-	assert_almost_eq(_snapshot(AttackScene, [halved]).number(Skill.COOLDOWN), 0.2, 0.0001)
+	assert_eq(_snapshot(SPELL, [halved]).number(Skill.COOLDOWN), 2.0)
+	assert_eq(_snapshot(MELEE, [halved]).number(Skill.COOLDOWN), 2.0)
 
 
 func test_flat_then_increased_summed_then_each_more() -> void:
-	var snapshot := _snapshot(FireballScene, [
+	var snapshot := _snapshot(SPELL, [
 		_modifier([], Skill.RANGE, NumberChange.Kind.FLAT, 2.0),
 		_modifier([], Skill.RANGE, NumberChange.Kind.INCREASED, 20.0),
 		_modifier([], Skill.RANGE, NumberChange.Kind.INCREASED, 10.0),
@@ -49,7 +53,7 @@ func test_flat_then_increased_summed_then_each_more() -> void:
 
 
 func test_no_modifier_takes_a_number_below_zero() -> void:
-	var snapshot := _snapshot(FireballScene, [
+	var snapshot := _snapshot(SPELL, [
 		_modifier([], Skill.COOLDOWN, NumberChange.Kind.INCREASED, -150.0),
 		_modifier([], Skill.RANGE, NumberChange.Kind.MORE, -150.0),
 	])
@@ -66,7 +70,7 @@ func test_a_number_as_it_stands_now_follows_the_modifiers() -> void:
 
 
 func test_a_number_the_skill_does_not_have_is_ignored() -> void:
-	var snapshot := _snapshot(FireballScene, [_modifier([], Attack.SWEEP, NumberChange.Kind.FLAT, 30.0)])
+	var snapshot := _snapshot(SPELL, [_modifier([], Attack.SWEEP, NumberChange.Kind.FLAT, 30.0)])
 	assert_false(snapshot.numbers.has(Attack.SWEEP))
 	assert_eq(snapshot.number(Skill.RANGE), 10.0)
 
@@ -76,18 +80,18 @@ func test_the_snapshot_says_why_each_modifier_applied_or_missed() -> void:
 	spells.title = "Spells have 50% reduced cooldown"
 	var elemental := _modifier([&"Elemental"], Skill.RANGE, NumberChange.Kind.FLAT, 1.0)
 	elemental.title = "Elemental Skills have +1 Range"
-	assert_eq(_snapshot(AttackScene, [spells, elemental]).why, [
+	assert_eq(_snapshot(MELEE, [spells, elemental]).why, [
 		"Spells have 50% reduced cooldown: missed, not Spell",
 		"Elemental Skills have +1 Range: missed, not Elemental",
 	] as Array[String])
-	assert_eq(_snapshot(FireballScene, [spells, elemental]).why, [
+	assert_eq(_snapshot(SPELL, [spells, elemental]).why, [
 		"Spells have 50% reduced cooldown: applied",
 		"Elemental Skills have +1 Range: applied",
 	] as Array[String], "Elemental is implied by Fire")
 
 
 func test_a_snapshot_never_changes() -> void:
-	var snapshot := _snapshot(FireballScene, [])
+	var snapshot := _snapshot(SPELL, [])
 	assert_true(snapshot.numbers.is_read_only(), "writing to it is an engine error")
 	assert_true(snapshot.tags.is_read_only())
 	assert_true(snapshot.why.is_read_only())
@@ -108,7 +112,7 @@ func _tagger(title: String, filter: Array[StringName], kind: TagChange.Kind, tag
 
 func test_an_added_tag_lets_another_modifier_match() -> void:
 	var chains := _modifier([&"Chain"], Skill.RANGE, NumberChange.Kind.FLAT, 1.0)
-	var snapshot := _snapshot(FireballScene, [chains, _tagger("chain", [&"Projectile"], TagChange.Kind.ADD, &"Chain")])
+	var snapshot := _snapshot(SPELL, [chains, _tagger("chain", [&"Projectile"], TagChange.Kind.ADD, &"Chain")])
 	assert_has(snapshot.tags, &"Chain")
 	assert_eq(snapshot.number(Skill.RANGE), 11.0, "the Chain filter is judged after the tag is added")
 
@@ -116,7 +120,7 @@ func test_an_added_tag_lets_another_modifier_match() -> void:
 func test_replacing_fire_with_a_non_elemental_tag_drops_elemental() -> void:
 	var elemental := _modifier([&"Elemental"], Skill.RANGE, NumberChange.Kind.FLAT, 1.0)
 	elemental.title = "Elemental Skills have +1 Range"
-	var snapshot := _snapshot(FireballScene, [_tagger("Fire spells are now Holy", [&"Fire"], TagChange.Kind.REPLACE, &"Fire", &"Holy"), elemental])
+	var snapshot := _snapshot(SPELL, [_tagger("Fire spells are now Holy", [&"Fire"], TagChange.Kind.REPLACE, &"Fire", &"Holy"), elemental])
 	assert_eq(snapshot.tags, [&"Spell", &"Projectile", &"Holy"] as Array[StringName])
 	assert_eq(snapshot.number(Skill.RANGE), 10.0)
 	assert_eq(snapshot.why, [
@@ -128,9 +132,9 @@ func test_replacing_fire_with_a_non_elemental_tag_drops_elemental() -> void:
 func test_a_removed_tag_cannot_be_added_back_whichever_comes_first() -> void:
 	var adds := _tagger("Projectiles pierce an Enemy", [&"Projectile"], TagChange.Kind.ADD, &"Pierce")
 	var removes := _tagger("Spells can no longer pierce", [&"Spell"], TagChange.Kind.REMOVE, &"Pierce")
-	assert_does_not_have(_snapshot(FireballScene, [adds, removes]).tags, &"Pierce")
-	assert_does_not_have(_snapshot(FireballScene, [removes, adds]).tags, &"Pierce")
-	assert_eq(_snapshot(FireballScene, [adds, removes]).why, [
+	assert_does_not_have(_snapshot(SPELL, [adds, removes]).tags, &"Pierce")
+	assert_does_not_have(_snapshot(SPELL, [removes, adds]).tags, &"Pierce")
+	assert_eq(_snapshot(SPELL, [adds, removes]).why, [
 		"Projectiles pierce an Enemy: applied, Pierce stays removed",
 		"Spells can no longer pierce: applied, removes Pierce",
 	] as Array[String])
@@ -142,8 +146,8 @@ func test_skills_that_chain_can_no_longer_pierce() -> void:
 	var no_pierce := _tagger("Skills that chain can no longer pierce", [&"Chain"], TagChange.Kind.REMOVE, &"Pierce")
 	var piercing := _modifier([&"Pierce"], Skill.RANGE, NumberChange.Kind.FLAT, 1.0)
 	piercing.title = "Piercing Skills have +1 Range"
-	var snapshot := _snapshot(FireballScene, [piercing, no_pierce, pierces, chains])
-	assert_does_not_have(snapshot.tags, &"Pierce", "a chaining Fireball doesn't pierce")
+	var snapshot := _snapshot(SPELL, [piercing, no_pierce, pierces, chains])
+	assert_does_not_have(snapshot.tags, &"Pierce", "a chaining projectile doesn't pierce")
 	assert_eq(snapshot.number(Skill.RANGE), 10.0, "anything needing Pierce misses")
 	assert_eq(snapshot.why[0], "Piercing Skills have +1 Range: missed, Pierce was removed")
 
@@ -155,7 +159,7 @@ func test_a_tag_changer_stays_applied_when_a_later_change_removes_its_tag() -> v
 	change.amount = 2.0
 	to_holy.number_changes = [change]
 	var unfire := _tagger("Blessed Skills lose Fire", [&"Holy"], TagChange.Kind.REMOVE, &"Fire")
-	var snapshot := _snapshot(FireballScene, [unfire, to_holy])
+	var snapshot := _snapshot(SPELL, [unfire, to_holy])
 	assert_eq(snapshot.tags, [&"Spell", &"Projectile", &"Holy"] as Array[StringName])
 	assert_eq(snapshot.number(Skill.RANGE), 12.0, "its number changes still count")
 	assert_eq(snapshot.why, [
@@ -166,7 +170,7 @@ func test_a_tag_changer_stays_applied_when_a_later_change_removes_its_tag() -> v
 
 func test_tag_changes_come_before_number_changes() -> void:
 	var piercing := _modifier([&"Pierce"], Skill.COOLDOWN, NumberChange.Kind.INCREASED, -50.0)
-	var snapshot := _snapshot(FireballScene, [piercing, _tagger("pierce", [&"Projectile"], TagChange.Kind.ADD, &"Pierce")])
+	var snapshot := _snapshot(SPELL, [piercing, _tagger("pierce", [&"Projectile"], TagChange.Kind.ADD, &"Pierce")])
 	assert_eq(snapshot.number(Skill.COOLDOWN), 2.0, "the granted Pierce is there when numbers are worked out")
 
 
@@ -176,7 +180,7 @@ func test_a_tag_changer_applies_its_number_changes_too() -> void:
 	change.number = Skill.RANGE
 	change.amount = 2.0
 	pierces.number_changes = [change]
-	assert_eq(_snapshot(FireballScene, [pierces]).number(Skill.RANGE), 12.0)
+	assert_eq(_snapshot(SPELL, [pierces]).number(Skill.RANGE), 12.0)
 
 
 func test_a_tag_changers_number_changes_are_a_pool_of_their_own() -> void:
@@ -186,43 +190,43 @@ func test_a_tag_changers_number_changes_are_a_pool_of_their_own() -> void:
 	change.kind = NumberChange.Kind.INCREASED
 	change.amount = 50.0
 	pierces.number_changes = [change]
-	var snapshot := _snapshot(FireballScene, [_modifier([], Skill.RANGE, NumberChange.Kind.FLAT, 2.0), pierces])
+	var snapshot := _snapshot(SPELL, [_modifier([], Skill.RANGE, NumberChange.Kind.FLAT, 2.0), pierces])
 	assert_eq(snapshot.number(Skill.RANGE), 17.0, "10 × 1.5, then + 2")
 
 
 func test_two_modifiers_that_switch_each_other_off_still_end() -> void:
 	var unspell := _tagger("Fire Skills lose Spell", [&"Fire"], TagChange.Kind.REMOVE, &"Spell")
 	var unfire := _tagger("Spells lose Fire", [&"Spell"], TagChange.Kind.REMOVE, &"Fire")
-	var snapshot := _snapshot(FireballScene, [unspell, unfire])
+	var snapshot := _snapshot(SPELL, [unspell, unfire])
 	assert_eq(snapshot.tags, [&"Projectile"] as Array[StringName], "both match in the first round, so both apply")
 
 
 func test_an_implied_tag_cannot_be_changed_directly() -> void:
 	var add := _tagger("Skills are Elemental", [], TagChange.Kind.ADD, &"Elemental")
-	assert_does_not_have(_snapshot(AttackScene, [add]).tags, &"Elemental")
-	assert_eq(_snapshot(AttackScene, [add]).why, [
+	assert_does_not_have(_snapshot(MELEE, [add]).tags, &"Elemental")
+	assert_eq(_snapshot(MELEE, [add]).why, [
 		"Skills are Elemental: applied, can't change Elemental, it comes from another tag",
 	] as Array[String])
 	var remove := _tagger("Skills are not Elemental", [], TagChange.Kind.REMOVE, &"Elemental")
-	assert_has(_snapshot(FireballScene, [remove]).tags, &"Elemental", "Fire still implies it")
+	assert_has(_snapshot(SPELL, [remove]).tags, &"Elemental", "Fire still implies it")
 
 
 func test_a_replace_of_a_tag_the_skill_lacks_says_so() -> void:
-	var snapshot := _snapshot(AttackScene, [_tagger("Fire is Cold", [], TagChange.Kind.REPLACE, &"Fire", &"Cold")])
+	var snapshot := _snapshot(MELEE, [_tagger("Fire is Cold", [], TagChange.Kind.REPLACE, &"Fire", &"Cold")])
 	assert_eq(snapshot.tags, [&"Attack", &"Melee"] as Array[StringName])
 	assert_eq(snapshot.why, ["Fire is Cold: applied, no Fire to replace"] as Array[String])
 
 
-func test_the_pierce_proof_modifier_gives_fireball_pierce_and_not_attack() -> void:
+func test_the_pierce_proof_modifier_gives_a_projectile_pierce_and_not_an_attack() -> void:
 	var pierce: Modifier = load("res://skills/modifiers/pierce.tres")
-	var fireball := _snapshot(FireballScene, [pierce])
+	var fireball := _snapshot(SPELL, [pierce])
 	assert_has(fireball.tags, &"Pierce")
 	assert_eq(fireball.why, ["Projectiles pierce an Enemy: applied, adds Pierce"])
-	var attack := _snapshot(AttackScene, [pierce])
+	var attack := _snapshot(MELEE, [pierce])
 	assert_does_not_have(attack.tags, &"Pierce")
 	assert_eq(attack.why, ["Projectiles pierce an Enemy: missed, not Projectile"])
 
 
 func test_a_modifier_listed_twice_applies_once() -> void:
 	var farther := _modifier([], Skill.RANGE, NumberChange.Kind.FLAT, 2.0)
-	assert_eq(_snapshot(FireballScene, [farther, farther]).number(Skill.RANGE), 12.0)
+	assert_eq(_snapshot(SPELL, [farther, farther]).number(Skill.RANGE), 12.0)

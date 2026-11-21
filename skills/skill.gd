@@ -17,11 +17,6 @@ enum Aim { AROUND, AUTO, AIMED }
 ## Auto-aim takes an Enemy at most this far either side of Facing.
 const AUTO_AIM_ANGLE := 60.0
 
-## The one table of implied Skill tags: a Skill with the key tag also has each tag it lists.
-const IMPLIED_TAGS: Dictionary[StringName, Array] = {
-	&"Fire": [&"Elemental"],
-}
-
 ## The names of the Skill's numbers (see numbers()), as Modifiers and Snapshots know them.
 const COOLDOWN := &"Cooldown"
 const RANGE := &"Range"
@@ -29,7 +24,7 @@ const KNOCKBACK := &"Knockback"
 const STAGGER := &"Stagger"
 
 ## The Skill's Skill tags, as set in its scene: what kind of Skill it is. Implied tags are
-## left out here; with_implied() works them out.
+## left out here; the tag pass works them out (see TagPass.with_implied()).
 @export var tags: Array[StringName] = []
 ## The Skill's name, as the player sees it.
 @export var title := ""
@@ -96,17 +91,6 @@ func _get_configuration_warnings() -> PackedStringArray:
 	return ["Every Skill needs a Cooldown above 0."] if cooldown <= 0.0 else []
 
 
-## `given` plus every tag IMPLIED_TAGS says they imply. Worked out from the tags given, so a
-## set without Fire has no Elemental. One level deep: an implied tag implies nothing further.
-static func with_implied(given: Array[StringName]) -> Array[StringName]:
-	var all := given.duplicate()
-	for tag in given:
-		for implied: StringName in IMPLIED_TAGS.get(tag, []):
-			if implied not in all:
-				all.append(implied)
-	return all
-
-
 ## The Skill's numbers by name, for Modifiers to change. A Skill with numbers of its own adds
 ## them to these.
 func numbers() -> Dictionary[StringName, float]:
@@ -125,55 +109,16 @@ func try_activate(aim: Vector3, modifiers: Array[Modifier]) -> bool:
 	return true
 
 
-## The Skill as one activation sees it: a Snapshot made by the tag pass (see TagPass) with every
-## one of `modifiers` that applies.
+## The Skill as one activation sees it: a Snapshot of its tags and numbers with every one of
+## `modifiers` that applies (see Snapshot.of()).
 func snapshot(modifiers: Array[Modifier]) -> Snapshot:
-	var tag_pass := TagPass.new(tags, modifiers)
-	var why: Array[String] = []
-	for modifier in modifiers:
-		why.append(tag_pass.explain(modifier))
-	return Snapshot.new(tag_pass.tags, _numbers_with(tag_pass, modifiers), why)
+	return Snapshot.of(tags, numbers(), modifiers)
 
 
 ## The number called `name` as it stands now with `modifiers`, outside any activation: for
 ## aiming, which follows the Modifiers as they come and go.
 func number(name: StringName, modifiers: Array[Modifier]) -> float:
-	return _numbers_with(TagPass.new(tags, modifiers), modifiers)[name]
-
-
-## Each of the Skill's numbers with every one of `modifiers` that applies after `tag_pass`, in
-## two pools: the number changes of Modifiers that change tags, then every other's.
-func _numbers_with(tag_pass: TagPass, modifiers: Array[Modifier]) -> Dictionary[StringName, float]:
-	var tag_pool: Array[NumberChange] = []
-	var number_pool: Array[NumberChange] = []
-	var counted: Array[Modifier] = [] # each Modifier applies at most once, even if listed twice
-	for modifier in modifiers:
-		if modifier not in counted and tag_pass.applies(modifier):
-			counted.append(modifier)
-			(number_pool if modifier.tag_changes.is_empty() else tag_pool).append_array(modifier.number_changes)
-	var result := numbers()
-	for name in result:
-		result[name] = stack(stack(result[name], name, tag_pool), name, number_pool)
-	return result
-
-
-## The number called `name`, `value` at first, with each of `changes` to it: flat additions
-## first, then the sum of every Increased percentage, then each More percentage on its own.
-## Neither takes a number below 0: Increased stops at -100%, and so does each More.
-static func stack(value: float, name: StringName, changes: Array[NumberChange]) -> float:
-	var increased := 0.0
-	var more := 1.0
-	for change in changes:
-		if change.number != name:
-			continue
-		match change.kind:
-			NumberChange.Kind.FLAT:
-				value += change.amount
-			NumberChange.Kind.INCREASED:
-				increased += change.amount
-			NumberChange.Kind.MORE:
-				more *= maxf(0.0, 1.0 + change.amount / 100.0)
-	return value * maxf(0.0, 1.0 + increased / 100.0) * more
+	return snapshot(modifiers).number(name)
 
 
 ## Where auto-aim points, as an offset on the ground from the Character: the nearest of
