@@ -38,7 +38,7 @@ To check a change visually, `tools/screenshot.gd` opens a scene, runs console co
 
 - `tp <x> <z>` puts the player where the test needs them.
 - `bar <slot> <skill|empty>` fills or empties a Skill slot.
-- `use <slot> [<x> <z>]` uses one, auto-aimed or aimed.
+- `activate <slot> [<x> <z>]` presses one, auto-aimed or aimed.
 - `touch <slot> [<dx> <dy>]` taps or drags it like a finger.
 
 Reach for these before writing a one-off check script.

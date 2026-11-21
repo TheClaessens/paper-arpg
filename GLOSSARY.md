@@ -29,7 +29,7 @@ The distance from an Enemy within which the player draws its Aggro.
 _Avoid_: Detection range, sight radius
 
 **Controls**:
-How the player tells their Character what to do: where to walk, where to aim and which Skill slot to use, by keys and mouse, a controller or touch.
+How the player tells their Character what to do: where to walk, where to aim and which Skill slot to activate, by keys and mouse, a controller or touch.
 _Avoid_: Input, player input, input handler
 
 **Touch stick**:
@@ -41,8 +41,12 @@ The direction on the ground a Character points, at any angle. The player's Facin
 _Avoid_: Heading, orientation
 
 **Skill**:
-Something the player uses from a Skill slot, such as Fireball or Attack.
+Something the player activates from a Skill slot, such as Fireball or Attack. The Character has its Skills; the Skill bar is only where they are slotted.
 _Avoid_: Ability, spell, action, power
+
+**Activate**:
+To set a Skill off: it checks its Cooldown, makes a Snapshot, starts the Snapshot's Cooldown and does what it does. One such time is an activation.
+_Avoid_: Use, cast, invoke, trigger (kept for a Skill set off by another event)
 
 **Skill tag**:
 A word on a Skill that says what kind of Skill it is, such as Spell, Projectile or Fire. Some Skill tags imply others: a Fire Skill is also Elemental.
@@ -73,7 +77,7 @@ The Skill that uses the equipped Weapon: a sword swings, a bow shoots. The playe
 _Avoid_: Basic attack, auto-attack, default attack
 
 **Skill slot**:
-A place on the Skill bar that holds one Skill or is empty, with its own button. Using the slot uses the Skill in it; an empty slot does nothing. The same Skill may sit in several slots.
+A place on the Skill bar that holds one Skill or is empty, with its own button. Pressing the slot activates the Skill in it; an empty slot does nothing. The same Skill may sit in several slots.
 _Avoid_: Hotbar, action slot, button
 
 **Skill bar**:
@@ -89,12 +93,12 @@ The list of the player's Skills that opens when they choose a Skill slot to chan
 _Avoid_: Skill picker, spellbook, inventory
 
 **Cooldown**:
-How long after a use starts before a Skill can be used again, from any slot it sits in. Every Skill has one, and it is the only thing that limits how often a Skill is used. Modifiers such as attack speed change it.
+How long after an activation starts before a Skill can be activated again, from any slot it sits in. Every Skill has one, and it is the only thing that limits how often a Skill is activated. Modifiers such as attack speed change it.
 _Avoid_: Recharge, refresh, timer, global cooldown, use time
 
 **Snapshot**:
-A Skill with every Modifier that applied when it was used, fixed from that moment for everything the use causes, such as a projectile in flight or a burn left on an Enemy.
-_Avoid_: Use, cast, invocation, instance
+A Skill with every Modifier that applied when it was activated, fixed from that moment for everything the activation causes, such as a projectile in flight or a burn left on an Enemy.
+_Avoid_: Activation, cast, invocation, instance
 
 **Range**:
 How far a Skill reaches from the Character using it: the length of a swing, or how far a projectile flies.
@@ -113,7 +117,7 @@ The short time after a hit when an Enemy slides with the knockback and does not 
 _Avoid_: Stun, hitstun, flinch
 
 **Aim**:
-Where a use of a Skill is sent: a direction on the ground, and for a Skill that lands on a spot, also how far. The mouse cursor, the right stick or a drag off the Skill slot sets it; otherwise Auto-aim does. A Skill used around the player has none.
+Where an activation of a Skill is sent: a direction on the ground, and for a Skill that lands on a spot, also how far. The mouse cursor, the right stick or a drag off the Skill slot sets it; otherwise Auto-aim does. A Skill activated around the player has none.
 _Avoid_: Target, heading, direction
 
 **Auto-aim**:
