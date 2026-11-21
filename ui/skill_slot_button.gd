@@ -5,7 +5,7 @@ extends Control
 ## does, and reports where it goes and where it lifts; it takes a second finger while the thumb
 ## holds the stick. While the Skill bar is being changed it shows a focusable Button instead,
 ## which emits `chosen`.
-## It also shows the Skill's cooldown, presses in when used and flashes when ready again.
+## It also shows the Skill's cooldown, presses in when activated and flashes when ready again.
 
 signal chosen
 ## A finger landed on the button at `at`, moved to `at`, or lifted at `at` (viewport coordinates).
@@ -17,7 +17,7 @@ const NO_FINGER := -1
 
 ## How faded an empty slot is.
 const EMPTY_OPACITY := 0.5
-## How far a used button presses in, and how long it takes to spring back.
+## How far a button presses in on an activation, and how long it takes to spring back.
 const PRESS_SCALE := 0.86
 const PRESS_TIME := 0.15
 ## How bright the ready flash starts, and how long it fades.
@@ -64,7 +64,7 @@ func show_skill(skill: Skill) -> void:
 	_face.modulate.a = 1.0 if skill else EMPTY_OPACITY
 
 
-## In play the slot is used by touch; while editing it is chosen with a tap, click or controller.
+## In play the slot is pressed by touch; while editing it is chosen with a tap, click or controller.
 func set_editing(on: bool) -> void:
 	_choose.visible = on
 
@@ -78,7 +78,7 @@ func focus() -> void:
 	_choose.grab_focus()
 
 
-## Presses the button in and lets it spring back, for a use.
+## Presses the button in and lets it spring back, for an activation.
 func press_in() -> void:
 	_face.scale = Vector2.ONE * PRESS_SCALE
 	create_tween().set_ignore_time_scale().tween_property(_face, ^"scale", Vector2.ONE, PRESS_TIME)

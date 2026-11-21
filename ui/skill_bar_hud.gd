@@ -3,11 +3,11 @@ extends Control
 ## The Skill bar on screen (see GLOSSARY.md): the main slot in the bottom right and the four
 ## small slots fanned around it, inside the phone's safe area. It follows the player's Skill bar.
 ## While the Skill bar is being changed (`editing`), each slot can be chosen; `slot_chosen` says
-## which. Each slot shows its Skill's cooldown, presses in when used and flashes when ready.
+## which. Each slot shows its Skill's cooldown, presses in when activated and flashes when ready.
 ##
-## On touch, tapping a slot uses it (auto-aimed). Holding a Skill that repeats while held (the
-## Attack) keeps using it, and dragging steers it. An aimed Skill can instead be dragged off its
-## slot: the Player shows where it would go, and lifting the thumb uses it there. Dragging back
+## On touch, tapping a slot activates it (auto-aimed). Holding a Skill that repeats while held
+## (the Attack) keeps activating it, and dragging steers it. An aimed Skill can instead be
+## dragged off its slot: the Player shows where it would go, and lifting the thumb activates it there. Dragging back
 ## onto the slot and lifting there cancels it. Sizes are in viewport units: on an iPhone 17 Pro, 1 pt is about 1.6 of them.
 
 signal slot_chosen(slot: int)
@@ -52,13 +52,14 @@ func _ready() -> void:
 		button.show_skill(player.skill_bar.skill_in(slot))
 		_buttons.append(button)
 	player.skill_bar.changed.connect(_on_slot_changed)
-	player.skill_bar.slot_used.connect(func(slot: int) -> void: _buttons[slot].press_in())
-	player.skill_bar.ready_again.connect(_on_ready_again)
+	player.skill_activated.connect(func(slot: int) -> void: _buttons[slot].press_in())
+	for skill in player.skills:
+		skill.ready_again.connect(_on_ready_again.bind(skill))
 	get_viewport().size_changed.connect(_layout)
 	_layout()
 
 
-## While on, each slot can be chosen instead of used.
+## While on, each slot can be chosen instead of activated.
 func set_editing(on: bool) -> void:
 	for button in _buttons:
 		button.set_editing(on)
@@ -106,7 +107,7 @@ func _on_touch_started(at: Vector2, slot: int) -> void:
 	if skill == null or not skill.is_ready():
 		return
 	if skill.aim == Skill.Aim.AIMED:
-		_aiming_slot = slot # used when the thumb lifts
+		_aiming_slot = slot # activated when the thumb lifts
 		_aimed = false
 		_left_slot = false
 	else:

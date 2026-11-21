@@ -123,7 +123,7 @@ func test_after_a_use_the_player_faces_the_aim_for_a_moment() -> void:
 	assert_almost_eq(player.facing, Vector3(0.0, 0.0, -1.0), Vector3.ONE * 0.05, "then the walk takes Facing back")
 
 
-# The `bar` and `use` console commands, for driving Skills from tools/screenshot.gd and simulate.gd.
+# The `bar` and `activate` console commands, for driving Skills from tools/screenshot.gd and simulate.gd.
 
 func test_bar_puts_a_skill_in_a_slot_and_empties_it() -> void:
 	assert_eq(Console.execute("bar 2 fireball"), "bar 2 Fireball")
@@ -137,29 +137,80 @@ func test_bar_rejects_bad_slots_and_unknown_skills() -> void:
 	assert_string_starts_with(Console.execute("bar 2 hammer"), "Unknown Skill 'hammer'")
 
 
-func test_use_presses_a_slot_with_or_without_an_aim() -> void:
+## `seconds` pass: the player's Skills cool down (as each does in its own physics step), then
+## its Skill bar works through its presses and holds.
+func _elapse(seconds: float) -> void:
+	for skill in player.skills:
+		skill.cool_down(seconds)
+	player.skill_bar.advance()
+
+
+func test_activate_presses_a_slot_with_or_without_an_aim() -> void:
 	var aims: Array[Vector3] = []
-	player.skill_bar.used.connect(func(_skill: Skill, aim: Vector3) -> void: aims.append(aim))
-	assert_eq(Console.execute("use 1 3 -1"), "use 1 at 3 -1")
-	player.skill_bar.advance(0.016)
-	player.skill_bar.advance(1.0)
-	assert_eq(Console.execute("use 1"), "use 1")
-	player.skill_bar.advance(0.016)
+	player.skill_bar.activation_requested.connect(func(_slot: int, aim: Vector3) -> void: aims.append(aim))
+	assert_eq(Console.execute("activate 1 3 -1"), "activate 1 at 3 -1")
+	_elapse(0.016)
+	_elapse(1.0)
+	assert_eq(Console.execute("activate 1"), "activate 1")
+	_elapse(0.016)
 	assert_eq(aims, [Vector3(3.0, 0.0, -1.0), SkillBar.NO_AIM] as Array[Vector3])
-	assert_eq(Console.execute("use x"), "Usage: use <1-5> [<x> <z>]")
+	assert_eq(Console.execute("activate x"), "Usage: activate <1-5> [<x> <z>]")
 
 
-# The Controls' signals reach the Skill bar: a press uses the slot and holds it, and letting go
-# stops the repeats.
+# The Controls' signals reach the Skill bar: a press activates the slot's Skill and holds the
+# slot, and letting go stops the repeats.
 
 func test_the_controls_press_hold_and_let_go_of_a_slot() -> void:
-	var used: Array[Skill] = []
-	player.skill_bar.used.connect(func(skill: Skill, _aim: Vector3) -> void: used.append(skill))
+	var activated: Array[int] = []
+	player.skill_activated.connect(func(slot: int) -> void: activated.append(slot))
 	var controls: Controls = player.get_node("Controls")
 	controls.slot_pressed.emit(0) # the Attack: repeats while held
-	player.skill_bar.advance(0.016)
-	player.skill_bar.advance(0.4) # its Cooldown ends
-	assert_eq(used.size(), 2, "pressed, then repeated while held")
+	_elapse(0.016)
+	_elapse(0.4) # its Cooldown ends
+	assert_eq(activated, [0, 0] as Array[int], "pressed, then repeated while held")
 	controls.slot_released.emit(0)
-	player.skill_bar.advance(1.0)
-	assert_eq(used.size(), 2, "let go")
+	_elapse(1.0)
+	assert_eq(activated.size(), 2, "let go")
+
+
+func test_a_requested_skill_is_activated_with_the_players_modifiers() -> void:
+	var fireball := _fireball()
+	player.skill_bar.set_skill(1, fireball)
+	Console.execute("modifier spell-cooldown on")
+	player.skill_bar.press(1, Vector3.RIGHT)
+	_elapse(0.016)
+	assert_eq(fireball.cooldown_left, 2.0, "Spells have 50% reduced cooldown")
+
+
+# The `modifier` command switches the proof Modifiers on the player, for trying them in game.
+
+func _fireball() -> Skill:
+	for skill in player.skills:
+		if skill.title == "Fireball":
+			return skill
+	return null
+
+
+func test_modifier_lists_the_proof_modifiers_and_why_each_applies() -> void:
+	assert_eq(Console.execute("modifier"), "spell-cooldown: off (Spells have 50% reduced cooldown)")
+	Console.execute("modifier spell-cooldown on")
+	assert_eq(Console.execute("modifier"), "\n".join([
+		"spell-cooldown: on (Spells have 50% reduced cooldown)",
+		"Attack › Spells have 50% reduced cooldown: missed, not Spell",
+		"Fireball › Spells have 50% reduced cooldown: applied",
+	]))
+
+
+func test_modifier_switches_a_proof_modifier_on_and_off() -> void:
+	assert_eq(Console.execute("modifier spell-cooldown on"), "modifier spell-cooldown on")
+	assert_eq(_fireball().snapshot(player.modifiers).number(Skill.COOLDOWN), 2.0)
+	Console.execute("modifier spell-cooldown on")
+	assert_eq(player.modifiers.size(), 1, "switching on twice adds it once")
+	assert_eq(Console.execute("modifier spell-cooldown off"), "modifier spell-cooldown off")
+	assert_eq(_fireball().snapshot(player.modifiers).number(Skill.COOLDOWN), 4.0)
+
+
+func test_modifier_needs_a_known_name_and_on_or_off() -> void:
+	assert_eq(Console.execute("modifier pierce on"), "Usage: modifier [<spell-cooldown> on|off]")
+	assert_eq(Console.execute("modifier spell-cooldown maybe"), "Usage: modifier [<spell-cooldown> on|off]")
+	assert_eq(player.modifiers.size(), 0)

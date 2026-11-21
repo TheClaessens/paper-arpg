@@ -1,6 +1,7 @@
 class_name Projectile
 extends Area3D
-## A shot flying straight along `direction` until it has flown its Range or touches something.
+## A shot flying straight along `direction` at its Snapshot's Speed until it has flown its
+## Snapshot's Range or touches something.
 ## It looks for walls and props (`world` layer) and Enemies (`enemy` layer), and reports an
 ## Enemy it touched with `hit_enemy`; the Skill that fired it decides what the hit does.
 
@@ -8,10 +9,9 @@ signal hit_enemy(enemy: Enemy)
 
 ## A unit direction on the ground.
 var direction := Vector3.FORWARD
-## World units per second.
-var speed := 12.0
-## How far it flies before it disappears, in world units.
-var range := 10.0
+## The Snapshot of the activation that fired it: its Speed (world units per second) and Range
+## (world units). Set before it enters the tree.
+var snapshot: Snapshot
 
 var _flown := 0.0
 
@@ -21,10 +21,10 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	var step := speed * delta
+	var step := snapshot.number(Fireball.SPEED) * delta
 	global_position += direction * step
 	_flown += step
-	if _flown >= range:
+	if _flown >= snapshot.number(Skill.RANGE):
 		queue_free()
 
 
