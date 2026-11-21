@@ -78,7 +78,7 @@ func test_a_cooling_skill_ignores_presses_in_every_slot() -> void:
 	bar.set_skill(3, fire)
 	bar.press(1)
 	bar.advance(0.016)
-	bar.advance(3.97) # just before it is ready
+	bar.advance(fire.cooldown - 0.05) # just before it is ready
 	bar.press(3)
 	bar.advance(0.016)
 	bar.advance(1.0) # cooled down now, but the press was not kept

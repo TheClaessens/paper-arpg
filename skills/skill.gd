@@ -3,7 +3,8 @@ class_name Skill
 extends Node3D
 ## A Skill (see GLOSSARY.md): something the player uses from a Skill slot. Each Skill is a
 ## node on the Character, so it can reach the world from where the Character stands.
-## Subclasses do the work in use().
+## Subclasses do the work in use(). Each Skill script is a @tool, as this one is, so the editor
+## shows its configuration warnings.
 
 ## How a Skill aims. AROUND: used where the Character stands. AUTO: toward the nearest Enemy
 ## near Facing. AIMED: auto-aimed too, and on touch it can also be aimed by hand.
@@ -24,7 +25,10 @@ const AUTO_AIM_ANGLE := 60.0
 @export var repeats_while_held := false
 ## The Skill's Cooldown: how long after a use starts before it can be used again, from any slot.
 ## The only thing that limits how often it is used, so every Skill needs one above 0.
-@export var cooldown := 0.0
+@export var cooldown := 0.0:
+	set(value):
+		cooldown = value
+		update_configuration_warnings()
 ## The Skill's Range: how far it reaches from the Character's centre, in world units.
 @export var range := 1.0
 ## How far a hit pushes an Enemy, in world units.
