@@ -20,6 +20,8 @@ Build scenes as `.tscn` files and expose tuning values with `@export`, so they c
 
 Enforced: `project.godot` treats untyped declarations and unsafe (unchecked) property access, method calls and call arguments as errors, so `tools/check.sh` fails on them. To type an autoload, give its script a `class_name` that differs from the autoload's name (`GameSettings` for `Settings`, `DevConsole` for `Console`). Test files may opt out of `unsafe_call_argument` with `@warning_ignore_start`, because their assertions compare Variant values.
 
+`Array.filter()` and `map()` return an untyped `Array`, even on a typed array. Assigning the result to a typed array, or passing it to a typed array's `append_array()`, fails the check. Loop instead, or use `assign()`.
+
 ## Autoloads
 
 Autoloads are reserved for global services: `Settings` (runtime settings) and `Console` (developer console). Game state and gameplay logic belong in scenes and components.
