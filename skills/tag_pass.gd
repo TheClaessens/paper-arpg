@@ -3,9 +3,9 @@ extends RefCounted
 ## The tag pass (see GLOSSARY.md): works out a Skill's final tags from its own tags and the
 ## Character's Modifiers, and so which Modifiers apply.
 ##
-## Modifiers with tag changes go first, in waves: each wave is every one whose filter matches the
+## Modifiers with tag changes go first, in rounds: each round is every one whose filter matches the
 ## tags as they stand, applied together. Each applies at most once, and once applied it stays
-## applied, with all its effects, even if a later wave removes a tag its filter needs. Removal
+## applied, with all its effects, even if a later round removes a tag its filter needs. Removal
 ## wins: a tag removed in the pass can't be added back, whichever Modifier comes first. Every
 ## other Modifier is judged on the final tags. Why it works this way: docs/adr/0003.
 
@@ -18,18 +18,18 @@ var _removed: Array[StringName] = [] # every tag removed in the pass
 
 
 ## Runs the pass on a Skill whose own tags are `own_tags`, with the Character's `modifiers`:
-## wave after wave until no Modifier with tag changes is left whose filter matches.
+## round after round until no Modifier with tag changes is left whose filter matches.
 func _init(own_tags: Array[StringName], modifiers: Array[Modifier]) -> void:
 	var changers := modifiers.filter(func(m: Modifier) -> bool: return not m.tag_changes.is_empty())
 	var working: Array[StringName] = own_tags.duplicate() # the tags so far, without implied ones
 	while true:
 		tags = Skill.with_implied(working)
-		var wave := changers.filter(func(m: Modifier) -> bool:
+		var matching := changers.filter(func(m: Modifier) -> bool:
 			return m not in _applied and m.missing(tags).is_empty())
-		if wave.is_empty():
+		if matching.is_empty():
 			return
 		var added: Array[StringName] = []
-		for modifier: Modifier in wave:
+		for modifier: Modifier in matching:
 			_applied.append(modifier)
 			_changes_made[modifier] = []
 			for change in modifier.tag_changes:
