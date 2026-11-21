@@ -146,8 +146,10 @@ func number(name: StringName, modifiers: Array[Modifier]) -> float:
 func _numbers_with(tag_pass: TagPass, modifiers: Array[Modifier]) -> Dictionary[StringName, float]:
 	var tag_pool: Array[NumberChange] = []
 	var number_pool: Array[NumberChange] = []
+	var counted: Array[Modifier] = [] # each Modifier applies at most once, even if listed twice
 	for modifier in modifiers:
-		if tag_pass.applies(modifier):
+		if modifier not in counted and tag_pass.applies(modifier):
+			counted.append(modifier)
 			(number_pool if modifier.tag_changes.is_empty() else tag_pool).append_array(modifier.number_changes)
 	var result := numbers()
 	for name in result:

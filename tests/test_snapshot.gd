@@ -221,3 +221,8 @@ func test_the_pierce_proof_modifier_gives_fireball_pierce_and_not_attack() -> vo
 	var attack := _snapshot(AttackScene, [pierce])
 	assert_does_not_have(attack.tags, &"Pierce")
 	assert_eq(attack.why, ["Projectiles pierce an Enemy: missed, not Projectile"])
+
+
+func test_a_modifier_listed_twice_applies_once() -> void:
+	var farther := _modifier([], Skill.RANGE, NumberChange.Kind.FLAT, 2.0)
+	assert_eq(_snapshot(FireballScene, [farther, farther]).number(Skill.RANGE), 12.0)

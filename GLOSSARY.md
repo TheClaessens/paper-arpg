@@ -109,7 +109,7 @@ A Skill with every Modifier that applied when it was activated, fixed from that 
 _Avoid_: Activation, cast, invocation, instance
 
 **Range**:
-How far a Skill reaches from the Character using it: the length of a swing, or how far a projectile flies.
+How far a Skill reaches from the Character that has it: the length of a swing, or how far a projectile flies.
 _Avoid_: Reach, distance, radius
 
 **Sweep**:
