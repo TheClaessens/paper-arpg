@@ -9,11 +9,11 @@ A framework that later game systems use to change Skills: **Skill tags** say wha
 1. **Skill tags say what a Skill is; Damage types say what it deals.** Neither changes the other on its own. A Fire Skill can deal frost damage, and removing a tag never removes damage.
 2. **A Modifier is an optional filter plus one or more effects.** The filter checks Skill tags; with none, the Modifier applies to every Skill. Effects change a number, add a behaviour, or add, replace or remove a tag. (Adding and converting damage come with damage.)
 3. **A tag changes only when an effect adds, replaces or removes it.** Prefer replacing a damage-type tag over removing it.
-4. **Filters judge the final tags, and removal wins.**
-   - A Modifier applies only if its filter matches the Skill's tags after every tag change.
-   - A removed tag can't come back in the same activation.
-   - A Modifier that drops out because a tag it needs was removed stays out for that activation, so the tag pass always ends. Example: with "Projectiles pierce 2 Enemies" and "Skills that chain can no longer pierce", a Fireball that chains doesn't pierce, and anything that needs Pierce doesn't apply.
-   - Each Modifier applies at most once per activation.
+4. **Tag changes apply in waves, and removal wins.**
+   - Modifiers that change tags apply in waves: each wave is every one whose filter matches the tags as they stand. Once applied, a Modifier stays applied, with all its effects, even if a later wave removes a tag its filter needs. The pass never starts over (decided 2026-11-21).
+   - Every other Modifier applies only if its filter matches the Skill's tags after every tag change.
+   - A removed tag can't come back in the same activation. Example: with "Projectiles pierce 2 Enemies" and "Skills that chain can no longer pierce", a Fireball that chains doesn't pierce, and anything that needs Pierce doesn't apply.
+   - Each Modifier applies at most once per activation, so the tag pass always ends.
 5. **Conversion and tag replacement only move forward along one ordered list of Damage types.** The list is data in one place, so types can be renamed or added and nothing can loop. (Needed once damage exists; nothing to build now.)
 6. **Modifiers apply in pools, one pool at a time**: tag changes (with all their effects), added damage, conversion, scaling, other numbers. Inside a pool, a number takes flat additions first, then the sum of every **Increased** percentage, then each **More** percentage on its own. Conversions from one type cap at 100% in total and are shared proportionally above that.
 
@@ -60,6 +60,7 @@ Settled 2026-11-21 after a call map of the old flow (https://claude.ai/artifact/
 - **A minimum Cooldown.** Stacking stops Increased and each More at -100%, so a number never goes below 0, but a Cooldown of 0 would break "every Skill has one". Decide with attack speed, the first Modifier likely to push a Cooldown that low.
 
 - **Where Modifiers come from.** Decide when a second real source exists (say gear next to talents): whether the Character asks each source on every activation, or keeps a combined list. The framework only needs "a list of Modifiers" either way.
+- **A replace of a tag added in the same wave.** If one Modifier adds Chain and another replaces Chain with Fork, and both apply in the same wave of the tag pass, the replace does nothing, because Chain only arrives at the end of that wave. Decide if a real build ever hits this.
 - Whether converted damage is also scaled by its old type's Modifiers (with damage).
 - What the Damage types are, how many, and their order (with damage).
 
@@ -67,7 +68,7 @@ Settled 2026-11-21 after a call map of the old flow (https://claude.ai/artifact/
 
 - Implied tags: Fireball has Elemental; replacing Fire with a non-elemental tag drops it.
 - Filters: a Modifier with a Spell filter applies to Fireball and not to Attack; one with no filter applies to both.
-- Tag pass: an added tag lets another Modifier match; a removed tag can't be added back; a Modifier that needs a removed tag drops out; two Modifiers that switch each other off and on still end.
+- Tag pass: an added tag lets another Modifier match; a removed tag can't be added back; a Modifier that needs a removed tag misses; a Modifier that changes tags stays applied when a later wave removes its tag; two Modifiers that switch each other off and on still end.
 - Numbers: flat, then Increased summed, then More each on its own: Range 10, +2, +20% and +10% Increased, 50% More gives 23.4.
 - Snapshot: changing Modifiers after an activation doesn't change that activation's projectile.
 - Proof: with the cooldown Modifier on, Fireball's Cooldown is 2 s; with Pierce on, its projectile passes through two Enemies and stops at the third; with both off, Fireball is as made.

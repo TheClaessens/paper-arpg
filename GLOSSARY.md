@@ -57,7 +57,7 @@ A change that a game system, such as gear or a talent, makes to Skills. It picks
 _Avoid_: Mod, affix, stat
 
 **Tag pass**:
-The first step of making a Snapshot: Modifiers that add, replace or remove Skill tags apply, so every other Modifier is judged on the final tags. A removed tag can't come back in the same activation, and a Modifier that loses a tag it needs to another Modifier drops out.
+The first step of making a Snapshot: Modifiers that add, replace or remove Skill tags apply in waves, each once, so every other Modifier is judged on the final tags. A removed tag can't come back in the same activation.
 _Avoid_: Tag resolution, tag phase
 
 **Damage type**:

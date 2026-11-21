@@ -145,17 +145,22 @@ func test_skills_that_chain_can_no_longer_pierce() -> void:
 	var snapshot := _snapshot(FireballScene, [piercing, no_pierce, pierces, chains])
 	assert_does_not_have(snapshot.tags, &"Pierce", "a chaining Fireball doesn't pierce")
 	assert_eq(snapshot.number(Skill.RANGE), 10.0, "anything needing Pierce misses")
-	assert_eq(snapshot.why[0], "Piercing Skills have +1 Range: dropped out, Pierce was removed")
+	assert_eq(snapshot.why[0], "Piercing Skills have +1 Range: missed, Pierce was removed")
 
 
-func test_two_modifiers_that_switch_each_other_off_and_on_still_end() -> void:
-	var to_holy := _tagger("Fire Skills are Holy", [&"Fire"], TagChange.Kind.ADD, &"Holy")
-	var unfire := _tagger("Holy Skills are not Fire", [&"Holy"], TagChange.Kind.REMOVE, &"Fire")
-	var snapshot := _snapshot(FireballScene, [to_holy, unfire])
-	assert_eq(snapshot.tags, [&"Spell", &"Projectile", &"Fire", &"Elemental"] as Array[StringName], "neither applies in the end")
+func test_a_tag_changer_stays_applied_when_a_later_change_removes_its_tag() -> void:
+	var to_holy := _tagger("Fire Skills are blessed", [&"Fire"], TagChange.Kind.ADD, &"Holy")
+	var change := NumberChange.new()
+	change.number = Skill.RANGE
+	change.amount = 2.0
+	to_holy.number_changes = [change]
+	var unfire := _tagger("Blessed Skills lose Fire", [&"Holy"], TagChange.Kind.REMOVE, &"Fire")
+	var snapshot := _snapshot(FireballScene, [unfire, to_holy])
+	assert_eq(snapshot.tags, [&"Spell", &"Projectile", &"Holy"] as Array[StringName])
+	assert_eq(snapshot.number(Skill.RANGE), 12.0, "its number changes still count")
 	assert_eq(snapshot.why, [
-		"Fire Skills are Holy: dropped out, Fire was removed",
-		"Holy Skills are not Fire: missed, not Holy",
+		"Blessed Skills lose Fire: applied, removes Fire",
+		"Fire Skills are blessed: applied, adds Holy",
 	] as Array[String])
 
 
