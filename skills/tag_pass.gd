@@ -14,6 +14,7 @@ var tags: Array[StringName]
 
 var _applied: Array[Modifier] = [] # the Modifiers with tag changes that applied
 var _changes_made: Dictionary[Modifier, Array] = {} # the TagChanges each of _applied made
+var _skipped: Dictionary[Modifier, Array] = {} # why each of _applied left a TagChange out
 var _removed: Array[StringName] = [] # every tag removed in the pass
 
 
@@ -32,8 +33,11 @@ func _init(own_tags: Array[StringName], modifiers: Array[Modifier]) -> void:
 		for modifier: Modifier in matching:
 			_applied.append(modifier)
 			_changes_made[modifier] = []
+			_skipped[modifier] = []
 			for change in modifier.tag_changes:
-				if change.kind == TagChange.Kind.REPLACE and change.tag not in working:
+				var skip := _why_skip(change, working)
+				if skip:
+					_skipped[modifier].append(skip)
 					continue
 				_changes_made[modifier].append(change)
 				if change.removed():
@@ -60,12 +64,26 @@ func explain(modifier: Modifier) -> String:
 		var parts: Array[String] = ["applied"]
 		for change: TagChange in _changes_made.get(modifier, []):
 			parts.append(_describe(change))
+		for note: String in _skipped.get(modifier, []):
+			parts.append(note)
 		return "%s: %s" % [modifier.title, ", ".join(parts)]
 	var lacking := modifier.missing(tags)
 	var lost := lacking.filter(func(tag: StringName) -> bool: return tag in _removed)
 	if not lost.is_empty():
 		return "%s: missed, %s was removed" % [modifier.title, ", ".join(lost)]
 	return "%s: missed, not %s" % [modifier.title, ", ".join(lacking)]
+
+
+## Why `change` does nothing to a Skill whose tags so far are `working`, or empty when it acts.
+## A Modifier can't change an implied tag directly, and a replace needs the tag it replaces.
+static func _why_skip(change: TagChange, working: Array[StringName]) -> String:
+	for implied: Array in Skill.IMPLIED_TAGS.values():
+		for tag: StringName in [change.removed(), change.gained()]:
+			if tag in implied:
+				return "can't change %s, it comes from another tag" % tag
+	if change.kind == TagChange.Kind.REPLACE and change.tag not in working:
+		return "no %s to replace" % change.tag
+	return ""
 
 
 ## What `change` did, as the end of the pass has it: "adds Pierce", "Pierce stays removed".

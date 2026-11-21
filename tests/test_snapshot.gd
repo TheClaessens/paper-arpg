@@ -188,3 +188,26 @@ func test_a_tag_changers_number_changes_are_a_pool_of_their_own() -> void:
 	pierces.number_changes = [change]
 	var snapshot := _snapshot(FireballScene, [_modifier([], Skill.RANGE, NumberChange.Kind.FLAT, 2.0), pierces])
 	assert_eq(snapshot.number(Skill.RANGE), 17.0, "10 × 1.5, then + 2")
+
+
+func test_two_modifiers_that_switch_each_other_off_still_end() -> void:
+	var unspell := _tagger("Fire Skills lose Spell", [&"Fire"], TagChange.Kind.REMOVE, &"Spell")
+	var unfire := _tagger("Spells lose Fire", [&"Spell"], TagChange.Kind.REMOVE, &"Fire")
+	var snapshot := _snapshot(FireballScene, [unspell, unfire])
+	assert_eq(snapshot.tags, [&"Projectile"] as Array[StringName], "both match in the first round, so both apply")
+
+
+func test_an_implied_tag_cannot_be_changed_directly() -> void:
+	var add := _tagger("Skills are Elemental", [], TagChange.Kind.ADD, &"Elemental")
+	assert_does_not_have(_snapshot(AttackScene, [add]).tags, &"Elemental")
+	assert_eq(_snapshot(AttackScene, [add]).why, [
+		"Skills are Elemental: applied, can't change Elemental, it comes from another tag",
+	] as Array[String])
+	var remove := _tagger("Skills are not Elemental", [], TagChange.Kind.REMOVE, &"Elemental")
+	assert_has(_snapshot(FireballScene, [remove]).tags, &"Elemental", "Fire still implies it")
+
+
+func test_a_replace_of_a_tag_the_skill_lacks_says_so() -> void:
+	var snapshot := _snapshot(AttackScene, [_tagger("Fire is Cold", [], TagChange.Kind.REPLACE, &"Fire", &"Cold")])
+	assert_eq(snapshot.tags, [&"Attack", &"Melee"] as Array[StringName])
+	assert_eq(snapshot.why, ["Fire is Cold: applied, no Fire to replace"] as Array[String])

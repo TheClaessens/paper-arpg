@@ -111,7 +111,7 @@ func test_a_drag_aims_a_spot_skill_as_far_as_it_goes() -> void:
 	assert_almost_eq(past, Vector3(0.0, 0.0, 8.0), Vector3.ONE * 0.001, "never past the Range")
 
 
-func test_after_a_use_the_player_faces_the_aim_for_a_moment() -> void:
+func test_after_an_activation_the_player_faces_the_aim_for_a_moment() -> void:
 	_tilted_camera()
 	player.set_physics_process(true)
 	Input.action_press(&"move_up")
