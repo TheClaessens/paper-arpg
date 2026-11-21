@@ -27,6 +27,46 @@ func _ready() -> void:
 	_agent.max_speed = _movement.speed # avoidance never speeds an Enemy past its own top speed
 
 
+## The Enemy nearest `spot` on the ground within `reach` of it, or null (see nearest_to()).
+static func enemy_nearest(world: World3D, spot: Vector3, reach: float) -> Enemy:
+	var enemies := enemies_around(world, spot, reach)
+	var positions: Array[Vector3] = []
+	for enemy in enemies:
+		positions.append(enemy.global_position)
+	var i := nearest_to(spot, positions, reach)
+	return enemies[i] if i >= 0 else null
+
+
+## Which of `enemies` (positions) is nearest `spot` on the ground and within `reach` of it, or -1.
+static func nearest_to(spot: Vector3, enemies: Array[Vector3], reach: float) -> int:
+	var best := -1
+	var best_distance := reach
+	for i in enemies.size():
+		var distance := Vector2(enemies[i].x - spot.x, enemies[i].z - spot.z).length()
+		if distance <= best_distance:
+			best = i
+			best_distance = distance
+	return best
+
+
+## Every Enemy in `world` with any part of its body within `reach` of `centre`.
+## The physics engine finds them: the sphere masks only the `enemy` layer, and an Enemy's body
+## is its collision shape.
+static func enemies_around(world: World3D, centre: Vector3, reach: float) -> Array[Enemy]:
+	var sphere := SphereShape3D.new()
+	sphere.radius = reach
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape = sphere
+	query.transform = Transform3D(Basis.IDENTITY, centre + Vector3.UP * 0.5) # body height
+	query.collision_mask = 1 << 2 # layer 3, `enemy`
+	var enemies: Array[Enemy] = []
+	for result in world.direct_space_state.intersect_shape(query, 32):
+		var enemy := result.collider as Enemy
+		if enemy:
+			enemies.append(enemy)
+	return enemies
+
+
 ## Whether to chase a target `distance` away, given whether the Enemy is chasing now.
 func should_chase(chasing: bool, distance: float) -> bool:
 	return distance > (reach_distance if chasing else resume_distance)

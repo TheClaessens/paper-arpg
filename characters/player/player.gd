@@ -221,7 +221,7 @@ func _facing_toward_cursor() -> Vector3:
 ## Enemy a Skill that lands on a spot would pick.
 func _highlight_hovered() -> void:
 	var point: Variant = _controls.cursor_on_ground(global_position.y) if _controls.leads_with_mouse() else null
-	var hovered := Skill.enemy_nearest(get_world_3d(), point as Vector3, HOVER_REACH) if point != null else null
+	var hovered := Enemy.enemy_nearest(get_world_3d(), point as Vector3, HOVER_REACH) if point != null else null
 	_hover_ring.visible = hovered != null
 	if hovered:
 		_hover_ring.global_position = hovered.global_position + Vector3.UP * 0.05

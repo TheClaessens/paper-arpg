@@ -4,5 +4,5 @@
 
 **Status:** ready-for-agent
 
-- [ ] They are statics on `Enemy`; `Skill`, `Attack`, `Player` and the tests call them there.
-- [ ] A search for `Skill.enemies_around`, `Skill.enemy_nearest` and `Skill.nearest_to` comes back clean; `tools/check.sh` passes.
+- [x] They are statics on `Enemy`; `Skill`, `Attack`, `Player` and the tests call them there.
+- [x] A search for `Skill.enemies_around`, `Skill.enemy_nearest` and `Skill.nearest_to` comes back clean; `tools/check.sh` passes.

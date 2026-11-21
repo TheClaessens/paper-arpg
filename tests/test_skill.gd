@@ -64,8 +64,8 @@ func test_auto_aim_ignores_height() -> void:
 func test_an_enemy_is_within_reach_when_its_body_is() -> void:
 	var zombie := _zombie_at(1.2) # its near edge at 0.95
 	await wait_physics_frames(2) # the physics world learns where it stands
-	assert_eq(Skill.enemies_around(skill.get_world_3d(), Vector3.ZERO, 1.0), [zombie] as Array[Enemy])
-	assert_eq(Skill.enemies_around(skill.get_world_3d(), Vector3.ZERO, 0.9), [] as Array[Enemy], "0.05 short of it")
+	assert_eq(Enemy.enemies_around(skill.get_world_3d(), Vector3.ZERO, 1.0), [zombie] as Array[Enemy])
+	assert_eq(Enemy.enemies_around(skill.get_world_3d(), Vector3.ZERO, 0.9), [] as Array[Enemy], "0.05 short of it")
 
 
 func test_auto_aim_at_a_body_in_range_goes_as_far_as_the_range() -> void:
