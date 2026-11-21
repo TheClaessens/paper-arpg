@@ -1,3 +1,4 @@
+@tool
 class_name Attack
 extends Skill
 ## The Attack (see GLOSSARY.md) with a sword: a swing along Facing that hits every Enemy

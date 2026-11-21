@@ -9,7 +9,6 @@ aim = 2
 cooldown = 4.0
 title = "Fireball"
 icon = ExtResource("3_icon")
-use_time = 0.6
 range = 10.0
 knockback = 0.35
 stagger = 0.05

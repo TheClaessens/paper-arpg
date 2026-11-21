@@ -92,7 +92,7 @@ func test_its_skills_are_the_skill_nodes_it_holds() -> void:
 	var titles: Array[String] = []
 	for skill in player.skills:
 		titles.append(skill.title)
-	assert_eq(titles, ["Attack", "Fireball", "Nova", "Mark"] as Array[String])
+	assert_eq(titles, ["Attack", "Fireball"] as Array[String])
 
 
 
@@ -158,7 +158,7 @@ func test_the_controls_press_hold_and_let_go_of_a_slot() -> void:
 	var controls: Controls = player.get_node("Controls")
 	controls.slot_pressed.emit(0) # the Attack: repeats while held
 	player.skill_bar.advance(0.016)
-	player.skill_bar.advance(1.0) # past its Use time
+	player.skill_bar.advance(0.4) # its Cooldown ends
 	assert_eq(used.size(), 2, "pressed, then repeated while held")
 	controls.slot_released.emit(0)
 	player.skill_bar.advance(1.0)

@@ -16,6 +16,7 @@ size = Vector2(2, 2)
 script = ExtResource("1_attack")
 repeats_while_held = true
 title = "Attack"
+cooldown = 0.4
 icon = ExtResource("4_icon")
 range = 1.6
 knockback = 0.35

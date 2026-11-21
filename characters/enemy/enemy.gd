@@ -4,9 +4,6 @@ extends CharacterBody3D
 ## the player, then chases them along the navmesh for good, stopping within reach.
 ## A hit staggers it: it slides away with the knockback and doesn't chase until the Stagger ends.
 
-## The colour a mark tints the Enemy, and how strongly (alpha).
-const MARK_TINT := Color(1.0, 0.62, 0.15, 0.55)
-
 ## Stops chasing this close to the target, in world units.
 @export var reach_distance := 1.0
 ## Chases again once the target is this far away. Larger than `reach_distance`, so a small
@@ -52,11 +49,6 @@ func take_hit(direction: Vector3, knockback: float, stagger: float) -> void:
 	var feedback := HitFeedback.shared()
 	_standee.flash(feedback.flash)
 	_standee.squash(feedback.squash)
-
-
-## Marked (by the Mark test Skill): tinted for `seconds`.
-func mark(seconds: float) -> void:
-	_standee.tint(MARK_TINT, seconds)
 
 
 func _physics_process(delta: float) -> void:

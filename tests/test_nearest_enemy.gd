@@ -1,6 +1,6 @@
 extends GutTest
-## The Enemy nearest a spot on the ground, if one is close enough: what Mark marks where it
-## lands, and which Enemy the mouse cursor highlights.
+## The Enemy nearest a spot on the ground, if one is close enough: what a Skill landing on a
+## spot picks out, and which Enemy the mouse cursor highlights.
 
 
 func test_the_enemy_nearest_the_spot() -> void:

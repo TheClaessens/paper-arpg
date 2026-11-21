@@ -1,3 +1,4 @@
+@tool
 class_name Fireball
 extends Skill
 ## Fireball: throws a ball of fire straight where it is aimed. It flies at `speed` until it has flown
