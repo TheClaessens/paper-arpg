@@ -10,5 +10,5 @@
 
 **Status:** ready-for-agent
 
-- [ ] `launch()` reads as the spec's sketch; `_physics_process` is unchanged from ticket 03.
-- [ ] The two new tests pass; the first failed before the change; `tools/check.sh` passes.
+- [x] `launch()` reads as the spec's sketch; `_physics_process` is unchanged from ticket 03.
+- [x] The two new tests pass; the first failed before the change; `tools/check.sh` passes.

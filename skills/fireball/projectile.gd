@@ -30,15 +30,17 @@ func _ready() -> void:
 ## Character that throws it, along `direction` (a unit vector on the ground). It carries `ball_hit`,
 ## which it lands on each Hurtbox it touches on the layers of `mask`. It starts LAUNCH_OFFSET along
 ## `direction` and FLIGHT_HEIGHT up, and flies until its front is its Hit's Range from `centre` (see
-## GLOSSARY.md, Range). With a Range that ends inside it, it ends where it starts.
+## GLOSSARY.md, Range). With a Projectile speed of 0, or a Range that ends inside it, it ends where
+## it starts.
 func launch(ball_hit: Hit, centre: Vector3, direction: Vector3, mask: int) -> void:
 	hit = ball_hit
 	_direction = direction
 	collision_mask |= mask
 	global_position = centre + direction * LAUNCH_OFFSET + Vector3.UP * FLIGHT_HEIGHT
 	var radius := ((get_node(^"CollisionShape3D") as CollisionShape3D).shape as SphereShape3D).radius
+	var can_fly := hit.snapshot.number(Fireball.PROJECTILE_SPEED) > 0.0
 	# Its front is its radius ahead of its centre, and its centre starts LAUNCH_OFFSET out.
-	_flight = hit.snapshot.number(Skill.RANGE) - LAUNCH_OFFSET - radius
+	_flight = hit.snapshot.number(Skill.RANGE) - LAUNCH_OFFSET - radius if can_fly else 0.0
 
 
 # ponytail: moves by setting its position and trusts the physics step's overlaps, so it can skip

@@ -278,3 +278,21 @@ func test_a_fireball_never_touches_a_zombie_wholly_beyond_its_range() -> void:
 	await wait_physics_frames(55)
 	assert_eq(zombie.health.current, 50.0, "untouched")
 	assert_eq(_balls(), [] as Array[Node], "the ball has ended")
+
+
+func test_a_ball_with_no_projectile_speed_ends() -> void:
+	var ball := _fire([], 0.0)
+	await wait_physics_frames(3)
+	assert_freed(ball, "it can't fly, so it ends where it starts")
+
+
+func test_a_ball_frozen_by_a_hitstop_flies_on_after_it() -> void:
+	var zombie := _zombie_at(4.0)
+	await wait_physics_frames(2)
+	var ball := _fire([])
+	Engine.time_scale = 0.0 # as a hitstop does
+	await wait_physics_frames(10)
+	assert_not_freed(ball, "a frozen ball waits")
+	Engine.time_scale = 1.0
+	await wait_physics_frames(30)
+	assert_eq(hits, [zombie], "it flew on and hit the zombie")
