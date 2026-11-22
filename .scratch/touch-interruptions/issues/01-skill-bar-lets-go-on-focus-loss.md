@@ -12,6 +12,6 @@
 
 **Done when:**
 
-- [ ] After `NOTIFICATION_APPLICATION_FOCUS_OUT` a held repeating Skill isn't activated again; `test_pausing_lets_go` still passes.
-- [ ] The class doc comment reads "Pausing, or the app losing focus, lets go of every slot.", and the `_notification` comment says why both let go.
-- [ ] `tools/check.sh` passes.
+- [x] After `NOTIFICATION_APPLICATION_FOCUS_OUT` a held repeating Skill isn't activated again; `test_pausing_lets_go` still passes.
+- [x] The class doc comment reads "Pausing, or the app losing focus, lets go of every slot.", and the `_notification` comment says why both let go.
+- [x] `tools/check.sh` passes.
