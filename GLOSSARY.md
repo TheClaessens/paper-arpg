@@ -17,8 +17,12 @@ The soft dark ellipse on the ground beneath a Standee that grounds it in the wor
 _Avoid_: Drop shadow, shadow decal
 
 **Enemy**:
-A Character of the Enemies' Faction, hostile to the player and their allies. Later Enemies come in kinds (such as elites and bosses) and rarities.
+A Character of the Enemies' Faction, hostile to the player and their allies. Every Enemy is of an Enemy kind, such as the zombie. Later Enemies also come in rarities.
 _Avoid_: Monster, mob, creep
+
+**Enemy kind**:
+A sort of Enemy, such as the zombie: how it looks, how fast it walks, how much Health it has, its Skills and how it behaves. Every Enemy of a kind starts out the same.
+_Avoid_: Enemy type, monster type, archetype, variant
 
 **Faction**:
 The side a Character fights on: the player's or the Enemies'. Characters of different Factions are hostile, so their Skills hit each other. A pet the player summons would be of the player's Faction.
