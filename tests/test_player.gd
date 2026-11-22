@@ -1,5 +1,5 @@
 extends GutTest
-## The `tp` console command, which the Player registers while it is in the tree.
+## The Player: the `tp` console command it registers while in the tree, and Auto-aim.
 
 const PlayerScene := preload("res://characters/player/player.tscn")
 const ZombieScene := preload("res://characters/enemy/zombie.tscn")

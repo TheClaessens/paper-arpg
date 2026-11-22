@@ -77,7 +77,6 @@ func _on_slot_changed(slot: int, skill: Skill) -> void:
 	_buttons[slot].show_skill(skill)
 
 
-
 func _cmd_touch(args: PackedStringArray) -> String:
 	var dragged := args.size() == 3 and args[1].is_valid_float() and args[2].is_valid_float()
 	if not (args.size() == 1 or dragged) or not args[0].is_valid_int() or args[0].to_int() not in range(1, SkillBar.SLOTS + 1):

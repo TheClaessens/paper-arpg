@@ -28,7 +28,7 @@ func _ready() -> void:
 
 
 ## The Enemy nearest `spot` on the ground within `reach` of it, or null (see nearest_to()).
-static func enemy_nearest(world: World3D, spot: Vector3, reach: float) -> Enemy:
+static func nearest(world: World3D, spot: Vector3, reach: float) -> Enemy:
 	var enemies := enemies_around(world, spot, reach)
 	var positions: Array[Vector3] = []
 	for enemy in enemies:
