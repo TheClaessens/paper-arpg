@@ -26,6 +26,8 @@ var _knockback := Vector3.ZERO # direction times distance
 @onready var hurtbox: Hurtbox = $Hurtbox
 ## How much more Damage it can take.
 @onready var health: Health = $Health
+## Shows its Health while it is below the maximum.
+@onready var health_bar: HealthBar = $HealthBar
 @onready var _movement: Movement = $Movement
 @onready var _standee: Standee = $Standee
 @onready var _agent: NavigationAgent3D = $NavigationAgent3D
@@ -34,6 +36,7 @@ var _knockback := Vector3.ZERO # direction times distance
 func _ready() -> void:
 	hurtbox.collision_layer = Faction.layer(faction)
 	hurtbox.hit_taken.connect(_on_hit_taken)
+	health.changed.connect(health_bar.show_health)
 	health.died.connect(_die)
 	($Aggro as Aggro).aggroed.connect(func(target: Node3D) -> void: _target = target)
 	_agent.velocity_computed.connect(_on_velocity_computed)
@@ -104,14 +107,15 @@ func _on_velocity_computed(safe_velocity: Vector3) -> void:
 
 
 ## At 0 Health: stops chasing and sliding (so the killing hit doesn't knock it back), leaves
-## every collision layer so nothing can hit, aim at, ring or bump into it, and sinks through the
-## floor where it stood. Gone once the sink ends.
+## every collision layer so nothing can hit, aim at, ring or bump into it, hides its Health bar,
+## and sinks through the floor where it stood. Gone once the sink ends.
 func _die() -> void:
 	set_physics_process(false)
 	_standee.play(&"idle") # no walk wobble on top of the sink's
 	_agent.avoidance_enabled = false # other Enemies no longer steer around it
 	collision_layer = 0
 	hurtbox.collision_layer = 0
+	health_bar.hide()
 	_standee.sunk.connect(queue_free)
 	_standee.sink()
 

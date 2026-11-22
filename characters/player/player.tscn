@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" path="res://characters/player/aim_marker.tscn" id="8_aim_marker"]
 [ext_resource type="Script" uid="uid://3ho826ejxaw4" path="res://characters/player/controls.gd" id="11_controls"]
 [ext_resource type="Script" path="res://characters/health/health.gd" id="12_health"]
+[ext_resource type="PackedScene" path="res://characters/health_bar/health_bar.tscn" id="13_health_bar"]
 
 [sub_resource type="StandardMaterial3D" id="hover_material"]
 transparency = 1
@@ -81,3 +82,6 @@ top_level = true
 cast_shadow = 0
 material_override = SubResource("hover_material")
 mesh = SubResource("hover_ring")
+
+[node name="HealthBar" parent="." unique_id=1427705114 instance=ExtResource("13_health_bar")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)

@@ -51,6 +51,8 @@ var _face_aim_left := 0.0 # time left facing the last activation's aim
 
 ## How much more Damage the player can take.
 @onready var health: Health = $Health
+## Shows the player's Health while it is below the maximum.
+@onready var health_bar: HealthBar = $HealthBar
 
 @onready var _controls: Controls = $Controls
 @onready var _movement: Movement = $Movement
@@ -71,6 +73,7 @@ func _enter_tree() -> void:
 
 
 func _ready() -> void:
+	health.changed.connect(health_bar.show_health)
 	for skill in skills:
 		skill.faction = faction
 	facing = _controls.ground_axes()[0] # screen right
