@@ -41,24 +41,22 @@ func _init(snapshot_tags: Array[StringName], snapshot_numbers: Dictionary[String
 
 ## The Snapshot of a Skill whose own tags are `own_tags` and own numbers `own_numbers`, with the
 ## Character's `modifiers`. The tag pass (see TagPass) settles the tags and which Modifiers
-## apply; then the number changes apply in two pools, those of Modifiers that change tags first,
-## then every other's (see docs/adr/0002). Each Modifier applies at most once, even if listed twice.
+## apply; then the number changes of every Modifier that applies stack together, one stack per
+## number, whether or not it changes tags (see docs/adr/0002). Each entry of `modifiers` counts:
+## the same Modifier listed twice applies twice (see docs/adr/0003).
 static func of(own_tags: Array[StringName], own_numbers: Dictionary[StringName, float], modifiers: Array[Modifier]) -> Snapshot:
 	var tag_pass := TagPass.new(own_tags, modifiers)
-	var tag_pool: Array[NumberChange] = []
-	var number_pool: Array[NumberChange] = []
-	var counted: Array[Modifier] = []
+	var changes: Array[NumberChange] = []
 	var why: Array[String] = []
 	for modifier in modifiers:
 		# ponytail: every Snapshot writes a why line per Modifier, even one made only to aim;
 		# write them only when read, if a profile on the phone points here.
 		why.append(tag_pass.explain(modifier))
-		if modifier not in counted and tag_pass.applies(modifier):
-			counted.append(modifier)
-			(number_pool if modifier.tag_changes.is_empty() else tag_pool).append_array(modifier.number_changes)
+		if tag_pass.applies(modifier):
+			changes.append_array(modifier.number_changes)
 	var result: Dictionary[StringName, float] = {}
 	for name in own_numbers:
-		result[name] = _stack(_stack(own_numbers[name], name, tag_pool), name, number_pool)
+		result[name] = _stack(own_numbers[name], name, changes)
 	return Snapshot.new(tag_pass.tags, result, why)
 
 

@@ -19,15 +19,19 @@ func _snapshot(tags: Array[StringName], modifiers: Array[Modifier]) -> Snapshot:
 	return Snapshot.of(tags, NUMBERS, modifiers)
 
 
-func _modifier(filter: Array[StringName], number: StringName, kind: NumberChange.Kind, amount: float) -> Modifier:
+func _change(number: StringName, kind: NumberChange.Kind, amount: float) -> NumberChange:
 	var change := NumberChange.new()
 	change.number = number
 	change.kind = kind
 	change.amount = amount
+	return change
+
+
+func _modifier(filter: Array[StringName], number: StringName, kind: NumberChange.Kind, amount: float) -> Modifier:
 	var modifier := Modifier.new()
 	modifier.title = "test"
 	modifier.filter = filter
-	modifier.number_changes = [change]
+	modifier.number_changes = [_change(number, kind, amount)]
 	return modifier
 
 
@@ -212,15 +216,25 @@ func test_a_tag_changer_applies_its_number_changes_too() -> void:
 	assert_eq(_snapshot(SPELL, [pierces]).number(Skill.RANGE), 12.0)
 
 
-func test_a_tag_changers_number_changes_are_a_pool_of_their_own() -> void:
+func test_a_tag_changers_number_changes_stack_with_everyone_elses() -> void:
 	var pierces := _tagger("pierce", [&"Projectile"], TagChange.Kind.ADD, &"Pierce")
-	var change := NumberChange.new()
-	change.number = Skill.RANGE
-	change.kind = NumberChange.Kind.INCREASED
-	change.amount = 50.0
-	pierces.number_changes = [change]
+	pierces.number_changes = [_change(Skill.RANGE, NumberChange.Kind.INCREASED, 50.0)]
 	var snapshot := _snapshot(SPELL, [_modifier([], Skill.RANGE, NumberChange.Kind.FLAT, 2.0), pierces])
-	assert_eq(snapshot.number(Skill.RANGE), 17.0, "10 × 1.5, then + 2")
+	assert_eq(snapshot.number(Skill.RANGE), 18.0, "(10 + 2) × 1.5")
+
+
+func test_a_tag_changers_increased_and_more_stack_with_everyone_elses() -> void:
+	var pierces := _tagger("pierce", [&"Projectile"], TagChange.Kind.ADD, &"Pierce")
+	pierces.number_changes = [
+		_change(Skill.RANGE, NumberChange.Kind.INCREASED, 20.0),
+		_change(Skill.RANGE, NumberChange.Kind.MORE, 50.0),
+	]
+	var snapshot := _snapshot(SPELL, [
+		pierces,
+		_modifier([], Skill.RANGE, NumberChange.Kind.FLAT, 2.0),
+		_modifier([], Skill.RANGE, NumberChange.Kind.INCREASED, 10.0),
+	])
+	assert_almost_eq(snapshot.number(Skill.RANGE), 23.4, 0.0001, "(10 + 2) × 1.3 × 1.5, as with no tag change")
 
 
 func test_two_modifiers_that_switch_each_other_off_still_end() -> void:
@@ -256,6 +270,20 @@ func test_the_pierce_proof_modifier_gives_a_projectile_pierce_and_not_an_attack(
 	assert_eq(attack.why, ["Projectiles pierce an Enemy: missed, not Projectile"])
 
 
-func test_a_modifier_listed_twice_applies_once() -> void:
+func test_a_modifier_listed_twice_applies_twice() -> void:
 	var farther := _modifier([], Skill.RANGE, NumberChange.Kind.FLAT, 2.0)
-	assert_eq(_snapshot(SPELL, [farther, farther]).number(Skill.RANGE), 12.0)
+	assert_eq(_snapshot(SPELL, [farther, farther]).number(Skill.RANGE), 14.0, "10 + 2 + 2")
+	var copy := _modifier([], Skill.RANGE, NumberChange.Kind.FLAT, 2.0)
+	assert_eq(_snapshot(SPELL, [farther, copy]).number(Skill.RANGE), 14.0, "two copies count the same")
+
+
+func test_a_tag_changer_listed_twice_changes_the_tags_once_and_its_numbers_twice() -> void:
+	var to_holy := _tagger("Fire spells are now Holy", [&"Fire"], TagChange.Kind.REPLACE, &"Fire", &"Holy")
+	to_holy.number_changes = [_change(Skill.RANGE, NumberChange.Kind.FLAT, 2.0)]
+	var snapshot := _snapshot(SPELL, [to_holy, to_holy])
+	assert_eq(snapshot.tags, [&"Spell", &"Projectile", &"Holy"] as Array[StringName])
+	assert_eq(snapshot.number(Skill.RANGE), 14.0, "10 + 2 + 2")
+	assert_eq(snapshot.why, [
+		"Fire spells are now Holy: applied, replaces Fire with Holy",
+		"Fire spells are now Holy: applied, replaces Fire with Holy",
+	] as Array[String])

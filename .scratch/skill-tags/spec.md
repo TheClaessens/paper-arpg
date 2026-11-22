@@ -13,9 +13,9 @@ A framework that later game systems use to change Skills: **Skill tags** say wha
    - Modifiers that change tags apply in rounds: each round is every one whose filter matches the tags as they stand. Once applied, a Modifier stays applied, with all its effects, even if a later round removes a tag its filter needs. The pass never starts over (decided 2026-11-21; see `docs/adr/0003-tag-changes-apply-in-rounds.md`).
    - Every other Modifier applies only if its filter matches the Skill's tags after every tag change.
    - A removed tag can't come back in the same activation. Example: with "Projectiles pierce an Enemy" and "Skills that chain can no longer pierce", a Fireball that chains doesn't pierce, and anything that needs Pierce doesn't apply.
-   - Each Modifier applies at most once per activation, so the tag pass always ends.
+   - Each entry in the Character's list of Modifiers applies at most once per activation, so the tag pass always ends. The same Modifier listed twice applies twice, both times in the same round, and its tag changes leave the tags as one entry's would (decided 2026-11-22; see `.scratch/modifier-stacking/spec.md`).
 5. **Conversion and tag replacement only move forward along one ordered list of Damage types.** The list is data in one place, so types can be renamed or added and nothing can loop. (Needed once damage exists; nothing to build now.)
-6. **Modifiers apply in pools, one pool at a time**: tag changes (with all their effects), added damage, conversion, scaling, other numbers. Inside a pool, a number takes flat additions first, then the sum of every **Increased** percentage, then each **More** percentage on its own. Conversions from one type cap at 100% in total and are shared proportionally above that.
+6. **Modifiers apply in pools, one pool at a time**: tag changes, added damage, conversion, scaling, other numbers. A Modifier that changes tags has its tag changes in the first pool and its number changes in the later ones, with every other Modifier's (decided 2026-11-22; see `.scratch/modifier-stacking/spec.md`). Inside a pool, a number takes flat additions first, then the sum of every **Increased** percentage, then each **More** percentage on its own. Conversions from one type cap at 100% in total and are shared proportionally above that. Whether a Modifier that replaces a damage-type tag converts its damage in the tag pass, as it replaces the tag, or in the conversion pool waits for damage (see Deferred decisions).
 
 ## Requirements
 
@@ -62,6 +62,7 @@ Settled 2026-11-21 after a call map of the old flow (https://claude.ai/artifact/
 - **Where Modifiers come from.** Decide when a second real source exists (say gear next to talents): whether the Character asks each source on every activation, or keeps a combined list. The framework only needs "a list of Modifiers" either way.
 - **A replace of a tag added in the same round.** If one Modifier adds Chain and another replaces Chain with Fork, and both apply in the same round of the tag pass, the replace does nothing, because Chain only arrives at the end of that round. Decide if a real build ever hits this.
 - Whether converted damage is also scaled by its old type's Modifiers (with damage).
+- Whether a Modifier that replaces a damage-type tag converts its damage as it replaces the tag, in the tag pass, as the Skill Tag Rules sandbox did, or in the conversion pool with every other conversion (with damage; see `.scratch/modifier-stacking/spec.md`).
 - What the Damage types are, how many, and their order (with damage). Whatever they are, `Damage` keeps meaning all of a hit's Damage, so a Modifier file written on Damage before then keeps its meaning.
 
 ## Tests
