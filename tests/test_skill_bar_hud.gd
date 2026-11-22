@@ -135,3 +135,13 @@ func test_a_lift_during_a_pause_activates_nothing() -> void:
 	get_tree().paused = false
 	_elapse(0.016)
 	assert_eq(aims, [] as Array[Vector3])
+
+
+func test_a_skill_changed_under_an_aim_activates_nothing() -> void:
+	button.touch_started.emit(button.centre())
+	button.touch_moved.emit(button.centre() + Vector2(-120.0, 0.0))
+	player.skill_bar.set_skill(1, player.skill_bar.skill_in(0)) # the Attack, as the Skill drawer would
+	button.touch_ended.emit(button.centre() + Vector2(-120.0, 0.0))
+	_elapse(0.016)
+	assert_eq(aims, [] as Array[Vector3])
+	assert_false(_aim_marker_shows())

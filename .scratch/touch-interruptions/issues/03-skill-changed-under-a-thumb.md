@@ -12,6 +12,6 @@
 
 **Done when:**
 
-- [ ] A slot's Skill changed under an aiming or holding thumb ends that thumb's aim or hold; its later moves and lift activate nothing and raise no error.
-- [ ] Changing a slot no thumb is on changes nothing else (the pause menu tests still pass).
-- [ ] `tools/check.sh` passes.
+- [x] A slot's Skill changed under an aiming or holding thumb ends that thumb's aim or hold; its later moves and lift activate nothing and raise no error.
+- [x] Changing a slot no thumb is on changes nothing else (the pause menu tests still pass).
+- [x] `tools/check.sh` passes.

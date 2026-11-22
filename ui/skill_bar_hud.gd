@@ -10,6 +10,7 @@ extends Control
 ## dragged off its slot: the Player shows where it would go, and lifting the thumb activates it there. Dragging back
 ## onto the slot and lifting there cancels it. A thumb taken away without lifting (the app losing
 ## focus, or the system cancelling the touch) ends its hold and its aim, and activates nothing.
+## So does a change of the slot's Skill under the thumb.
 ## Sizes are in viewport units: on an iPhone 17 Pro, 1 pt is about 1.6 of them.
 
 signal slot_chosen(slot: int)
@@ -78,6 +79,7 @@ func focus_slot(slot: int) -> void:
 
 func _on_slot_changed(slot: int, skill: Skill) -> void:
 	_buttons[slot].show_skill(skill)
+	_let_go(slot)
 
 
 func _cmd_touch(args: PackedStringArray) -> String:
