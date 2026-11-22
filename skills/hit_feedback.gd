@@ -5,7 +5,7 @@ extends Resource
 ## study the values started from (see .scratch/combat/spec.md). One shared set,
 ## `hit_feedback.tres`, serves everything: shared() returns it. Tune it in the editor. How hard a hit pushes (knockback, Stagger) belongs
 ## to the Skill. The hit Enemy shows flash and squash; the Skill that hit plays the impact
-## (hitstop and screen shake) once per use.
+## (hitstop and screen shake) once per activation.
 
 ## The whole game freezes this long.
 @export var hitstop := 0.06

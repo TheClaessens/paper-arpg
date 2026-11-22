@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="Modifier" format=3]
+
+[ext_resource type="Script" path="res://skills/modifier.gd" id="1_modifier"]
+[ext_resource type="Script" path="res://skills/number_change.gd" id="2_number_change"]
+
+[sub_resource type="Resource" id="halve_cooldown"]
+script = ExtResource("2_number_change")
+number = &"Cooldown"
+kind = 1
+amount = -50.0
+
+[resource]
+script = ExtResource("1_modifier")
+title = "Spells have 50% reduced cooldown"
+filter = Array[StringName]([&"Spell"])
+number_changes = Array[ExtResource("2_number_change")]([SubResource("halve_cooldown")])

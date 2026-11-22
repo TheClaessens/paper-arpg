@@ -20,12 +20,13 @@ func _ready() -> void:
 	hide()
 
 
-## Shows `skill` aimed at `aim`, an offset on the ground from the Character.
-func show_aim(skill: Skill, aim: Vector3, cancelling: bool) -> void:
+## Shows `skill` aimed at `aim`, an offset on the ground from the Character, with its Range
+## ring at `reach`: its Range as it stands now.
+func show_aim(skill: Skill, aim: Vector3, reach: float, cancelling: bool) -> void:
 	show()
 	_material.albedo_color = CANCEL_COLOR if cancelling else AIM_COLOR
-	_ring.outer_radius = skill.range
-	_ring.inner_radius = skill.range - RING_WIDTH
+	_ring.outer_radius = reach
+	_ring.inner_radius = reach - RING_WIDTH
 	var flat := Vector3(aim.x, 0.0, aim.z)
 	_spot.visible = skill.aims_at_spot
 	_line.visible = not skill.aims_at_spot and flat.length() > 0.01

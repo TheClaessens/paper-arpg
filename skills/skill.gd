@@ -1,18 +1,36 @@
 @tool
 class_name Skill
 extends Node3D
-## A Skill (see GLOSSARY.md): something the player uses from a Skill slot. Each Skill is a
-## node on the Character, so it can reach the world from where the Character stands.
-## Subclasses do the work in use(). Each Skill script is a @tool, as this one is, so the editor
-## shows its configuration warnings.
+## A Skill (see GLOSSARY.md): something the player activates from a Skill slot. Each Skill is
+## a node on the Character that has it, so it can reach the world from where the Character
+## stands. try_activate() is the one way to set it off, and the Skill runs its own Cooldown.
+## Subclasses do their work in _activate(). Each Skill script is a @tool, as this one is, so the
+## editor shows its configuration warnings.
 
-## How a Skill aims. AROUND: used where the Character stands. AUTO: toward the nearest Enemy
+## Its Cooldown has run out: it can be activated again.
+signal ready_again
+
+## How a Skill aims. AROUND: activated where the Character stands. AUTO: toward the nearest Enemy
 ## near Facing. AIMED: auto-aimed too, and on touch it can also be aimed by hand.
 enum Aim { AROUND, AUTO, AIMED }
 
 ## Auto-aim takes an Enemy at most this far either side of Facing.
 const AUTO_AIM_ANGLE := 60.0
 
+## The one table of implied Skill tags: a Skill with the key tag also has each tag it lists.
+const IMPLIED_TAGS: Dictionary[StringName, Array] = {
+	&"Fire": [&"Elemental"],
+}
+
+## The names of the Skill's numbers (see numbers()), as Modifiers and Snapshots know them.
+const COOLDOWN := &"Cooldown"
+const RANGE := &"Range"
+const KNOCKBACK := &"Knockback"
+const STAGGER := &"Stagger"
+
+## The Skill's Skill tags, as set in its scene: what kind of Skill it is. Implied tags are
+## left out here; with_implied() works them out.
+@export var tags: Array[StringName] = []
 ## The Skill's name, as the player sees it.
 @export var title := ""
 ## The Skill's picture on its Skill slot's button and in the Skill drawer.
@@ -21,10 +39,11 @@ const AUTO_AIM_ANGLE := 60.0
 @export var aim := Aim.AUTO
 ## Whether it lands on a spot (aimed by how far, too) rather than going a direction.
 @export var aims_at_spot := false
-## Whether holding its slot uses it again each time its Cooldown ends.
+## Whether holding its slot activates it again each time its Cooldown ends.
 @export var repeats_while_held := false
-## The Skill's Cooldown: how long after a use starts before it can be used again, from any slot.
-## The only thing that limits how often it is used, so every Skill needs one above 0.
+## The Skill's Cooldown: how long after an activation starts before it can be activated again,
+## from any slot. The only thing that limits how often it is activated, so every Skill needs one
+## above 0. Modifiers can change it: the Cooldown that runs is the activation's Snapshot's.
 @export var cooldown := 0.0:
 	set(value):
 		cooldown = value
@@ -36,8 +55,10 @@ const AUTO_AIM_ANGLE := 60.0
 ## How long a hit Enemy slides without chasing (its Stagger), in seconds.
 @export var stagger := 0.0
 
-## Seconds until the Skill can be used again. The Skill bar runs this clock.
+## Seconds until the Skill can be activated again. The Skill runs this clock itself.
 var cooldown_left := 0.0
+
+var _cooldown_length := 0.0 # how long the running cooldown is in all
 
 
 ## Whether its cooldown has run out.
@@ -45,27 +66,114 @@ func is_ready() -> bool:
 	return cooldown_left <= 0.0
 
 
-## Starts the cooldown, for a use.
-func start_cooldown() -> void:
-	cooldown_left = cooldown
+## Starts a cooldown `seconds` long: an activation's Snapshot's Cooldown.
+func start_cooldown(seconds: float) -> void:
+	cooldown_left = seconds
+	_cooldown_length = seconds
 
 
-## Runs the cooldown on by `delta` seconds. True the moment it runs out.
-func cool_down(delta: float) -> bool:
+## Runs the cooldown on by `delta` seconds, emitting ready_again the moment it runs out.
+func cool_down(delta: float) -> void:
 	if is_ready():
-		return false
+		return
 	cooldown_left = maxf(0.0, cooldown_left - delta)
-	return is_ready()
+	if is_ready():
+		ready_again.emit()
 
 
-## How much of the cooldown is left: 1 just used, 0 ready.
+func _physics_process(delta: float) -> void:
+	if not Engine.is_editor_hint():
+		cool_down(delta)
+
+
+## How much of the cooldown is left: 1 just activated, 0 ready.
 func cooldown_fraction() -> float:
-	return cooldown_left / cooldown if cooldown > 0.0 else 0.0
+	return cooldown_left / _cooldown_length if _cooldown_length > 0.0 else 0.0
 
 
-## Warns in the editor about a Skill without a Cooldown: nothing would limit its uses.
+## Warns in the editor about a Skill without a Cooldown: nothing would limit its activations.
 func _get_configuration_warnings() -> PackedStringArray:
 	return ["Every Skill needs a Cooldown above 0."] if cooldown <= 0.0 else []
+
+
+## `given` plus every tag IMPLIED_TAGS says they imply. Worked out from the tags given, so a
+## set without Fire has no Elemental. One level deep: an implied tag implies nothing further.
+static func with_implied(given: Array[StringName]) -> Array[StringName]:
+	var all := given.duplicate()
+	for tag in given:
+		for implied: StringName in IMPLIED_TAGS.get(tag, []):
+			if implied not in all:
+				all.append(implied)
+	return all
+
+
+## The Skill's numbers by name, for Modifiers to change. A Skill with numbers of its own adds
+## them to these.
+func numbers() -> Dictionary[StringName, float]:
+	return {COOLDOWN: cooldown, RANGE: range, KNOCKBACK: knockback, STAGGER: stagger}
+
+
+## Activates the Skill aimed at `aim` with the Character's `modifiers`, unless it is cooling
+## down: makes the activation's Snapshot, starts the Snapshot's Cooldown, then does what the
+## Skill does. Whether it activated.
+func try_activate(aim: Vector3, modifiers: Array[Modifier]) -> bool:
+	if not is_ready():
+		return false
+	var made := snapshot(modifiers)
+	start_cooldown(made.number(COOLDOWN))
+	_activate(made, aim)
+	return true
+
+
+## The Skill as one activation sees it: a Snapshot made by the tag pass (see TagPass) with every
+## one of `modifiers` that applies.
+func snapshot(modifiers: Array[Modifier]) -> Snapshot:
+	var tag_pass := TagPass.new(tags, modifiers)
+	var why: Array[String] = []
+	for modifier in modifiers:
+		why.append(tag_pass.explain(modifier))
+	return Snapshot.new(tag_pass.tags, _numbers_with(tag_pass, modifiers), why)
+
+
+## The number called `name` as it stands now with `modifiers`, outside any activation: for
+## aiming, which follows the Modifiers as they come and go.
+func number(name: StringName, modifiers: Array[Modifier]) -> float:
+	return _numbers_with(TagPass.new(tags, modifiers), modifiers)[name]
+
+
+## Each of the Skill's numbers with every one of `modifiers` that applies after `tag_pass`, in
+## two pools: the number changes of Modifiers that change tags, then every other's.
+func _numbers_with(tag_pass: TagPass, modifiers: Array[Modifier]) -> Dictionary[StringName, float]:
+	var tag_pool: Array[NumberChange] = []
+	var number_pool: Array[NumberChange] = []
+	var counted: Array[Modifier] = [] # each Modifier applies at most once, even if listed twice
+	for modifier in modifiers:
+		if modifier not in counted and tag_pass.applies(modifier):
+			counted.append(modifier)
+			(number_pool if modifier.tag_changes.is_empty() else tag_pool).append_array(modifier.number_changes)
+	var result := numbers()
+	for name in result:
+		result[name] = stack(stack(result[name], name, tag_pool), name, number_pool)
+	return result
+
+
+## The number called `name`, `value` at first, with each of `changes` to it: flat additions
+## first, then the sum of every Increased percentage, then each More percentage on its own.
+## Neither takes a number below 0: Increased stops at -100%, and so does each More.
+static func stack(value: float, name: StringName, changes: Array[NumberChange]) -> float:
+	var increased := 0.0
+	var more := 1.0
+	for change in changes:
+		if change.number != name:
+			continue
+		match change.kind:
+			NumberChange.Kind.FLAT:
+				value += change.amount
+			NumberChange.Kind.INCREASED:
+				increased += change.amount
+			NumberChange.Kind.MORE:
+				more *= maxf(0.0, 1.0 + change.amount / 100.0)
+	return value * maxf(0.0, 1.0 + increased / 100.0) * more
 
 
 ## Where auto-aim points, as an offset on the ground from the Character: the nearest of
@@ -123,22 +231,25 @@ static func enemies_around(world: World3D, centre: Vector3, reach: float) -> Arr
 	return enemies
 
 
-## Auto-aim from where the Character stands (see auto_aim()). An Enemy whose body is in Range
-## but whose centre is past it is aimed at as far as the Range.
-func aim_toward(facing: Vector3) -> Vector3:
+## Auto-aim from where the Character stands (see auto_aim()), as far as `reach`: the Skill's
+## Range as it stands now. An Enemy whose body is within reach but whose centre is past it is
+## aimed at as far as the reach.
+func aim_toward(facing: Vector3, reach: float) -> Vector3:
 	var offsets: Array[Vector3] = []
-	for enemy in _enemies_within(range):
+	for enemy in _enemies_within(reach):
 		offsets.append(enemy.global_position - global_position)
-	return auto_aim(facing, range, offsets)
+	return auto_aim(facing, reach, offsets)
 
 
-## Uses the Skill, aimed at `aim`: an offset on the ground from the Character. Its direction is
-## where the Skill goes; for a Skill that lands on a spot, its length is how far.
-func use(_aim: Vector3) -> void:
+## What the Skill does when activated, as `snapshot` says, aimed at `aim`: an offset on the
+## ground from the Character. Its direction is where the Skill goes; for a Skill that lands on a
+## spot, its length is how far. A Skill reads its numbers from `snapshot`, not from itself.
+## Each Skill overrides it; try_activate() calls it.
+func _activate(_snapshot: Snapshot, _aim: Vector3) -> void:
 	pass
 
 
-## What a use aimed at `aim` would pick out, to ring it while aiming; null for most Skills.
+## What an activation aimed at `aim` would pick out, to ring it while aiming; null for most Skills.
 func target_for(_aim: Vector3) -> Node3D:
 	return null
 
@@ -148,12 +259,12 @@ func _enemies_within(reach: float) -> Array[Enemy]:
 	return enemies_around(get_world_3d(), global_position, reach)
 
 
-## Lands one use's hits: each Enemy in `hits` is pushed along its direction (a unit vector on
-## the ground) with this Skill's knockback and Stagger. The impact (hitstop, screen shake)
-## plays once for the whole use, however many Enemies it hit. For the Skills themselves.
-func _land_hits(hits: Dictionary[Enemy, Vector3]) -> void:
+## Lands one activation's hits: each Enemy in `hits` is pushed along its direction (a unit
+## vector on the ground) with the Knockback and Stagger of the activation's `snapshot`. The
+## impact (hitstop, screen shake) plays once for the whole activation, however many Enemies it hit. For the Skills themselves.
+func _land_hits(hits: Dictionary[Enemy, Vector3], snapshot: Snapshot) -> void:
 	if hits.is_empty():
 		return
 	for enemy in hits:
-		enemy.take_hit(hits[enemy], knockback, stagger)
+		enemy.take_hit(hits[enemy], snapshot.number(KNOCKBACK), snapshot.number(STAGGER))
 	HitFeedback.shared().play_impact(get_viewport())

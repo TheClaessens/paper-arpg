@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="Modifier" format=3]
+
+[ext_resource type="Script" path="res://skills/modifier.gd" id="1_modifier"]
+[ext_resource type="Script" path="res://skills/tag_change.gd" id="2_tag_change"]
+
+[sub_resource type="Resource" id="add_pierce"]
+script = ExtResource("2_tag_change")
+tag = &"Pierce"
+
+[resource]
+script = ExtResource("1_modifier")
+title = "Projectiles pierce an Enemy"
+filter = Array[StringName]([&"Projectile"])
+tag_changes = Array[ExtResource("2_tag_change")]([SubResource("add_pierce")])

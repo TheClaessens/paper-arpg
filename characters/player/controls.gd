@@ -2,17 +2,17 @@ class_name Controls
 extends Node
 ## The player's Controls (see GLOSSARY.md): reads the keys and mouse, a controller and touch.
 ## The Player asks it where the player walks and aims, each physics frame and when a Skill is
-## used, and connects its signals to the Skill bar. The `use_skill_slot_1` to `_5` actions press and let go of the
-## Skill slots; it knows the slots only by number.
+## activated, and connects its signals to the Skill bar. The `activate_skill_slot_1` to `_5`
+## actions press and let go of the Skill slots; it knows the slots only by number.
 
 ## The player pressed the binding of `slot`.
 signal slot_pressed(slot: int)
 ## The player let go of the binding of `slot`.
 signal slot_released(slot: int)
 
-## The input action that uses each Skill slot, the main slot first.
+## The input action that presses each Skill slot, the main slot first.
 const SLOT_ACTIONS: Array[StringName] = [
-	&"use_skill_slot_1", &"use_skill_slot_2", &"use_skill_slot_3", &"use_skill_slot_4", &"use_skill_slot_5",
+	&"activate_skill_slot_1", &"activate_skill_slot_2", &"activate_skill_slot_3", &"activate_skill_slot_4", &"activate_skill_slot_5",
 ]
 
 var _cursor := Vector2.ZERO # mouse position in this viewport
@@ -47,7 +47,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 ## Which Skill slot `event` presses (or, with `pressed` false, lets go of): 0 for the main slot,
 ## 1 to 4 for the small ones, or SkillBar.NONE. Godot also turns every touch into a left click,
-## which would use the main slot wherever a thumb lands, so those emulated clicks don't count.
+## which would press the main slot wherever a thumb lands, so those emulated clicks don't count.
 static func slot_for(event: InputEvent, pressed: bool) -> int:
 	if event.device == InputEvent.DEVICE_ID_EMULATION:
 		return SkillBar.NONE

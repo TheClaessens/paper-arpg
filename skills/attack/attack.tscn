@@ -15,6 +15,7 @@ size = Vector2(2, 2)
 [node name="Attack" type="Node3D"]
 script = ExtResource("1_attack")
 repeats_while_held = true
+tags = Array[StringName]([&"Attack", &"Melee"])
 title = "Attack"
 cooldown = 0.4
 icon = ExtResource("4_icon")
