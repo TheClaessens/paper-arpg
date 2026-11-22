@@ -10,4 +10,4 @@
 - [x] Health clamps, ignores 0 Damage, reports each change, and dies exactly once; after death it ignores damage and heal.
 - [x] Hitting a zombie lowers its Health by the Skill's Damage.
 - [x] `damage` and `heal` change the player's Health, stop at 0 and 100, and healing at 0 leaves it at 0.
-- [ ] GUT tests cover the above; `tools/check.sh` passes; checked once in game with the Console.
+- [x] GUT tests cover the above; `tools/check.sh` passes; checked once in game with the Console.
