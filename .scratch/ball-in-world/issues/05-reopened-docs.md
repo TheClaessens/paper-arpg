@@ -10,6 +10,6 @@
 
 **Status:** ready-for-agent
 
-- [ ] Each passage reads as the spec gives it, and the paragraphs around it are not reflowed.
-- [ ] The specs the spec lists as not reopened (the hit spec among them), `docs/adr/` and the two reports are unchanged.
-- [ ] `tools/check.sh` passes.
+- [x] Each passage reads as the spec gives it, and the paragraphs around it are not reflowed.
+- [x] The specs the spec lists as not reopened (the hit spec among them), `docs/adr/` and the two reports are unchanged.
+- [x] `tools/check.sh` passes.
