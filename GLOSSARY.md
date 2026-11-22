@@ -9,7 +9,7 @@ A character drawn as a flat 2D cut-out with a white border, standing upright in 
 _Avoid_: Card, sprite, billboard, paper doll
 
 **Character**:
-Anything that moves through the world as a Standee: the player's hero and the enemies.
+Anything that moves through the world as a Standee and has a Faction: the player's hero and the Enemies.
 _Avoid_: Actor, entity, unit
 
 **Blob shadow**:
@@ -17,8 +17,12 @@ The soft dark ellipse on the ground beneath a Standee that grounds it in the wor
 _Avoid_: Drop shadow, shadow decal
 
 **Enemy**:
-A Character hostile to the player. Later Enemies come in kinds (such as elites and bosses) and rarities.
+A Character of the Enemies' Faction, hostile to the player and their allies. Later Enemies come in kinds (such as elites and bosses) and rarities.
 _Avoid_: Monster, mob, creep
+
+**Faction**:
+The side a Character fights on: the player's or the Enemies'. Characters of different Factions are hostile, so their Skills hit each other. A pet the player summons would be of the player's Faction.
+_Avoid_: Team, allegiance, alignment, side
 
 **Aggro**:
 The state of an Enemy that has noticed the player and chases them. Once an Enemy is aggroed, it stays aggroed.
@@ -63,6 +67,10 @@ _Avoid_: Mod, affix, stat
 **Tag pass**:
 The first step of making a Snapshot: Modifiers that add, replace or remove Skill tags apply round after round, each once, so every other Modifier is judged on the final tags. A removed tag can't come back in the same activation.
 _Avoid_: Tag resolution, tag phase
+
+**Damage**:
+How much Health a Skill's hit takes away. A number of the Skill that Modifiers change, separate from its Damage type.
+_Avoid_: Power, attack value
 
 **Damage type**:
 What kind of damage a hit deals, such as fire. It is separate from the Skill's Skill tags: a Fire Skill can deal frost damage, and a tag never sets the damage.
@@ -123,6 +131,18 @@ _Avoid_: Juice, game feel, impact effects
 **Stagger**:
 The short time after a hit when an Enemy slides with the knockback and does not chase. Another hit restarts it.
 _Avoid_: Stun, hitstun, flinch
+
+**Health**:
+How much more Damage a Character can take before it dies. Damage lowers it, and healing raises it up to its maximum. At 0 an Enemy dies; the player, for now, stays at 0.
+_Avoid_: HP, hit points, life
+
+**Health bar**:
+The flat strip over a Character's Standee that shows its Health. It shows only while Health is below its maximum.
+_Avoid_: Life bar, HP bar
+
+**Hurtbox**:
+The part of a Character that Skills hit. A Character without one can't be hit.
+_Avoid_: Hitbox, collider, hit area
 
 **Aim**:
 Where an activation of a Skill is sent: a direction on the ground, and for a Skill that lands on a spot, also how far. The mouse cursor, the right stick or a drag off the Skill slot sets it; otherwise Auto-aim does. A Skill activated around the player has none.

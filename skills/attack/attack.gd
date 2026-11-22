@@ -1,10 +1,10 @@
 @tool
 class_name Attack
 extends Skill
-## The Attack (see GLOSSARY.md) with a sword: a swing along Facing that hits every Enemy
-## inside its Sweep and Range once. A white wedge flashes flat on the ground over that area.
+## The Attack (see GLOSSARY.md) with a sword: a swing along Facing that hits every hostile
+## Hurtbox inside its Sweep and Range once. A white wedge flashes flat on the ground over that area.
 
-## Closer than this, an Enemy is hit from any side: its body is pressed against the player's.
+## Closer than this, a Hurtbox is hit from any side: its body is pressed against the player's.
 const POINT_BLANK := 0.6
 ## How long the wedge on the ground takes to fade.
 const SWING_FADE := 0.16
@@ -19,8 +19,8 @@ const SWEEP := &"Sweep"
 @onready var _swing_material: ShaderMaterial = _swing.material_override
 
 
-## Whether an Enemy at `offset` from the player is inside the Sweep of a swing along `facing`.
-## Only the angle: _activate() asks for the Enemies within Range first.
+## Whether a Hurtbox at `offset` from the player is inside the Sweep of a swing along `facing`.
+## Only the angle: _activate() asks for the hostile Hurtboxes within Range first.
 static func in_sweep(offset: Vector3, facing: Vector3, sweep_degrees: float) -> bool:
 	var flat := Vector3(offset.x, 0.0, offset.z)
 	if flat.length() < POINT_BLANK:
@@ -39,12 +39,12 @@ func _activate(snapshot: Snapshot, aim: Vector3) -> void:
 	var swing_range := snapshot.number(RANGE)
 	var swing_sweep := snapshot.number(SWEEP)
 	_show_swing(facing, swing_range, swing_sweep)
-	var hits: Dictionary[Enemy, Vector3] = {}
-	for enemy in _enemies_within(swing_range):
-		var offset := enemy.global_position - global_position
+	var hits: Dictionary[Hurtbox, Vector3] = {}
+	for hurtbox in _hurtboxes_within(swing_range):
+		var offset := hurtbox.global_position - global_position
 		if in_sweep(offset, facing, swing_sweep):
 			# Pushed straight away from the player; one right on top goes along Facing.
-			hits[enemy] = Vector3(offset.x, 0.0, offset.z).normalized() if offset.length() > 0.01 else facing
+			hits[hurtbox] = Vector3(offset.x, 0.0, offset.z).normalized() if offset.length() > 0.01 else facing
 	_land_hits(hits, snapshot)
 
 

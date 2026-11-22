@@ -1,8 +1,10 @@
 extends GutTest
-## Landing a Skill's hits: each Enemy is pushed along its own direction with the Skill's
-## Knockback and Stagger, and the impact plays once per activation, not per Enemy.
+## Landing a Skill's hits: each Hurtbox hit tells its Enemy, which is pushed along its own
+## direction with the Snapshot's Knockback and Stagger. The impact plays once per activation.
 
 const ZombieScene := preload("res://characters/enemy/zombie.tscn")
+const HurtboxScene := preload("res://characters/hurtbox/hurtbox.tscn")
+const ENEMIES := 1 << 4 # Faction.layer(ENEMIES), written out so the test doesn't recompute it
 
 var skill: Skill
 
@@ -28,7 +30,7 @@ func _zombie_at(x: float) -> Enemy:
 func test_each_enemy_is_pushed_its_own_way() -> void:
 	var left := _zombie_at(-5.0)
 	var right := _zombie_at(5.0)
-	skill._land_hits({left: Vector3.LEFT, right: Vector3.RIGHT}, skill.snapshot([]))
+	skill._land_hits({left.hurtbox: Vector3.LEFT, right.hurtbox: Vector3.RIGHT}, skill.snapshot([]))
 	await wait_physics_frames(30) # past the hitstop and the Stagger
 	assert_almost_eq(left.global_position.x, -5.35, 0.05)
 	assert_almost_eq(right.global_position.x, 5.35, 0.05)
@@ -58,14 +60,39 @@ func test_auto_aim_ignores_height() -> void:
 	assert_eq(Skill.auto_aim(Vector3.RIGHT, 5.0, [Vector3(2.0, 0.5, 0.0)]), Vector3(2.0, 0.0, 0.0))
 
 
-# Reach: an Enemy is within reach when any part of its body is. A zombie's body is 0.25 around
-# its centre.
+# Reach: a Hurtbox is within reach when any part of it is. A zombie's Hurtbox is its body's
+# capsule, 0.25 around its centre. Only Hurtboxes on the layers asked for are found.
 
-func test_an_enemy_is_within_reach_when_its_body_is() -> void:
+func _player_hurtbox_at(x: float) -> Hurtbox:
+	var hurtbox: Hurtbox = HurtboxScene.instantiate()
+	hurtbox.collision_layer = Faction.layer(Faction.Id.PLAYER)
+	add_child_autofree(hurtbox)
+	hurtbox.global_position = Vector3(x, 0.0, 0.0)
+	return hurtbox
+
+
+func test_a_hurtbox_is_within_reach_when_any_part_of_it_is() -> void:
 	var zombie := _zombie_at(1.2) # its near edge at 0.95
 	await wait_physics_frames(2) # the physics world learns where it stands
-	assert_eq(Skill.enemies_around(skill.get_world_3d(), Vector3.ZERO, 1.0), [zombie] as Array[Enemy])
-	assert_eq(Skill.enemies_around(skill.get_world_3d(), Vector3.ZERO, 0.9), [] as Array[Enemy], "0.05 short of it")
+	var world := skill.get_world_3d()
+	assert_eq(Skill.hurtboxes_around(world, Vector3.ZERO, 1.0, ENEMIES), [zombie.hurtbox] as Array[Hurtbox])
+	assert_eq(Skill.hurtboxes_around(world, Vector3.ZERO, 0.9, ENEMIES), [] as Array[Hurtbox], "0.05 short of it")
+
+
+func test_only_hurtboxes_on_the_layers_asked_for_are_found() -> void:
+	var zombie := _zombie_at(0.5)
+	_player_hurtbox_at(0.5)
+	await wait_physics_frames(2)
+	var world := skill.get_world_3d()
+	assert_eq(Skill.hurtboxes_around(world, Vector3.ZERO, 1.0, ENEMIES), [zombie.hurtbox] as Array[Hurtbox])
+	assert_eq(Skill.hurtbox_nearest(world, Vector3(0.5, 0.0, 0.0), 1.0, ENEMIES), zombie.hurtbox)
+
+
+func test_the_players_skills_never_aim_at_the_players_faction() -> void:
+	_player_hurtbox_at(1.0)
+	await wait_physics_frames(2)
+	assert_eq(skill.aim_toward(Vector3.RIGHT, 2.0), Vector3.RIGHT * 2.0, "along Facing")
+	assert_null(Skill.hurtbox_nearest(skill.get_world_3d(), Vector3(1.0, 0.0, 0.0), 1.0, skill.hostile_mask()), "nothing to ring")
 
 
 func test_auto_aim_at_a_body_in_range_goes_as_far_as_the_range() -> void:
@@ -137,3 +164,23 @@ func test_it_runs_its_own_cooldown() -> void:
 	recording.try_activate(Vector3.RIGHT, [])
 	await wait_physics_frames(6) # 0.1 s at 60 Hz
 	assert_true(recording.is_ready())
+
+
+# Damage is one of the Skill's numbers, so the Snapshot holds it after Modifiers.
+
+func test_attack_and_fireball_deal_their_damage() -> void:
+	var attack: Skill = autofree(preload("res://skills/attack/attack.tscn").instantiate())
+	var fireball: Skill = autofree(preload("res://skills/fireball/fireball.tscn").instantiate())
+	assert_eq(attack.snapshot([]).number(Skill.DAMAGE), 10.0)
+	assert_eq(fireball.snapshot([]).number(Skill.DAMAGE), 20.0)
+
+
+func test_a_modifier_on_damage_changes_it() -> void:
+	var attack: Skill = autofree(preload("res://skills/attack/attack.tscn").instantiate())
+	var harder := Modifier.new()
+	var change := NumberChange.new()
+	change.number = Skill.DAMAGE
+	change.kind = NumberChange.Kind.INCREASED
+	change.amount = 50.0
+	harder.number_changes = [change]
+	assert_eq(attack.snapshot([harder]).number(Skill.DAMAGE), 15.0, "10, 50% increased")

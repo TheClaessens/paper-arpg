@@ -2,8 +2,8 @@
 class_name Fireball
 extends Skill
 ## Fireball: throws a ball of fire straight where it is aimed. It flies at `speed` until it has flown
-## the Skill's Range, or touches a wall or an Enemy (with Pierce, a second Enemy). Each Enemy it
-## touches is knocked back, with the same Hit feedback as any other Skill.
+## the Skill's Range, or touches a wall or a hostile Hurtbox (with Pierce, a second one). Each
+## Hurtbox it touches is hit, with the same Hit feedback as any other Skill.
 
 const ProjectileScene := preload("res://skills/fireball/projectile.tscn")
 
@@ -30,6 +30,7 @@ func _activate(snapshot: Snapshot, aim: Vector3) -> void:
 	ball.direction = facing
 	ball.snapshot = snapshot # the ball flies as this throw was made, whatever changes after
 	ball.top_level = true # flies on its own instead of following the Character
-	ball.hit_enemy.connect(func(enemy: Enemy) -> void: _land_hits({enemy: facing}, ball.snapshot)) # pushed along the throw
+	ball.collision_mask |= hostile_mask()
+	ball.hit.connect(func(hurtbox: Hurtbox) -> void: _land_hits({hurtbox: facing}, ball.snapshot)) # pushed along the throw
 	add_child(ball)
 	ball.global_position = global_position + facing * LAUNCH_OFFSET + Vector3.UP * FLIGHT_HEIGHT

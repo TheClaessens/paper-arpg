@@ -1,5 +1,5 @@
 extends GutTest
-## The `tp` console command, which the Player registers while it is in the tree.
+## The Player: its Facing, aiming, and the console commands it registers while in the tree.
 
 const PlayerScene := preload("res://characters/player/player.tscn")
 
@@ -225,3 +225,20 @@ func test_modifier_needs_a_known_name_and_on_or_off() -> void:
 	assert_eq(Console.execute("modifier chain on"), "Usage: modifier [<spell-cooldown|pierce> on|off]")
 	assert_eq(Console.execute("modifier spell-cooldown maybe"), "Usage: modifier [<spell-cooldown|pierce> on|off]")
 	assert_eq(player.modifiers.size(), 0)
+
+
+# `damage` and `heal` change the player's Health, which stays between 0 and 100 and doesn't
+# come back from 0.
+
+func test_damage_and_heal_change_the_players_health() -> void:
+	assert_eq(Console.execute("damage 12.4"), "Health 88")
+	assert_eq(Console.execute("heal 5"), "Health 93")
+	assert_eq(Console.execute("heal 50"), "Health 100", "no higher than 100")
+	assert_eq(Console.execute("damage 150"), "Health 0", "no lower than 0")
+	assert_eq(Console.execute("heal 30"), "Health 0", "healing doesn't bring the player back")
+
+
+func test_damage_and_heal_need_an_amount() -> void:
+	assert_eq(Console.execute("damage"), "Usage: damage <amount>")
+	assert_eq(Console.execute("heal lots"), "Usage: heal <amount>")
+	assert_eq(Console.execute("damage -5"), "Usage: damage <amount>", "not below 0")

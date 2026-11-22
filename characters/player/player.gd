@@ -1,8 +1,8 @@
 class_name Player
 extends CharacterBody3D
-## The player's Character (see GLOSSARY.md). Its Controls tell it where to walk, relative to the
-## camera (pushing up walks up the screen), and which Skill slots of its Skill bar the player
-## presses. It has its Skills (child nodes) and its Modifiers, and activates a Skill when its
+## The player's Character (see GLOSSARY.md), of the player's Faction. Its Controls tell it
+## where to walk, relative to the camera (pushing up walks up the screen), and which Skill
+## slots of its Skill bar the player presses. It has its Skills (child nodes) and its Modifiers, and activates a Skill when its
 ## Skill bar asks: aimed at the mouse cursor, along the right stick while it is pushed, or else
 ## auto-aimed (see Skill.Aim).
 
@@ -11,7 +11,7 @@ signal skill_activated(slot: int)
 
 ## How far the card stretches when the player activates a Skill.
 const ACTIVATE_STRETCH := -0.15
-## How near the mouse cursor's spot an Enemy must be to be highlighted.
+## How near the mouse cursor's spot a hostile Hurtbox must be to be highlighted.
 const HOVER_REACH := 1.0
 ## How long the player keeps facing what a Skill was aimed at before the walk takes Facing back.
 const FACE_AIM_TIME := 0.35
@@ -39,11 +39,20 @@ var skills: Array[Skill]:
 				found.append(child as Skill)
 		return found
 
+## The player's Faction: the player's, unless its scene says otherwise. Its Skills hit only
+## Hurtboxes hostile to it.
+@export var faction := Faction.Id.PLAYER
+
 ## The player's Modifiers: every activation of its Skills is made with them, and aiming reads
 ## its Skills' numbers through them.
 @export var modifiers: Array[Modifier] = []
 
 var _face_aim_left := 0.0 # time left facing the last activation's aim
+
+## How much more Damage the player can take.
+@onready var health: Health = $Health
+## Shows the player's Health while it is below the maximum.
+@onready var health_bar: HealthBar = $HealthBar
 
 @onready var _controls: Controls = $Controls
 @onready var _movement: Movement = $Movement
@@ -58,10 +67,15 @@ func _enter_tree() -> void:
 	Console.register(&"tp", _cmd_tp, "tp <x> <z>: move the player to a spot on the ground.")
 	Console.register(&"bar", _cmd_bar, "bar <1-5> <skill|empty>: put a Skill in a Skill slot (1 is the main slot), or empty it.")
 	Console.register(&"activate", _cmd_activate, "activate <1-5> [<x> <z>]: press a Skill slot, auto-aimed or aimed at an offset on the ground.")
+	Console.register(&"damage", _cmd_damage, "damage <amount>: take Damage off the player's Health.")
+	Console.register(&"heal", _cmd_heal, "heal <amount>: heal the player's Health.")
 	Console.register(&"modifier", _cmd_modifier, "modifier [<name> on|off]: switch a proof Modifier on the player, or list them and why each applies to each Skill.")
 
 
 func _ready() -> void:
+	health.changed.connect(health_bar.show_health)
+	for skill in skills:
+		skill.faction = faction
 	facing = _controls.ground_axes()[0] # screen right
 	skill_bar.activation_requested.connect(_on_activation_requested)
 	_controls.slot_pressed.connect(skill_bar.press)
@@ -185,6 +199,23 @@ func _cmd_activate(args: PackedStringArray) -> String:
 	return "activate %d" % (slot + 1)
 
 
+func _cmd_damage(args: PackedStringArray) -> String:
+	return _change_health(args, "damage", health.damage)
+
+
+func _cmd_heal(args: PackedStringArray) -> String:
+	return _change_health(args, "heal", health.heal)
+
+
+## Runs the `command` console command: `change` the player's Health by the amount in `args`, then
+## says what it is now, rounded.
+func _change_health(args: PackedStringArray, command: String, change: Callable) -> String:
+	if args.size() != 1 or not args[0].is_valid_float() or args[0].to_float() < 0.0:
+		return "Usage: %s <amount>" % command
+	change.call(args[0].to_float())
+	return "Health %d" % roundi(health.current)
+
+
 func _cmd_modifier(args: PackedStringArray) -> String:
 	if args.is_empty():
 		var lines: Array[String] = []
@@ -217,11 +248,13 @@ func _facing_toward_cursor() -> Vector3:
 	return facing if point == null else facing_toward(global_position, point as Vector3, facing)
 
 
-## Rings the Enemy nearest the spot under the mouse cursor, while the mouse aims: on PC, the
-## Enemy a Skill that lands on a spot would pick.
+## Rings the hostile Hurtbox nearest the spot under the mouse cursor, while the mouse aims: on
+## PC, the one a Skill that lands on a spot would pick.
 func _highlight_hovered() -> void:
 	var point: Variant = _controls.cursor_on_ground(global_position.y) if _controls.leads_with_mouse() else null
-	var hovered := Skill.enemy_nearest(get_world_3d(), point as Vector3, HOVER_REACH) if point != null else null
+	var hovered: Hurtbox = null
+	if point != null:
+		hovered = Skill.hurtbox_nearest(get_world_3d(), point as Vector3, HOVER_REACH, Faction.hostile_mask(faction))
 	_hover_ring.visible = hovered != null
 	if hovered:
 		_hover_ring.global_position = hovered.global_position + Vector3.UP * 0.05

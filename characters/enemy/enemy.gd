@@ -1,8 +1,14 @@
 class_name Enemy
 extends CharacterBody3D
-## A Character hostile to the player (see GLOSSARY.md). Stands still until its Aggro notices
+## A Character of the Enemies' Faction (see GLOSSARY.md). Stands still until its Aggro notices
 ## the player, then chases them along the navmesh for good, stopping within reach.
-## A hit staggers it: it slides away with the knockback and doesn't chase until the Stagger ends.
+## A hit on its Hurtbox lowers its Health by the hit's Damage and staggers it: it slides away
+## with the knockback and doesn't chase until the Stagger ends. At 0 Health it dies: it sinks
+## through the floor where it stood and is gone.
+
+## The Enemy's Faction: the Enemies', unless its scene says otherwise. It puts its Hurtbox on
+## that Faction's layer.
+@export var faction := Faction.Id.ENEMIES
 
 ## Stops chasing this close to the target, in world units.
 @export var reach_distance := 1.0
@@ -16,12 +22,22 @@ var _stagger_left := 0.0
 var _stagger_time := 0.0 # the full length of the current Stagger
 var _knockback := Vector3.ZERO # direction times distance
 
+## The part of the Enemy that Skills hit.
+@onready var hurtbox: Hurtbox = $Hurtbox
+## How much more Damage it can take.
+@onready var health: Health = $Health
+## Shows its Health while it is below the maximum.
+@onready var health_bar: HealthBar = $HealthBar
 @onready var _movement: Movement = $Movement
 @onready var _standee: Standee = $Standee
 @onready var _agent: NavigationAgent3D = $NavigationAgent3D
 
 
 func _ready() -> void:
+	hurtbox.collision_layer = Faction.layer(faction)
+	hurtbox.hit_taken.connect(_on_hit_taken)
+	health.changed.connect(health_bar.show_health)
+	health.died.connect(_die)
 	($Aggro as Aggro).aggroed.connect(func(target: Node3D) -> void: _target = target)
 	_agent.velocity_computed.connect(_on_velocity_computed)
 	_agent.max_speed = _movement.speed # avoidance never speeds an Enemy past its own top speed
@@ -39,13 +55,15 @@ static func knockback_left(distance: float, stagger: float, left: float) -> floa
 	return distance * (left / stagger) ** 2
 
 
-## Hit by a Skill: pushed `knockback` world units along `direction` (a unit vector on the
-## ground), sliding without chasing for `stagger` seconds. The Skill decides both.
-func take_hit(direction: Vector3, knockback: float, stagger: float) -> void:
+## Hit on its Hurtbox: loses the `snapshot`'s Damage from its Health and is pushed the
+## `snapshot`'s Knockback in world units along `direction` (a unit vector on the ground),
+## sliding without chasing for its Stagger in seconds.
+func _on_hit_taken(direction: Vector3, snapshot: Snapshot) -> void:
+	health.damage(snapshot.number(Skill.DAMAGE))
 	# ponytail: a Stagger of 0 would need an instant push; the shortest slide stands in for it.
-	_stagger_time = maxf(stagger, 0.02)
+	_stagger_time = maxf(snapshot.number(Skill.STAGGER), 0.02)
 	_stagger_left = _stagger_time
-	_knockback = direction * knockback
+	_knockback = direction * snapshot.number(Skill.KNOCKBACK)
 	var feedback := HitFeedback.shared()
 	_standee.flash(feedback.flash)
 	_standee.squash(feedback.squash)
@@ -86,6 +104,20 @@ func _on_velocity_computed(safe_velocity: Vector3) -> void:
 	else:
 		_standee.play(&"walk")
 		_standee.face(velocity)
+
+
+## At 0 Health: stops chasing and sliding (so the killing hit doesn't knock it back), leaves
+## every collision layer so nothing can hit, aim at, ring or bump into it, hides its Health bar,
+## and sinks through the floor where it stood. Gone once the sink ends.
+func _die() -> void:
+	set_physics_process(false)
+	_standee.play(&"idle") # no walk wobble on top of the sink's
+	_agent.avoidance_enabled = false # other Enemies no longer steer around it
+	collision_layer = 0
+	hurtbox.collision_layer = 0
+	health_bar.hide()
+	_standee.sunk.connect(queue_free)
+	_standee.sink()
 
 
 ## Staggered: slides with the knockback and doesn't steer. Skips the navigation agent, which

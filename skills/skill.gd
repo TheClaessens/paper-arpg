@@ -10,11 +10,11 @@ extends Node3D
 ## Its Cooldown has run out: it can be activated again.
 signal ready_again
 
-## How a Skill aims. AROUND: activated where the Character stands. AUTO: toward the nearest Enemy
-## near Facing. AIMED: auto-aimed too, and on touch it can also be aimed by hand.
+## How a Skill aims. AROUND: activated where the Character stands. AUTO: toward the nearest
+## hostile Hurtbox near Facing. AIMED: auto-aimed too, and on touch it can also be aimed by hand.
 enum Aim { AROUND, AUTO, AIMED }
 
-## Auto-aim takes an Enemy at most this far either side of Facing.
+## Auto-aim takes a Hurtbox at most this far either side of Facing.
 const AUTO_AIM_ANGLE := 60.0
 
 ## The one table of implied Skill tags: a Skill with the key tag also has each tag it lists.
@@ -25,6 +25,7 @@ const IMPLIED_TAGS: Dictionary[StringName, Array] = {
 ## The names of the Skill's numbers (see numbers()), as Modifiers and Snapshots know them.
 const COOLDOWN := &"Cooldown"
 const RANGE := &"Range"
+const DAMAGE := &"Damage"
 const KNOCKBACK := &"Knockback"
 const STAGGER := &"Stagger"
 
@@ -50,10 +51,16 @@ const STAGGER := &"Stagger"
 		update_configuration_warnings()
 ## The Skill's Range: how far it reaches from the Character's centre, in world units.
 @export var range := 1.0
+## How much Health a hit takes away (its Damage).
+@export var damage := 0.0
 ## How far a hit pushes an Enemy, in world units.
 @export var knockback := 0.0
 ## How long a hit Enemy slides without chasing (its Stagger), in seconds.
 @export var stagger := 0.0
+
+## The Faction of the Character that has the Skill, given by that Character. The Skill hits
+## only Hurtboxes hostile to it.
+var faction: Faction.Id
 
 ## Seconds until the Skill can be activated again. The Skill runs this clock itself.
 var cooldown_left := 0.0
@@ -110,7 +117,7 @@ static func with_implied(given: Array[StringName]) -> Array[StringName]:
 ## The Skill's numbers by name, for Modifiers to change. A Skill with numbers of its own adds
 ## them to these.
 func numbers() -> Dictionary[StringName, float]:
-	return {COOLDOWN: cooldown, RANGE: range, KNOCKBACK: knockback, STAGGER: stagger}
+	return {COOLDOWN: cooldown, RANGE: range, DAMAGE: damage, KNOCKBACK: knockback, STAGGER: stagger}
 
 
 ## Activates the Skill aimed at `aim` with the Character's `modifiers`, unless it is cooling
@@ -177,12 +184,12 @@ static func stack(value: float, name: StringName, changes: Array[NumberChange]) 
 
 
 ## Where auto-aim points, as an offset on the ground from the Character: the nearest of
-## `enemy_offsets` within AUTO_AIM_ANGLE of `facing`, or else along `facing`. Never farther
-## than `skill_range`. Which Enemies are within Range is the caller's to ask (see aim_toward()).
-static func auto_aim(facing: Vector3, skill_range: float, enemy_offsets: Array[Vector3]) -> Vector3:
+## `target_offsets` within AUTO_AIM_ANGLE of `facing`, or else along `facing`. Never farther
+## than `skill_range`. Which Hurtboxes are within Range is the caller's to ask (see aim_toward()).
+static func auto_aim(facing: Vector3, skill_range: float, target_offsets: Array[Vector3]) -> Vector3:
 	var best := facing * skill_range
 	var best_distance := INF
-	for offset in enemy_offsets:
+	for offset in target_offsets:
 		var flat := Vector3(offset.x, 0.0, offset.z)
 		var distance := flat.length()
 		if distance < best_distance and rad_to_deg(flat.angle_to(facing)) <= AUTO_AIM_ANGLE:
@@ -191,53 +198,55 @@ static func auto_aim(facing: Vector3, skill_range: float, enemy_offsets: Array[V
 	return best
 
 
-## The Enemy nearest `spot` on the ground within `reach` of it, or null (see nearest_to()).
-static func enemy_nearest(world: World3D, spot: Vector3, reach: float) -> Enemy:
-	var enemies := enemies_around(world, spot, reach)
+## The Hurtbox on the layers in `mask` nearest `spot` on the ground within `reach` of it, or
+## null (see nearest_to()).
+static func hurtbox_nearest(world: World3D, spot: Vector3, reach: float, mask: int) -> Hurtbox:
+	var hurtboxes := hurtboxes_around(world, spot, reach, mask)
 	var positions: Array[Vector3] = []
-	for enemy in enemies:
-		positions.append(enemy.global_position)
+	for hurtbox in hurtboxes:
+		positions.append(hurtbox.global_position)
 	var i := nearest_to(spot, positions, reach)
-	return enemies[i] if i >= 0 else null
+	return hurtboxes[i] if i >= 0 else null
 
 
-## Which of `enemies` (positions) is nearest `spot` on the ground and within `reach` of it, or -1.
-static func nearest_to(spot: Vector3, enemies: Array[Vector3], reach: float) -> int:
+## Which of `positions` is nearest `spot` on the ground and within `reach` of it, or -1.
+static func nearest_to(spot: Vector3, positions: Array[Vector3], reach: float) -> int:
 	var best := -1
 	var best_distance := reach
-	for i in enemies.size():
-		var distance := Vector2(enemies[i].x - spot.x, enemies[i].z - spot.z).length()
+	for i in positions.size():
+		var distance := Vector2(positions[i].x - spot.x, positions[i].z - spot.z).length()
 		if distance <= best_distance:
 			best = i
 			best_distance = distance
 	return best
 
 
-## Every Enemy in `world` with any part of its body within `reach` of `centre`.
-## The physics engine finds them: the sphere masks only the `enemy` layer, and an Enemy's body
-## is its collision shape.
-static func enemies_around(world: World3D, centre: Vector3, reach: float) -> Array[Enemy]:
+## Every Hurtbox in `world` on the layers in `mask` with any part of it within `reach` of
+## `centre`. The physics engine finds them: the sphere looks for areas only, on `mask` only.
+static func hurtboxes_around(world: World3D, centre: Vector3, reach: float, mask: int) -> Array[Hurtbox]:
 	var sphere := SphereShape3D.new()
 	sphere.radius = reach
 	var query := PhysicsShapeQueryParameters3D.new()
 	query.shape = sphere
 	query.transform = Transform3D(Basis.IDENTITY, centre + Vector3.UP * 0.5) # body height
-	query.collision_mask = 1 << 2 # layer 3, `enemy`
-	var enemies: Array[Enemy] = []
+	query.collision_mask = mask
+	query.collide_with_areas = true
+	query.collide_with_bodies = false
+	var hurtboxes: Array[Hurtbox] = []
 	for result in world.direct_space_state.intersect_shape(query, 32):
-		var enemy := result.collider as Enemy
-		if enemy:
-			enemies.append(enemy)
-	return enemies
+		var hurtbox := result.collider as Hurtbox
+		if hurtbox:
+			hurtboxes.append(hurtbox)
+	return hurtboxes
 
 
 ## Auto-aim from where the Character stands (see auto_aim()), as far as `reach`: the Skill's
-## Range as it stands now. An Enemy whose body is within reach but whose centre is past it is
-## aimed at as far as the reach.
+## Range as it stands now. A hostile Hurtbox within reach whose centre is past it is aimed at
+## as far as the reach.
 func aim_toward(facing: Vector3, reach: float) -> Vector3:
 	var offsets: Array[Vector3] = []
-	for enemy in _enemies_within(reach):
-		offsets.append(enemy.global_position - global_position)
+	for hurtbox in _hurtboxes_within(reach):
+		offsets.append(hurtbox.global_position - global_position)
 	return auto_aim(facing, reach, offsets)
 
 
@@ -254,17 +263,24 @@ func target_for(_aim: Vector3) -> Node3D:
 	return null
 
 
-## Every Enemy whose body is within `reach` of the Character, in any direction.
-func _enemies_within(reach: float) -> Array[Enemy]:
-	return enemies_around(get_world_3d(), global_position, reach)
+## The layers of every Faction hostile to the Skill's: where its hits and Auto-aim look.
+func hostile_mask() -> int:
+	return Faction.hostile_mask(faction)
 
 
-## Lands one activation's hits: each Enemy in `hits` is pushed along its direction (a unit
-## vector on the ground) with the Knockback and Stagger of the activation's `snapshot`. The
-## impact (hitstop, screen shake) plays once for the whole activation, however many Enemies it hit. For the Skills themselves.
-func _land_hits(hits: Dictionary[Enemy, Vector3], snapshot: Snapshot) -> void:
-	if hits.is_empty():
-		return
-	for enemy in hits:
-		enemy.take_hit(hits[enemy], snapshot.number(KNOCKBACK), snapshot.number(STAGGER))
-	HitFeedback.shared().play_impact(get_viewport())
+## Every hostile Hurtbox within `reach` of the Character, in any direction.
+func _hurtboxes_within(reach: float) -> Array[Hurtbox]:
+	return hurtboxes_around(get_world_3d(), global_position, reach, hostile_mask())
+
+
+## Lands one activation's hits: each Hurtbox in `hits` is hit pushing along its direction (a
+## unit vector on the ground) with the activation's `snapshot`; its Character reads what the hit
+## does from that. The impact (hitstop, screen shake) plays once for the whole activation,
+## however many it hit, and only if at least one hit landed. For the Skills themselves.
+func _land_hits(hits: Dictionary[Hurtbox, Vector3], snapshot: Snapshot) -> void:
+	var landed := false
+	for hurtbox in hits:
+		if hurtbox.take_hit(hits[hurtbox], snapshot):
+			landed = true
+	if landed:
+		HitFeedback.shared().play_impact(get_viewport())
