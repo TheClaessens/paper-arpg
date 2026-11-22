@@ -177,7 +177,7 @@ func _skills_in(node: Node) -> Array[Skill]
 
 ## Saved content today
 
-**Enums saved as numbers.** `fireball.tscn:8` saves `aim = 2` (`Skill.Aim.AIMED`); `spell_cooldown.tres:10` saves `kind = 1` (`NumberChange.Kind.INCREASED`). `TagChange.Kind` and `Faction.Id` are exported but saved by no file today. All four fall under "only added to at the end".
+**Enums saved as numbers.** `fireball.tscn:8` saves `aim = 2` (`Skill.Aim.AIMED`); `spell_cooldown.tres:10` saves `kind = 1` (`NumberChange.Kind.INCREASED`). `player.tscn` saves `faction = 0` (`Faction.Id.PLAYER`); `TagChange.Kind` is exported but saved by no file today. All four fall under "only added to at the end".
 
 **Defaults files rely on.** A file holds only the values written in it. Every other value is the script's default, so changing that default changes the file. `player.tscn:56` writes `max_health = 100.0`, equal to the default, so a file can hold one; but the files the editor has saved never do (`pierce.tres` has no `kind = 0`), which suggests it drops such a line when it resaves (unverified). Hence "in the same commit" in the convention below.
 
@@ -191,8 +191,9 @@ func _skills_in(node: Node) -> Array[Skill]
 | `TagChange.kind` = `ADD`, `into` empty | `pierce.tres`: it adds Pierce only because of them |
 | `Modifier.number_changes`, `tag_changes` = empty | `pierce.tres`, `spell_cooldown.tres` |
 | `HitFeedback` (all five) | `hit_feedback.tres` sets none: the defaults are the game's Hit feedback |
-| `Player.faction`, `Player.modifiers` | `player.tscn` |
-| `Enemy.faction`, `reach_distance`, `resume_distance` | `zombie.tscn` |
+| `Character.faction` | `zombie.tscn` (`player.tscn` sets it since `.scratch/character/spec.md`) |
+| `Character.modifiers` | `player.tscn`, `zombie.tscn` |
+| `Enemy.reach_distance`, `resume_distance` | `zombie.tscn` |
 | `Movement.speed`, `acceleration`, `deceleration` | `player.tscn` all three; `zombie.tscn` the last two (it sets speed 2.5) |
 | `Aggro.radius` | `aggro.tscn`, and so `zombie.tscn` |
 | `Standee.pixel_size`, `wobble_animation`, `wobble_angle`, `wobble_speed` | `standee.tscn`, and so `player.tscn`, `zombie.tscn` |

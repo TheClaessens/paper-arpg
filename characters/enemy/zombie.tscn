@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" path="res://characters/hurtbox/hurtbox.tscn" id="6_hurtbox"]
 [ext_resource type="Script" path="res://characters/health/health.gd" id="7_health"]
 [ext_resource type="PackedScene" path="res://characters/health_bar/health_bar.tscn" id="8_health_bar"]
+[ext_resource type="Script" path="res://characters/stagger/stagger.gd" id="9_stagger"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 radius = 0.25
@@ -44,9 +45,14 @@ neighbor_distance = 3.0
 
 [node name="Hurtbox" parent="." unique_id=1938276007 instance=ExtResource("6_hurtbox")]
 
+[node name="Stagger" type="Node" parent="."]
+script = ExtResource("9_stagger")
+
 [node name="Health" type="Node" parent="." unique_id=1938276008]
 script = ExtResource("7_health")
 max_health = 50.0
 
 [node name="HealthBar" parent="." unique_id=1938276009 instance=ExtResource("8_health_bar")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+
+[node name="Skills" type="Node3D" parent="."]

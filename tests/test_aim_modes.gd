@@ -29,7 +29,7 @@ func before_each() -> void:
 	skill = TestSkill.new()
 	skill.cooldown = 1.0
 	skill.range = 2.0
-	player.add_child(skill)
+	player.add_skill(skill)
 	player.skill_bar.set_skill(1, skill)
 
 

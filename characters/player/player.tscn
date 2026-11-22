@@ -40,6 +40,7 @@ collision_mask = 5
 motion_mode = 1
 safe_margin = 0.02
 script = ExtResource("1_player")
+faction = 0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=656968989]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
@@ -66,13 +67,15 @@ transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, -0.55)
 cast_shadow = 0
 mesh = SubResource("arrow_mesh")
 
-[node name="Attack" parent="." unique_id=1240203622 instance=ExtResource("5_attack")]
+[node name="Skills" type="Node3D" parent="."]
 
-[node name="Fireball" parent="." unique_id=877120161 instance=ExtResource("7_fireball")]
+[node name="Attack" parent="Skills" unique_id=1240203622 instance=ExtResource("5_attack")]
+
+[node name="Fireball" parent="Skills" unique_id=877120161 instance=ExtResource("7_fireball")]
 
 [node name="SkillBar" type="Node" parent="." unique_id=807985351 node_paths=PackedStringArray("main_skill")]
 script = ExtResource("6_slot")
-main_skill = NodePath("../Attack")
+main_skill = NodePath("../Skills/Attack")
 
 [node name="AimMarker" parent="." unique_id=359261295 instance=ExtResource("8_aim_marker")]
 
