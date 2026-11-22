@@ -9,7 +9,7 @@ A character drawn as a flat 2D cut-out with a white border, standing upright in 
 _Avoid_: Card, sprite, billboard, paper doll
 
 **Character**:
-Anything that moves through the world as a Standee and has a Faction: the player's hero and the Enemies.
+Anything that moves through the world as a Standee and has a Faction: the player's hero and the Enemies. It has its Skills, and the Modifiers that change them.
 _Avoid_: Actor, entity, unit
 
 **Blob shadow**:
@@ -137,7 +137,7 @@ How the game shows the moment a Skill hits an Enemy so the hit feels solid: the 
 _Avoid_: Juice, game feel, impact effects
 
 **Stagger**:
-The short time after a hit when an Enemy slides with the knockback and does not chase. Another hit restarts it.
+The short time after a hit when a Character slides with the knockback and doesn't walk. Another hit restarts it, but a hit whose Stagger is 0 doesn't stagger at all. The player, for now, isn't staggered.
 _Avoid_: Stun, hitstun, flinch
 
 **Health**:
