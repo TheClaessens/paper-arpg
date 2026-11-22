@@ -118,9 +118,10 @@ func numbers() -> Dictionary[StringName, float]:
 
 
 ## Activates the Skill aimed at `aim` with the Character's `modifiers`: makes the activation's
-## Snapshot, starts the Snapshot's Cooldown, then does what the Skill does. Whether it activated.
-## A Skill still cooling down doesn't, and nor does one aimed with no direction on the ground,
-## which also prints an error. A Skill without a Character fails an assertion.
+## Snapshot, starts its Cooldown (the Snapshot's, never shorter than SHORTEST_COOLDOWN), then does
+## what the Skill does. Whether it activated. A Skill still cooling down doesn't, and nor does one
+## aimed with no direction on the ground, which also prints an error. A Skill without a Character
+## fails an assertion.
 func try_activate(aim: Vector3, modifiers: Array[Modifier]) -> bool:
 	assert(character != null, "%s has no Character: give it to one with Character.add_skill()." % name)
 	if not is_ready():
