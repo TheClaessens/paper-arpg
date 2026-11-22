@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="AimMode" format=3]
+
+[ext_resource type="Script" path="res://skills/aim_mode.gd" id="1_p7cb0"]
+
+[resource]
+script = ExtResource("1_p7cb0")
+waits_for_lift = true

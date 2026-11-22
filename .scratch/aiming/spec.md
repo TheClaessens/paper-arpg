@@ -66,3 +66,4 @@ Rebinding, targeting a specific Enemy by tapping it, aim assist on the mouse, da
 - **Drags are measured from where the thumb landed, not from the button's centre** (code review, 2026-11-16). With the deadzone at 8, a thumb that landed off-centre turned almost every tap into a hand-aim. The aim also starts at the player and follows the thumb's movement, wherever on the button it pressed.
 - **The player faces the aim for 0.35 s after a use** (code review). Before, the next frame's movement took Facing straight back, so the turn never showed while walking.
 - **The pause button takes no focus** (code review). After a mouse click on it, a controller's A would have pressed it again instead of attacking.
+- **How a Skill aims moved into Aim modes** (2026-11-22). The three settings on the Skill (`aim`, `aims_at_spot`, `repeats_while_held`) are gone; a Skill names a file in `skills/aim_modes/` (`.scratch/aim-modes/spec.md`).

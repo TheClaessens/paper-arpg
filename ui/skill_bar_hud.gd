@@ -102,13 +102,13 @@ func _on_touch_started(at: Vector2, slot: int) -> void:
 	var skill := player.skill_bar.skill_in(slot)
 	if skill == null or not skill.is_ready():
 		return
-	if skill.aim == Skill.Aim.AIMED:
+	if skill.aim_mode.waits_for_lift:
 		_aiming_slot = slot # activated when the thumb lifts
 		_aimed = false
 		_left_slot = false
 	else:
 		player.skill_bar.press(slot)
-		if skill.repeats_while_held:
+		if skill.aim_mode.repeats_while_held:
 			_held_slot = slot
 			player.skill_bar.set_held(slot, true)
 

@@ -4,7 +4,7 @@ extends Character
 ## where to walk, relative to the camera (pushing up walks up the screen), and which Skill
 ## slots of its Skill bar the player presses. It activates one of its Skills (see Character) when
 ## its Skill bar asks: aimed at the mouse cursor, along the right stick while it is pushed, or
-## else auto-aimed (see Skill.Aim).
+## else auto-aimed (see AimMode).
 
 ## A Skill in `slot` was activated (the HUD presses its button in).
 signal skill_activated(slot: int)
@@ -92,20 +92,11 @@ func _on_activation_requested(slot: int, given_aim: Vector3) -> void:
 	skill_activated.emit(slot)
 
 
-## The aim on the ground for a thumb `drag` on screen (see ground_aim()).
+## The aim on the ground for a thumb `drag` on screen, as `skill`'s Aim mode makes it (see
+## AimMode.aim_from_drag()).
 func aim_from_drag(skill: Skill, drag: Vector2, full_drag: float) -> Vector3:
 	var axes := _controls.ground_axes()
-	return ground_aim(drag, axes[0], axes[1], _range_of(skill), full_drag, skill.aims_at_spot)
-
-
-## The aim on the ground, as an offset from the Character, for a thumb `drag` on screen.
-## `right` and `back` are screen right and screen down on the ground. A Skill that goes a
-## direction goes its whole Range; one that lands on a spot goes as far as the drag, reaching
-## its Range at `full_drag`.
-static func ground_aim(drag: Vector2, right: Vector3, back: Vector3, skill_range: float, full_drag: float, to_spot: bool) -> Vector3:
-	var direction := (right * drag.x + back * drag.y).normalized()
-	var reach := minf(drag.length() / full_drag, 1.0) if to_spot else 1.0
-	return direction * skill_range * reach
+	return skill.aim_mode.aim_from_drag(drag, axes[0], axes[1], _range_of(skill), full_drag)
 
 
 ## Shows where `skill` would go if activated now with `aim`, greyed out while `cancelling`.
@@ -121,7 +112,7 @@ func hide_aim() -> void:
 ## right stick, or else auto-aimed. A Skill activated around the player ignores it.
 func _aim_for(skill: Skill) -> Vector3:
 	var reach := _range_of(skill)
-	if skill.aim == Skill.Aim.AROUND:
+	if skill.aim_mode.holds == AimMode.Holds.NOTHING:
 		return facing * reach
 	if _controls.leads_with_mouse():
 		var point: Variant = _controls.cursor_on_ground(global_position.y)
