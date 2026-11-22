@@ -1,0 +1,44 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://cx1p31vvnlago" path="res://rendering/pixelated_view.gd" id="2_2d2mb"]
+[ext_resource type="PackedScene" uid="uid://b7lxromdaqgee" path="res://characters/player/player.tscn" id="12_player"]
+[ext_resource type="PackedScene" path="res://ui/touch_stick.tscn" id="16_touch_stick"]
+[ext_resource type="PackedScene" path="res://ui/skill_bar_hud.tscn" id="17_skill_bar_hud"]
+[ext_resource type="PackedScene" path="res://ui/pause_menu.tscn" id="20_pause_menu"]
+[ext_resource type="PackedScene" uid="uid://dju5kanhrsbts" path="res://scenes/sandbox.tscn" id="21_sandbox"]
+
+[node name="Game" type="Node"]
+
+[node name="PixelatedView" type="SubViewportContainer" parent="." unique_id=1689867640]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+stretch = true
+script = ExtResource("2_2d2mb")
+
+[node name="SubViewport" type="SubViewport" parent="PixelatedView" unique_id=2110600729]
+handle_input_locally = false
+size = Vector2i(1152, 648)
+render_target_update_mode = 4
+
+[node name="World" type="Node3D" parent="PixelatedView/SubViewport" unique_id=122488929]
+
+[node name="Player" parent="PixelatedView/SubViewport/World" unique_id=1861459470 instance=ExtResource("12_player")]
+
+[node name="Camera" type="Camera3D" parent="PixelatedView/SubViewport/World/Player" unique_id=1078422878]
+transform = Transform3D(0.70710677, -0.4055798, 0.579228, 0, 0.81915206, 0.57357645, -0.70710677, -0.4055798, 0.579228, 11.584559, 11.471529, 11.584559)
+projection = 1
+size = 6.0
+
+[node name="Sandbox" parent="PixelatedView/SubViewport/World" instance=ExtResource("21_sandbox")]
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="TouchStick" parent="HUD" instance=ExtResource("16_touch_stick")]
+
+[node name="PauseMenu" parent="HUD" node_paths=PackedStringArray("player", "hud") instance=ExtResource("20_pause_menu")]
+player = NodePath("../../PixelatedView/SubViewport/World/Player")
+hud = NodePath("../SkillBarHud")
+
+[node name="SkillBarHud" parent="HUD" node_paths=PackedStringArray("player") instance=ExtResource("17_skill_bar_hud")]
+player = NodePath("../../PixelatedView/SubViewport/World/Player")

@@ -17,10 +17,10 @@
 5. Run the `tools/simulate.gd` command on `res://scenes/game.tscn`, and diff it with step 1's output.
 6. Change the tool comments and the conventions.
 
-- [ ] `scenes/game.tscn` matches the spec's text line for line; `scenes/sandbox.tscn` differs from today's only as the spec's four steps say.
-- [ ] "Checking the move" prints exactly the spec's lines; the files hold 11 and 32 nodes; the Level's parents count 10, 2 and 19; the Level holds no `NodePath` and the game scene the three HUD paths; neither file has a `[connection`.
-- [ ] `project.godot` names `res://scenes/game.tscn`.
-- [ ] `tests/test_game.gd` passes; `tools/check.sh` passes.
+- [x] `scenes/game.tscn` matches the spec's text line for line; `scenes/sandbox.tscn` differs from today's only as the spec's four steps say.
+- [x] "Checking the move" prints exactly the spec's lines; the files hold 11 and 32 nodes; the Level's parents count 10, 2 and 19; the Level holds no `NodePath` and the game scene the three HUD paths; neither file has a `[connection`.
+- [x] `project.godot` names `res://scenes/game.tscn`.
+- [x] `tests/test_game.gd` passes; `tools/check.sh` passes.
 - [ ] `tools/simulate.gd` prints the same lines before and after the split. If two runs before the split already differ, the PR says so and by how much.
-- [ ] The three tool comments and the two conventions passages read as in the spec.
-- [ ] `git diff --stat` from ticket 01's commit lists only the files above.
+- [x] The three tool comments and the two conventions passages read as in the spec.
+- [x] `git diff --stat` from ticket 01's commit lists only the files above.

@@ -4,7 +4,7 @@ extends SceneTree
 ## behave without playing: put the player somewhere with `tp`, then watch the numbers.
 ##
 ##   godot --headless --path . --script res://tools/simulate.gd -- \
-##       res://scenes/sandbox.tscn 6 "tp 16 7.5"
+##       res://scenes/game.tscn 6 "tp 16 7.5"
 ##
 ## The player stands still: nothing presses a key in a headless run.
 ## Keep project class names out of this file: a --script entry point compiles before

@@ -1,6 +1,6 @@
 extends SceneTree
 ## Bakes every NavigationRegion3D in a scene and saves each navmesh to its resource file:
-## the editor's Bake NavigationMesh button, from the command line. Run after editing a level.
+## the editor's Bake NavigationMesh button, from the command line. Run after editing a Level.
 ##
 ##   godot --path . --script res://tools/bake_navmesh.gd -- res://scenes/sandbox.tscn
 ##
