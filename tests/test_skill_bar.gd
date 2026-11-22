@@ -1,7 +1,7 @@
 extends GutTest
 ## The Skill bar: five Skill slots, each Skill limited only by its own Cooldown. Presses on
 ## ready Skills ask for them in press order on the next physics frame, and an empty slot does
-## nothing. Here a stand-in for the Character owns the Skills and answers each request by
+## nothing. Here a stand-in for the Character owns the Skills, and the test answers each request by
 ## activating the Skill.
 
 var bar: SkillBar

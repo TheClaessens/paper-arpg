@@ -57,7 +57,7 @@ func test_a_swing_that_hits_two_enemies_freezes_the_world() -> void:
 		assert_gt(zombie.global_position.x, 1.0, "both hit and knocked back")
 
 
-# A swing hits the hostile Hurtboxes inside its Sweep and Range, and never one of its own Faction.
+# A swing hits the hostile Hurtboxes inside its Sweep and Range, and never one of its Character's Faction.
 
 func test_a_swing_hits_a_zombie_and_not_the_players_faction_in_the_same_spot() -> void:
 	var attack := _players_attack()

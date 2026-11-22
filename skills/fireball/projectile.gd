@@ -4,7 +4,7 @@ extends Area3D
 ## Snapshot's Range or touches something. With Pierce among its Snapshot's tags it passes through
 ## the first Hurtbox it hits; a wall stops it always.
 ## It looks for walls and props on the `world` layer, and for Hurtboxes on the layers the Skill
-## that fired it adds to its mask (the ones hostile to it). It reports a Hurtbox it touched with
+## that fired it adds to its mask (the ones hostile to the Faction of the Character that threw it). It reports a Hurtbox it touched with
 ## `hit`; that Skill decides what the hit does.
 
 signal hit(hurtbox: Hurtbox)

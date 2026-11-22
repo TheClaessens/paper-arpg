@@ -41,8 +41,9 @@ Nothing else changes in play.
   ## Each Skill is a node under its Character's Skills node and knows that Character (see
   ## `character`), so it acts from where the Character stands and hits what is hostile to the
   ## Character's Faction. try_activate() is the one way to set it off. The Skill runs its own
-  ## Cooldown, and no Skill script can stop it. Subclasses do their work in _activate(). Each Skill
-  ## script is a @tool, as this one is, so the editor shows its configuration warnings.
+  ## Cooldown, and a Skill script's own _physics_process() can't stop it. Subclasses do their work in
+  ## _activate(). Each Skill script is a @tool, as this one is, so the editor shows its configuration
+  ## warnings.
   ```
 
 - **`:53-55`**, `faction`, becomes:
@@ -60,7 +61,8 @@ Nothing else changes in play.
   ```gdscript
   # The Cooldown runs on internal physics processing: a Skill script's own _physics_process()
   # replaces a parent script's, but _notification() is called for every script that defines it,
-  # so no Skill script can stop the Cooldown, by accident or with set_physics_process(false).
+  # so a Skill script's own _physics_process() can't stop the Cooldown, by accident or with
+  # set_physics_process(false).
   func _notification(what: int) -> void:
   	if what == NOTIFICATION_READY:
   		set_physics_process_internal(not Engine.is_editor_hint())
@@ -163,8 +165,8 @@ In `test_character.gd` (ticket 01): `test_the_player_and_its_skills_are_of_the_p
 |---|---|---|---|
 | `test_an_enemys_swing_hits_the_players_faction_not_the_enemies` | `test_attack.gd`, 01 | Rule 2: an Attack given with `add_skill()` to a zombie at the origin, swung toward (1, 0, 0), hits a Hurtbox on the player's layer at (1, 0, 0.3) and not a second zombie at (1, 0, −0.3), nor its own zombie. | Fails on `master`: an Attack added to a zombie keeps the player's Faction and hits the zombie. Passes on `character`, where `add_skill()` hands the Faction down; it guards that a Skill hits by its Character's Faction once nothing hands a Faction down. |
 | `test_a_skill_without_a_character_fails_loudly` | `test_skill.gd`, 02 | Rule 3: a recording Skill with a 1 s Cooldown and no Character, activated: `assert_engine_error("has no Character")`, no Snapshot recorded, `cooldown_left` still 0. | Fails: it activates. |
-| `test_a_skill_with_its_own_physics_process_still_cools_down` | `test_skill.gd`, 03 | Rule 4: a Skill script that defines `_physics_process` (counting its frames), in the tree with a stand-in Character and a 0.05 s Cooldown, activated: 6 physics frames later its own `_physics_process` has run and it is ready. | Fails: its `_physics_process` replaces the base's, and the Cooldown never runs. |
-| `test_a_cooldown_waits_while_the_game_is_paused` | `test_skill.gd`, 03 | Rule 4: a recording Skill with a 1 s Cooldown, activated, then `get_tree().paused = true` for `wait_physics_frames(6)` (which counts the tree's frames, paused or not), unpaused before any assertion: `cooldown_left` is still 1.0. | Passes: a guard. The reference says internal processing runs "even if the node is paused"; the 4.7-stable source skips a node that can't process. |
+| `test_a_skill_with_its_own_physics_process_still_cools_down` | `test_skill.gd`, 03 | Rule 4: a Skill script that defines `_physics_process` (counting its frames), in the tree with a stand-in Character and the shortest Cooldown (`Skill.SHORTEST_COOLDOWN`, 0.1 s), activated: 8 physics frames later its own `_physics_process` has run and it is ready (0.1 s less six sixtieths leaves a crumb above 0, so it is ready on the 7th tick). | Fails: its `_physics_process` replaces the base's, and the Cooldown never runs. |
+| `test_a_cooldown_waits_while_the_game_is_paused` | `test_skill.gd`, 03 | Rule 4: a recording Skill with a 1 s Cooldown, activated, then `get_tree().paused = true` for `wait_physics_frames(6)` (which counts the tree's frames, paused or not), unpaused before any assertion: `cooldown_left` is still 1.0; then 6 more physics frames, and it has gone down. | Passes: a guard. The reference says internal processing runs "even if the node is paused"; the 4.7-stable source skips a node that can't process. |
 | `test_an_aim_with_no_direction_on_the_ground_is_refused` | `test_skill.gd`, 04 | Rule 5: a ready recording Skill activated with `Vector3.ZERO`, then with `Vector3(0, 0.3, 0)`: false both times, nothing recorded, no Cooldown, and two errors, each taken with `assert_push_error("direction on the ground")`. The second Aim fails a check on the whole vector. | Fails: it activates. |
 
 ## Checking by hand
@@ -185,9 +187,15 @@ On this branch, and the same on the base (`character`) where a comparison is ask
 
 Faction, Character and Stagger still say what the code does. Activate stays as it is: refusing an Aim with no direction is a guard, not a step of activating.
 
-**`docs/agents/godot-conventions.md`**, "Tests and checks": the paragraph "A test that keeps a node's `_physics_process` from running calls `set_physics_process(false)` after `add_child` …" gains a sentence at its end, and a new paragraph follows it (find them by their text):
+**`docs/agents/godot-conventions.md`**: "Composition" gains two sentences after the `super()` rule, and "Call down, signal up" three (find them by their text):
 
-> … turns it back on when it becomes ready. A Skill's Cooldown runs on internal physics processing, which `set_physics_process(false)` doesn't touch, so a Skill script may define `_physics_process` without calling `super()`.
+> … `Player._ready()` and `Enemy._ready()` start with `super()`. The exception is `_notification`: the engine calls it on every script in the inheritance chain, base first, so never call `super()` in it, or the base's runs twice. `Skill` runs its Cooldown from `_notification`, so a Skill script may define `_physics_process()` freely: the Cooldown doesn't run there.
+>
+> … A parent may hand a child a reference to what the child needs, as a Character hands itself to each of its Skills (`Skill.character`), and the child may use what it was handed. What stays ruled out is a child finding its parent by itself, with `get_parent()` or a path. A Skill reads its Character's Faction through it today, to know what is hostile.
+
+"Tests and checks", after the paragraph "A test that keeps a node's `_physics_process` from running …", gains a paragraph:
+
+> … turns it back on when it becomes ready.
 >
 > A test that activates a Skill gives it a Character, as the game does: one of the player's own Skills (`player.get_node("Skills/Attack")`), or `add_skill()` on a Character in the tree. A Skill that never reaches its Character, such as one that only records its activations, may take a stand-in kept out of the tree: `skill.character = autofree(Character.new())`. One Player per test: a second registers the Player's Console commands again, and the Console's assertion fails the test.
 
@@ -230,6 +238,13 @@ Settled by the plan or the brief, not open: `Skill.character` replaces `Skill.fa
 | A Hit that names its dealer; a ball beside its Character in the world | Steps 9 and 10 |
 | A ready Skill that stops ticking its Cooldown | A profile on the phone with packs of Enemies with Skills |
 | A Hurtbox that follows a Faction changed in play | Charm |
+
+### Found in review
+
+- A Skill moved from one Character to another with `reparent()` keeps its old Character, with no assert. Nothing does this today.
+- `add_skill()` on a Skill that already has a parent fails to add it but still sets `character`. Nothing does this today.
+- A touch-aimed Skill dragged past the deadzone and lifted exactly where the thumb landed gets an Aim of zero length from the HUD. Before this step that threw a ball that never moved; now it is refused, with an error in the output. Left for the step that reworks how a Skill is aimed.
+- The glossary's Aim entry says a Skill activated around the player has no Aim, while `try_activate` now needs every Aim to have a direction. The Player hands such a Skill its Facing, so nothing breaks. The entry's wording is left to the developer.
 
 ## Where this departs from the analysis
 

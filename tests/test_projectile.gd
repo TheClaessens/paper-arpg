@@ -150,7 +150,7 @@ func test_a_fireball_hit_knocks_back_without_freezing_the_world() -> void:
 	assert_gt(zombie.global_position.x, 2.0, "knocked back")
 
 
-func test_it_flies_through_a_hurtbox_of_its_own_faction() -> void:
+func test_it_flies_through_a_hurtbox_of_its_throwers_faction() -> void:
 	var friend: Hurtbox = preload("res://characters/hurtbox/hurtbox.tscn").instantiate()
 	friend.collision_layer = Faction.layer(Faction.Id.PLAYER)
 	add_child_autofree(friend)

@@ -158,11 +158,11 @@ func test_a_skill_without_a_character_fails_loudly() -> void:
 
 func test_a_skill_with_its_own_physics_process_still_cools_down() -> void:
 	var own := OwnPhysicsSkill.new()
-	own.cooldown = 0.05
+	own.cooldown = Skill.SHORTEST_COOLDOWN
 	own.character = autofree(Character.new()) # a stand-in: this Skill never reaches its Character
 	add_child_autofree(own)
 	own.try_activate(Vector3.RIGHT, [])
-	await wait_physics_frames(8) # the shortest Cooldown, 0.1 s, is 6 frames at 60 Hz
+	await wait_physics_frames(8) # 0.1 s less six sixtieths leaves a crumb above 0: ready on the 7th tick
 	assert_gt(own.frames, 0, "its own _physics_process ran")
 	assert_true(own.is_ready())
 
@@ -174,6 +174,8 @@ func test_a_cooldown_waits_while_the_game_is_paused() -> void:
 	await wait_physics_frames(6) # counts the tree's frames, paused or not
 	get_tree().paused = false
 	assert_eq(recording.cooldown_left, 1.0)
+	await wait_physics_frames(6)
+	assert_lt(recording.cooldown_left, 1.0, "and it runs again once unpaused")
 
 
 func test_an_aim_with_no_direction_on_the_ground_is_refused() -> void:
