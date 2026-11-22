@@ -10,7 +10,7 @@
 
 **Tests:** new `test_no_cooldown_runs_shorter_than_the_shortest`, written first: on `master` the Cooldown starts at 0 and the Skill activates again at once. Changed `test_it_runs_its_own_cooldown`: 0.05 s and 6 physics frames become 0.2 s and 15.
 
-- [ ] A Skill whose Modifiers took its Cooldown to 0 starts a Cooldown of `Skill.SHORTEST_COOLDOWN`, can't be activated again at once, and its Snapshot still says 0.
-- [ ] `test_it_runs_its_own_cooldown` passes with 0.2 s and 15 frames; every other test passes unchanged.
-- [ ] `GLOSSARY.md`'s Cooldown and the skill-tags spec's lines 34 and 60 read as the spec gives them.
+- [x] A Skill whose Modifiers took its Cooldown to 0 starts a Cooldown of `Skill.SHORTEST_COOLDOWN`, can't be activated again at once, and its Snapshot still says 0.
+- [x] `test_it_runs_its_own_cooldown` passes with 0.2 s and 15 frames; every other test passes unchanged.
+- [x] `GLOSSARY.md`'s Cooldown and the skill-tags spec's lines 34 and 60 read as the spec gives them.
 - [ ] `tools/check.sh` passes; checked once in game as the spec's "Checking by hand" says.

@@ -21,6 +21,10 @@ const DAMAGE := &"Damage"
 const KNOCKBACK := &"Knockback"
 const STAGGER := &"Stagger"
 
+## The shortest a Cooldown runs, in seconds, however short Modifiers make it: a held Skill
+## activates at most 10 times a second.
+const SHORTEST_COOLDOWN := 0.1
+
 ## The Skill's Skill tags, as set in its scene: what kind of Skill it is. Implied tags are
 ## left out here; the tag pass works them out (see TagPass.with_implied()).
 @export var tags: Array[StringName] = []
@@ -36,7 +40,8 @@ const STAGGER := &"Stagger"
 @export var repeats_while_held := false
 ## The Skill's Cooldown: how long after an activation starts before it can be activated again,
 ## from any slot. The only thing that limits how often it is activated, so every Skill needs one
-## above 0. Modifiers can change it: the Cooldown that runs is the activation's Snapshot's.
+## above 0. Modifiers can change it: the Cooldown that runs is the activation's Snapshot's, never
+## shorter than SHORTEST_COOLDOWN.
 @export var cooldown := 0.0:
 	set(value):
 		cooldown = value
@@ -65,10 +70,11 @@ func is_ready() -> bool:
 	return cooldown_left <= 0.0
 
 
-## Starts a cooldown `seconds` long: an activation's Snapshot's Cooldown.
+## Starts a Cooldown `seconds` long, an activation's Snapshot's, but never shorter than
+## SHORTEST_COOLDOWN.
 func start_cooldown(seconds: float) -> void:
-	cooldown_left = seconds
-	_cooldown_length = seconds
+	cooldown_left = maxf(seconds, SHORTEST_COOLDOWN)
+	_cooldown_length = cooldown_left
 
 
 ## Runs the cooldown on by `delta` seconds, emitting ready_again the moment it runs out.
