@@ -3,10 +3,10 @@ extends Area3D
 ## Fireball's ball. Thrown with launch(), it flies straight at its Hit's Projectile speed and lands
 ## its Hit on each hostile Hurtbox it touches, until it has flown its Hit's Range, or it touches a
 ## wall or a prop. With Pierce among its Hit's Snapshot's tags it passes through the first Hurtbox
-## it touches and stops at the next. It looks for walls and props on the `world` layer and for
-## Hurtboxes on the layers launch() adds. It lives in the world beside that Character (see
-## Skill._add_to_world()) and needs neither the Skill nor the Character once thrown, so it flies on
-## and lands its Hit after they are gone.
+## its Hit lands on and stops at the next; a Hurtbox its Hit misses doesn't count. It looks for
+## walls and props on the `world` layer and for Hurtboxes on the layers launch() adds. It lives in
+## the world beside that Character (see Skill._add_to_world()) and needs neither the Skill nor the
+## Character once thrown, so it flies on and lands its Hit after they are gone.
 
 ## How far in front of its Character's centre it starts, and how high it flies.
 const LAUNCH_OFFSET := 0.45
@@ -18,7 +18,7 @@ var hit: Hit
 var _direction := Vector3.FORWARD # a unit vector on the ground
 var _flight := 0.0 # how far its centre flies before it ends
 var _flown := 0.0
-var _hurtboxes_hit: Array[Hurtbox] = [] # those it touched
+var _hurtboxes_hit: Array[Hurtbox] = [] # those its Hit landed on
 
 
 func _ready() -> void:
@@ -64,8 +64,9 @@ func _on_area_entered(area: Area3D) -> void:
 	var hurtbox := area as Hurtbox
 	if not hurtbox or hurtbox in _hurtboxes_hit: # touching it again after knocking it ahead
 		return
+	if not hit.land({hurtbox: _direction}): # its Character died earlier in this physics step
+		return
 	_hurtboxes_hit.append(hurtbox)
-	hit.land({hurtbox: _direction})
 	var passes_through := 1 if SkillTag.PIERCE in hit.snapshot.tags else 0
 	if _hurtboxes_hit.size() > passes_through:
 		queue_free()

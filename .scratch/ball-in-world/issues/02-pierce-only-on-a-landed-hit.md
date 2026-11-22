@@ -10,5 +10,5 @@
 
 **Status:** ready-for-agent
 
-- [ ] `_on_area_entered` reads as the spec's sketch: the deletion check, the Hurtbox check, the landing, then the count.
-- [ ] The new test failed before the change and passes after; every other test still passes; `tools/check.sh` passes.
+- [x] `_on_area_entered` reads as the spec's sketch: the deletion check, the Hurtbox check, the landing, then the count.
+- [x] The new test failed before the change and passes after; every other test still passes; `tools/check.sh` passes.

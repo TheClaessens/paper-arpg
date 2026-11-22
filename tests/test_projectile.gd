@@ -248,3 +248,14 @@ func test_an_enemys_ball_goes_into_its_level_and_goes_with_it() -> void:
 	assert_eq(ball.get_parent(), level, "it is beside its Character, in the Level")
 	level.free()
 	assert_freed(ball, "it goes with its Level")
+
+
+func test_a_ball_flies_on_past_a_zombie_its_hit_missed() -> void:
+	var first := _zombie_at(2.0)
+	(first.get_parent() as Enemy).health.damage(40.0) # 10 left: one ball's Hit kills it
+	var second := _zombie_at(4.0)
+	await wait_physics_frames(2)
+	_fire([], 15.0, 10.0)
+	_fire([], 15.0, 10.0) # side by side: both touch the first zombie in the same physics step
+	await wait_physics_frames(20)
+	assert_eq(hits, [first, second], "the ball whose Hit missed the dead zombie flew on to the second")
