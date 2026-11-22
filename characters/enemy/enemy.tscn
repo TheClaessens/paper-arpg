@@ -1,11 +1,11 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dkn8b6xmtlav2"]
 
-[ext_resource type="Script" path="res://characters/enemy/enemy.gd" id="1_enemy"]
+[ext_resource type="Script" uid="uid://wjoh0yti7ju6" path="res://characters/enemy/enemy.gd" id="1_enemy"]
 [ext_resource type="PackedScene" path="res://characters/standee/standee.tscn" id="2_standee"]
-[ext_resource type="Script" path="res://characters/movement.gd" id="4_movement"]
+[ext_resource type="Script" uid="uid://bc551mjhw7rop" path="res://characters/movement.gd" id="4_movement"]
 [ext_resource type="PackedScene" path="res://characters/aggro/aggro.tscn" id="5_aggro"]
 [ext_resource type="PackedScene" path="res://characters/hurtbox/hurtbox.tscn" id="6_hurtbox"]
-[ext_resource type="Script" path="res://characters/health/health.gd" id="7_health"]
+[ext_resource type="Script" uid="uid://dvy3p7k73pm32" path="res://characters/health/health.gd" id="7_health"]
 [ext_resource type="PackedScene" path="res://characters/health_bar/health_bar.tscn" id="8_health_bar"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
@@ -30,10 +30,9 @@ script = ExtResource("4_movement")
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="." unique_id=1938276005]
 path_desired_distance = 0.1
+target_desired_distance = 0.5
 path_height_offset = 0.2
 avoidance_enabled = true
-target_desired_distance = 0.5
-height = 1.0
 radius = 0.3
 neighbor_distance = 3.0
 
@@ -47,4 +46,4 @@ script = ExtResource("7_health")
 [node name="HealthBar" parent="." unique_id=1938276009 instance=ExtResource("8_health_bar")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
 
-[node name="Skills" type="Node3D" parent="."]
+[node name="Skills" type="Node3D" parent="." unique_id=715934242]

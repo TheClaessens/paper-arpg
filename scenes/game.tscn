@@ -1,4 +1,4 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://boo2xfe37pn0q"]
 
 [ext_resource type="Script" uid="uid://cx1p31vvnlago" path="res://rendering/pixelated_view.gd" id="2_2d2mb"]
 [ext_resource type="PackedScene" uid="uid://b7lxromdaqgee" path="res://characters/player/player.tscn" id="12_player"]
@@ -7,7 +7,7 @@
 [ext_resource type="PackedScene" path="res://ui/pause_menu.tscn" id="20_pause_menu"]
 [ext_resource type="PackedScene" uid="uid://dju5kanhrsbts" path="res://scenes/sandbox.tscn" id="21_sandbox"]
 
-[node name="Game" type="Node"]
+[node name="Game" type="Node" unique_id=46949006]
 
 [node name="PixelatedView" type="SubViewportContainer" parent="." unique_id=1689867640]
 anchors_preset = 15
@@ -30,15 +30,15 @@ transform = Transform3D(0.70710677, -0.4055798, 0.579228, 0, 0.81915206, 0.57357
 projection = 1
 size = 6.0
 
-[node name="Sandbox" parent="PixelatedView/SubViewport/World" instance=ExtResource("21_sandbox")]
+[node name="Sandbox" parent="PixelatedView/SubViewport/World" unique_id=824749666 instance=ExtResource("21_sandbox")]
 
-[node name="HUD" type="CanvasLayer" parent="."]
+[node name="HUD" type="CanvasLayer" parent="." unique_id=1555595663]
 
-[node name="TouchStick" parent="HUD" instance=ExtResource("16_touch_stick")]
+[node name="TouchStick" parent="HUD" unique_id=134011763 instance=ExtResource("16_touch_stick")]
 
-[node name="PauseMenu" parent="HUD" node_paths=PackedStringArray("player", "hud") instance=ExtResource("20_pause_menu")]
+[node name="PauseMenu" parent="HUD" unique_id=774058391 node_paths=PackedStringArray("player", "hud") instance=ExtResource("20_pause_menu")]
 player = NodePath("../../PixelatedView/SubViewport/World/Player")
 hud = NodePath("../SkillBarHud")
 
-[node name="SkillBarHud" parent="HUD" node_paths=PackedStringArray("player") instance=ExtResource("17_skill_bar_hud")]
+[node name="SkillBarHud" parent="HUD" unique_id=1041981244 node_paths=PackedStringArray("player") instance=ExtResource("17_skill_bar_hud")]
 player = NodePath("../../PixelatedView/SubViewport/World/Player")
