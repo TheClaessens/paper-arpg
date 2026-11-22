@@ -19,15 +19,19 @@ func _snapshot(tags: Array[StringName], modifiers: Array[Modifier]) -> Snapshot:
 	return Snapshot.of(tags, NUMBERS, modifiers)
 
 
-func _modifier(filter: Array[StringName], number: StringName, kind: NumberChange.Kind, amount: float) -> Modifier:
+func _change(number: StringName, kind: NumberChange.Kind, amount: float) -> NumberChange:
 	var change := NumberChange.new()
 	change.number = number
 	change.kind = kind
 	change.amount = amount
+	return change
+
+
+func _modifier(filter: Array[StringName], number: StringName, kind: NumberChange.Kind, amount: float) -> Modifier:
 	var modifier := Modifier.new()
 	modifier.title = "test"
 	modifier.filter = filter
-	modifier.number_changes = [change]
+	modifier.number_changes = [_change(number, kind, amount)]
 	return modifier
 
 
@@ -214,26 +218,17 @@ func test_a_tag_changer_applies_its_number_changes_too() -> void:
 
 func test_a_tag_changers_number_changes_stack_with_everyone_elses() -> void:
 	var pierces := _tagger("pierce", [&"Projectile"], TagChange.Kind.ADD, &"Pierce")
-	var change := NumberChange.new()
-	change.number = Skill.RANGE
-	change.kind = NumberChange.Kind.INCREASED
-	change.amount = 50.0
-	pierces.number_changes = [change]
+	pierces.number_changes = [_change(Skill.RANGE, NumberChange.Kind.INCREASED, 50.0)]
 	var snapshot := _snapshot(SPELL, [_modifier([], Skill.RANGE, NumberChange.Kind.FLAT, 2.0), pierces])
 	assert_eq(snapshot.number(Skill.RANGE), 18.0, "(10 + 2) × 1.5")
 
 
-func test_numbers_stack_the_same_whichever_modifier_changes_tags() -> void:
+func test_a_tag_changers_increased_and_more_stack_with_everyone_elses() -> void:
 	var pierces := _tagger("pierce", [&"Projectile"], TagChange.Kind.ADD, &"Pierce")
-	var increased := NumberChange.new()
-	increased.number = Skill.RANGE
-	increased.kind = NumberChange.Kind.INCREASED
-	increased.amount = 20.0
-	var more := NumberChange.new()
-	more.number = Skill.RANGE
-	more.kind = NumberChange.Kind.MORE
-	more.amount = 50.0
-	pierces.number_changes = [increased, more]
+	pierces.number_changes = [
+		_change(Skill.RANGE, NumberChange.Kind.INCREASED, 20.0),
+		_change(Skill.RANGE, NumberChange.Kind.MORE, 50.0),
+	]
 	var snapshot := _snapshot(SPELL, [
 		pierces,
 		_modifier([], Skill.RANGE, NumberChange.Kind.FLAT, 2.0),
@@ -284,10 +279,7 @@ func test_a_modifier_listed_twice_applies_twice() -> void:
 
 func test_a_tag_changer_listed_twice_changes_the_tags_once_and_its_numbers_twice() -> void:
 	var to_holy := _tagger("Fire spells are now Holy", [&"Fire"], TagChange.Kind.REPLACE, &"Fire", &"Holy")
-	var change := NumberChange.new()
-	change.number = Skill.RANGE
-	change.amount = 2.0
-	to_holy.number_changes = [change]
+	to_holy.number_changes = [_change(Skill.RANGE, NumberChange.Kind.FLAT, 2.0)]
 	var snapshot := _snapshot(SPELL, [to_holy, to_holy])
 	assert_eq(snapshot.tags, [&"Spell", &"Projectile", &"Holy"] as Array[StringName])
 	assert_eq(snapshot.number(Skill.RANGE), 14.0, "10 + 2 + 2")

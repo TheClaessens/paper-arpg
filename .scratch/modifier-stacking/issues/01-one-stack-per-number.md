@@ -8,7 +8,7 @@
 
 **Files:** `skills/snapshot.gd` (`of()` and its doc only: `:25-28`, `:31-32`, `:39`, `:42` as numbered on `master`), `tests/test_snapshot.gd` (`:186-194`, and a new test after it), `.scratch/skill-tags/spec.md` (`:18`, and a new line after `:64`), `docs/adr/0002-skill-modifiers-resolve-in-pools.md` (a third consequence).
 
-**Tests:** `test_a_tag_changers_number_changes_are_a_pool_of_their_own` becomes `test_a_tag_changers_number_changes_stack_with_everyone_elses`, 17 → 18; new `test_numbers_stack_the_same_whichever_modifier_changes_tags`, 23.4. Change or write each first: on `master`, and on step 1's branch, they get 17 and 22.
+**Tests:** `test_a_tag_changers_number_changes_are_a_pool_of_their_own` becomes `test_a_tag_changers_number_changes_stack_with_everyone_elses`, 17 → 18; new `test_a_tag_changers_increased_and_more_stack_with_everyone_elses`, 23.4. Change or write each first: on `master`, and on step 1's branch, they get 17 and 22.
 
 - [x] Range 10, a tag-changing Modifier with 50% increased Range and a plain "+2 Range": 18.
 - [x] Range 10, a tag-changing Modifier with 20% increased and 50% more Range, a plain "+2 Range" and a plain "10% increased Range": 23.4, as in `test_flat_then_increased_summed_then_each_more`, where no Modifier changes tags.
