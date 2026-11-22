@@ -164,3 +164,13 @@ func test_pausing_lets_go() -> void:
 	bar.propagate_notification(Node.NOTIFICATION_PAUSED) # the release may never arrive while paused
 	_elapse(1.0)
 	assert_eq(activated.size(), 1)
+
+
+func test_losing_focus_lets_go() -> void:
+	sword.repeats_while_held = true
+	bar.press(0)
+	bar.set_held(0, true)
+	_elapse(0.016)
+	bar.notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT) # the engine releases keys unheard
+	_elapse(1.0)
+	assert_eq(activated.size(), 1)

@@ -59,7 +59,7 @@ Reach for these before writing a one-off check script.
 
 A test that keeps a node's `_physics_process` from running calls `set_physics_process(false)` after `add_child`: a node whose script has `_physics_process` turns it back on when it becomes ready.
 
-A test that simulates a screen touch sends it with `get_viewport().push_input(event, true)`. Without `true` the position is read as window coordinates and lands somewhere else. Pushed that way, a touch reaches a `SkillSlotButton` too; emitting its `touch_started`/`touch_moved`/`touch_ended` signals tests the HUD without one.
+A test that simulates a screen touch sends it with `get_viewport().push_input(event, true)`. Without `true` the position is read as window coordinates and lands somewhere else. Pushed that way, a touch reaches a `SkillSlotButton` too; emitting its `touch_started`/`touch_moved`/`touch_ended`/`touch_lost` signals tests the HUD without one. The system reports a touch it took away as a release at a negative position; a test pushes one with `push_input(event, true)`, in viewport units.
 
 To try a change on the iPhone, `tools/deploy_ios.sh` exports, installs and launches the debug build. Its header lists the known failures and their fixes.
 
@@ -79,6 +79,7 @@ Before committing, read `git diff` for scenes the editor reverted. Stage files b
 - Godot's built-in `ui_accept` and `ui_cancel` come with keys only. This project's input map adds the controller's A and B, so menus work with a controller.
 - HUD sizes are in viewport units, the base viewport being 648 tall. On an iPhone 17 Pro, 1 pt is about 1.6 units. Keep HUD elements inside `SafeArea.of(viewport)`.
 - `Basis.scaled()` scales along the world's axes. To stretch a node along its own axis (a line's length), multiply by `Basis.from_scale()` instead.
+- A touch control that follows a finger by its index (the Touch stick, a Skill slot's button) handles a lost finger. It lets go of the finger on `NOTIFICATION_APPLICATION_FOCUS_OUT`, and a release that is `canceled`, or at a negative x or y, is a lost finger: it only lets go, and never does what a lift would trigger (activate a Skill). Godot 4.7 on iOS reports a touch the system takes away as a release at a negative position with `canceled` false, before the focus loss or after it. The Touch stick's lift only lets go, so it needs no check; a Skill slot's lift activates, so its button checks (`SkillSlotButton._is_lift`). A control that stops with the game (the Touch stick) lets go on a pause; one that runs while paused (`process_mode` ALWAYS, its own or inherited, as the Skill slot buttons do) never gets `NOTIFICATION_PAUSED`, keeps following its finger, and the HUD decides what a lift does. Copy `test_a_touch_the_system_cancels_is_not_a_lift`, `test_a_release_marked_canceled_is_not_a_lift` and `test_losing_focus_lets_go_of_the_finger` from `test_skill_slot_button.gd`. The next touch control is the third, so it extracts the shared piece instead of making a third copy.
 
 ## Assets
 

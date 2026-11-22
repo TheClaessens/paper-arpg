@@ -8,7 +8,8 @@ extends Node
 ## frame; a press on a Skill still on Cooldown is ignored, not kept. A press may carry its own
 ## aim (a drag on touch); otherwise the Character aims the Skill. While a slot is held, a Skill
 ## that repeats while held is asked for again whenever it is ready, aimed where the hold steers
-## it. Pausing lets go of every slot. The Character connects `activation_requested`.
+## it. Pausing, or the app losing focus, lets go of every slot. The Character connects
+## `activation_requested`.
 
 ## `slot` asks to activate its Skill, which is ready. `aim` is the press's own aim, or NO_AIM to
 ## let the Character aim it.
@@ -70,8 +71,9 @@ func set_held(slot: int, held: bool, aim := NO_AIM) -> void:
 
 
 func _notification(what: int) -> void:
-	# A press held through a pause may lift unheard, so a pause lets go.
-	if what == NOTIFICATION_PAUSED:
+	# A binding held through a pause or a focus loss may be let go of unheard: Controls is
+	# paused, or the engine releases keys without an event when the app loses focus.
+	if what == NOTIFICATION_PAUSED or what == NOTIFICATION_APPLICATION_FOCUS_OUT:
 		_held.clear()
 
 

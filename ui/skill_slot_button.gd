@@ -2,8 +2,8 @@ class_name SkillSlotButton
 extends Control
 ## One Skill slot's button on the Skill bar HUD (see GLOSSARY.md). It shows the slot's Skill, or
 ## a faded empty button. In play it follows the finger that lands on it, like the Touch stick
-## does, and reports where it goes and where it lifts; it takes a second finger while the thumb
-## holds the stick. While the Skill bar is being changed it shows a focusable Button instead,
+## does, and reports where it goes and where it lifts, or that the finger was lost without lifting;
+## it takes a second finger while the thumb holds the stick. While the Skill bar is being changed it shows a focusable Button instead,
 ## which emits `chosen`.
 ## It also shows the Skill's cooldown, presses in when activated and flashes when ready again.
 
@@ -12,6 +12,8 @@ signal chosen
 signal touch_started(at: Vector2)
 signal touch_moved(at: Vector2)
 signal touch_ended(at: Vector2)
+## The finger was taken away without lifting: the system cancelled its touch, or the app lost focus.
+signal touch_lost
 
 const NO_FINGER := -1
 
@@ -104,14 +106,40 @@ func _input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			touch_started.emit(touch.position)
 		elif not touch.pressed and touch.index == _finger:
-			_finger = NO_FINGER
 			get_viewport().set_input_as_handled()
-			touch_ended.emit(touch.position)
+			if _is_lift(touch):
+				_finger = NO_FINGER
+				touch_ended.emit(touch.position)
+			else:
+				_lose_finger()
 		return
 	var drag := event as InputEventScreenDrag
 	if drag and drag.index == _finger:
 		get_viewport().set_input_as_handled()
 		touch_moved.emit(drag.position)
+
+
+func _notification(what: int) -> void:
+	# The app losing focus can take the finger with no lift this button hears. A pause can't: the
+	# button runs while paused (it inherits the HUD's process_mode ALWAYS, so it never gets
+	# NOTIFICATION_PAUSED) and follows its finger to the end.
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
+		_lose_finger()
+
+
+func _lose_finger() -> void:
+	if _finger == NO_FINGER:
+		return
+	_finger = NO_FINGER
+	touch_lost.emit()
+
+
+## Whether `touch`, a release, is a lift and not the system taking the touch away. Android marks a
+## taken touch `canceled`; Godot 4.7 on iOS doesn't, and puts it at (-1, -1).
+# ponytail: a lift left of or above the window (the Mac's mouse emulating touch) counts as lost;
+# drop the position check once Godot on iOS sets `canceled`.
+static func _is_lift(touch: InputEventScreenTouch) -> bool:
+	return not touch.canceled and touch.position.x >= 0.0 and touch.position.y >= 0.0
 
 
 func _process(_delta: float) -> void:
