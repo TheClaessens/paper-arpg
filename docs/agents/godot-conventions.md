@@ -59,7 +59,9 @@ To check a change visually, `tools/screenshot.gd` opens a scene, runs console co
 
 Reach for these before writing a one-off check script.
 
-A test that keeps a node's `_physics_process` from running calls `set_physics_process(false)` after `add_child`: a node whose script has `_physics_process` turns it back on when it becomes ready.
+A test that keeps a node's `_physics_process` from running calls `set_physics_process(false)` after `add_child`: a node whose script has `_physics_process` turns it back on when it becomes ready. A Skill's Cooldown runs on internal physics processing, which `set_physics_process(false)` doesn't touch, so a Skill script may define `_physics_process` without calling `super()`.
+
+A test that activates a Skill gives it a Character, as the game does: one of the player's own Skills (`player.get_node("Skills/Attack")`), or `add_skill()` on a Character in the tree. A Skill that never reaches its Character, such as one that only records its activations, may take a stand-in kept out of the tree: `skill.character = autofree(Character.new())`. One Player per test: a second registers the Player's Console commands again, and the Console's assertion fails the test.
 
 A test that simulates a screen touch sends it with `get_viewport().push_input(event, true)`. Without `true` the position is read as window coordinates and lands somewhere else. Pushed that way, a touch reaches a `SkillSlotButton` too; emitting its `touch_started`/`touch_moved`/`touch_ended`/`touch_lost` signals tests the HUD without one. The system reports a touch it took away as a release at a negative position; a test pushes one with `push_input(event, true)`, in viewport units.
 

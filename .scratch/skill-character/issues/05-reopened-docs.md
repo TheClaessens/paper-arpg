@@ -10,5 +10,5 @@
 
 **Status:** ready-for-agent
 
-- [ ] Each passage reads as the spec gives it, and the paragraphs around it are not reflowed.
-- [ ] `tools/check.sh` passes.
+- [x] Each passage reads as the spec gives it, and the paragraphs around it are not reflowed.
+- [x] `tools/check.sh` passes.
