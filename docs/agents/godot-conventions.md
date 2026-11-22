@@ -97,6 +97,8 @@ The developer keeps the Godot editor open, and it writes files behind your back:
 - **It rewrites `.uid` files** when its uid cache disagrees with them, and reorders `project.godot` when it saves project settings.
 - **It resaves files written outside it in its own format**, even while nobody touches it: it adds a `uid` to a hand-written `.tres` or `.tscn` and to its `ext_resource` lines, a `unique_id` to each node, and puts properties in its own order. Left uncommitted, this comes back after every checkout.
 
+To give a hand-written `.tres` or `.tscn` its `uid` yourself, run `godot --headless --path . --script res://tools/give_uid.gd -- <res:// path>...`: it writes one into each file's header that has none and leaves the rest alone. A scene's nodes still get their `unique_id` from the editor, so the editor's first resave of a scene still changes it.
+
 Before committing, read `git diff` for scenes the editor reverted. Stage files by name. When the editor's resave touches a file the branch changed, commit the resave once, on its own, so the file stops churning. Leave churn in files the branch didn't change out of the commit.
 
 ## Input and UI
