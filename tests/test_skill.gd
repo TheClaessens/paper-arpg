@@ -65,6 +65,7 @@ func _recording(seconds: float, skill_tags: Array[StringName]) -> RecordingSkill
 	var recording := RecordingSkill.new()
 	recording.cooldown = seconds
 	recording.tags = skill_tags
+	recording.character = autofree(Character.new()) # a stand-in: this Skill never reaches its Character
 	add_child_autofree(recording)
 	return recording
 
@@ -135,3 +136,13 @@ func test_a_modifier_on_damage_changes_it() -> void:
 	change.amount = 50.0
 	harder.number_changes = [change]
 	assert_eq(attack.snapshot([harder]).number(Skill.DAMAGE), 15.0, "10, 50% increased")
+
+
+func test_a_skill_without_a_character_fails_loudly() -> void:
+	var recording := RecordingSkill.new()
+	recording.cooldown = 1.0
+	add_child_autofree(recording)
+	assert_false(recording.try_activate(Vector3.RIGHT, []))
+	assert_engine_error("has no Character")
+	assert_eq(recording.snapshots.size(), 0, "nothing happened")
+	assert_eq(recording.cooldown_left, 0.0, "and no Cooldown started")

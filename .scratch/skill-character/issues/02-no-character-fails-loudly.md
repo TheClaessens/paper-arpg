@@ -10,7 +10,7 @@
 
 **Status:** ready-for-agent
 
-- [ ] The assertion is the first line of `try_activate()`, with the message above.
-- [ ] Every test that activates a Skill gives it a Character; `test_skill.gd`'s `before_each` Skill and `test_skill_slot_button.gd`, which never activate one, are unchanged.
-- [ ] The new test takes the error with `assert_engine_error("has no Character")` and finds no Snapshot and no Cooldown.
-- [ ] `tools/check.sh` passes.
+- [x] The assertion is the first line of `try_activate()`, with the message above.
+- [x] Every test that activates a Skill gives it a Character; `test_skill.gd`'s `before_each` Skill and `test_skill_slot_button.gd`, which never activate one, are unchanged.
+- [x] The new test takes the error with `assert_engine_error("has no Character")` and finds no Snapshot and no Cooldown.
+- [x] `tools/check.sh` passes.
