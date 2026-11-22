@@ -65,7 +65,7 @@ A word on a Skill that says what kind of Skill it is, such as Spell, Projectile 
 _Avoid_: Keyword, category, skill type
 
 **Pierce**:
-A Skill tag that is also a behaviour: a Pierce projectile passes through the first Enemy it hits and stops at the next. It never passes through a wall.
+A Skill tag that is also a behaviour: a Pierce projectile passes through the first Enemy its Hit lands on and stops at the next. An Enemy it touches without its Hit landing, such as one killed a moment before, doesn't count. It never passes through a wall.
 _Avoid_: Penetrate, pass-through
 
 **Modifier**:
@@ -121,15 +121,15 @@ How long after an activation starts before a Skill can be activated again, from 
 _Avoid_: Recharge, refresh, timer, global cooldown, use time
 
 **Snapshot**:
-A Skill with every Modifier that applied when it was activated, fixed from that moment for everything the activation causes, such as a projectile in flight or a burn left on an Enemy.
+A Skill with every Modifier that applied when it was activated, fixed from that moment for everything the activation causes, such as a projectile in flight, even after its Skill and Character are gone, or a burn left on an Enemy.
 _Avoid_: Activation, cast, invocation, instance
 
 **Range**:
-How far a Skill reaches from the Character that has it: the length of a swing, or how far a projectile flies.
+How far a Skill reaches from the centre of the Character that has it: the length of a swing, or how far a projectile's front gets. A Hurtbox is within Range when any part of it is.
 _Avoid_: Reach, distance, radius
 
 **Projectile speed**:
-How fast a Skill's projectile flies, such as Fireball's ball. A number of the Skill that Modifiers change, named the same on every Skill that has a projectile, so one Modifier can speed them all.
+How fast a Skill's projectile flies, such as Fireball's ball. A number of the Skill that Modifiers change, named the same on every Skill that has a projectile, so one Modifier can speed them all. At 0 the projectile doesn't fly: it ends where it starts.
 _Avoid_: Speed, ball speed, velocity
 
 **Sweep**:
@@ -137,7 +137,7 @@ The angle a melee swing covers, centred on Facing.
 _Avoid_: Arc, cone, angle
 
 **Hit**:
-What one activation of a Skill does to each Hurtbox it reaches. It carries the activation's Snapshot and the Character that dealt it, and lands unchanged on every Hurtbox the activation reaches: each Character hit works out what it does to them.
+What one activation of a Skill does to each Hurtbox it reaches. It carries the activation's Snapshot and the Character that dealt it, and lands unchanged on every Hurtbox the activation reaches: each Character hit works out what it does to them. A projectile carries its Hit and lands it itself, even after the Skill and the Character that dealt it are gone.
 _Avoid_: Strike, damage event, attack (the Attack is a Skill)
 
 **Hit feedback**:
