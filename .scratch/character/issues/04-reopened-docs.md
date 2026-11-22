@@ -10,6 +10,6 @@
 
 **Status:** ready-for-agent
 
-- [ ] Each passage reads as the spec gives it, and the paragraphs around it are not reflowed.
-- [ ] `.scratch/enemies/spec.md` and `docs/adr/` are unchanged.
-- [ ] `tools/check.sh` passes.
+- [x] Each passage reads as the spec gives it, and the paragraphs around it are not reflowed.
+- [x] `.scratch/enemies/spec.md` and `docs/adr/` are unchanged.
+- [x] `tools/check.sh` passes.

@@ -191,8 +191,9 @@ func _skills_in(node: Node) -> Array[Skill]
 | `TagChange.kind` = `ADD`, `into` empty | `pierce.tres`: it adds Pierce only because of them |
 | `Modifier.number_changes`, `tag_changes` = empty | `pierce.tres`, `spell_cooldown.tres` |
 | `HitFeedback` (all five) | `hit_feedback.tres` sets none: the defaults are the game's Hit feedback |
-| `Player.faction`, `Player.modifiers` | `player.tscn` |
-| `Enemy.faction`, `reach_distance`, `resume_distance` | `zombie.tscn` |
+| `Character.faction` | `zombie.tscn` (`player.tscn` sets it since `.scratch/character/spec.md`) |
+| `Character.modifiers` | `player.tscn`, `zombie.tscn` |
+| `Enemy.reach_distance`, `resume_distance` | `zombie.tscn` |
 | `Movement.speed`, `acceleration`, `deceleration` | `player.tscn` all three; `zombie.tscn` the last two (it sets speed 2.5) |
 | `Aggro.radius` | `aggro.tscn`, and so `zombie.tscn` |
 | `Standee.pixel_size`, `wobble_animation`, `wobble_angle`, `wobble_speed` | `standee.tscn`, and so `player.tscn`, `zombie.tscn` |

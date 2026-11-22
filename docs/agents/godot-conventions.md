@@ -6,6 +6,8 @@ How code in this project is shaped. Follow these when writing or reviewing any G
 
 A **component** is a child node with one job and its own `class_name` (e.g. `Standee` draws a character; a future `HealthComponent` tracks health and nothing else). Characters are assembled from components, and the same component serves the player and Enemies alike. Reach for a new component before an inheritance chain.
 
+The one base script is `Character` (`characters/character.gd`), the glossary's Character in code. `Player` and `Enemy` extend it and nothing extends them: an Enemy kind is a scene, not a script. It holds what makes something a Character (its Faction, its Modifiers, its Skills) and wires its components; behaviour stays in the components and in `Player` and `Enemy`. A script that extends another and has its own `_ready()` calls `super()` first: a subclass's `_ready()` replaces its parent's. A Character's Skills sit under its `Skills` node, a `Node3D` without a transform of its own, ahead of whatever activates them.
+
 Components and anything outside them carry `GLOSSARY.md` names. A component's private child nodes may use plain engine words (Standee's `Card` and `Sprite`), since the glossary names domain concepts, not a component's inner parts.
 
 ## Call down, signal up
