@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Project check, run by the pre-commit hook. Fails if any script, scene or resource doesn't load
-# (parse errors, including typing warnings that project.godot treats as errors) or a test fails.
+# Project check, run by the pre-commit hook. Fails if a tracked file is empty, a comment line in a
+# script is over-long, any script, scene or resource doesn't load (parse errors, including typing
+# warnings that project.godot treats as errors) or a test fails.
 # Set GODOT to use a Godot binary that isn't on PATH as `godot`.
 set -uo pipefail
 cd "$(dirname "$0")/.."
@@ -23,6 +24,27 @@ step() {
 		exit "$status"
 	fi
 }
+
+echo "== no empty file"
+empty=$(git ls-files | grep -vE '(^|/)(\.gdignore|\.gitkeep)$' | while IFS= read -r file; do
+	[[ -f "$file" && ! -s "$file" ]] && echo "$file"
+done)
+if [[ -n "$empty" ]]; then
+	echo "$empty"
+	echo "!! empty file (a failed edit leaves one: restore it from git, or delete it)"
+	exit 1
+fi
+
+echo "== comment lines"
+# A line that is only a comment is at most 110 characters (tabs count as one).
+long=$(git ls-files autoloads characters skills ui scenes props rendering tests tools |
+	grep '\.gd$' | LC_ALL=en_US.UTF-8 xargs awk \
+	'/^[ \t]*#/ && length($0) > 110 { print FILENAME ":" FNR ": " length($0) " characters" }')
+if [[ -n "$long" ]]; then
+	echo "$long"
+	echo "!! comment lines over 110 characters (re-wrap them)"
+	exit 1
+fi
 
 step "import" "SCRIPT ERROR" "$GODOT" --headless --path . --import
 step "load every script, scene and resource" "Parse Error|GDScript::reload|FAILED|load_all:" \

@@ -34,7 +34,8 @@ static func shared() -> HitFeedback:
 static var _hitstops := 0
 
 
-## The impact of a Hit on an Enemy (see Hit.land()): freezes the game for `hitstop` if `freezes`, and shakes the viewport's camera.
+## The impact of a Hit on an Enemy (see Hit.land()): freezes the game for `hitstop` if `freezes`,
+## and shakes the viewport's camera.
 func play_impact(viewport: Viewport, freezes := true) -> void:
 	if freezes and hitstop > 0.0:
 		_hitstops += 1

@@ -9,7 +9,8 @@ extends Resource
 @export var filter: Array[StringName] = []
 ## Its effects on the Skill's numbers.
 @export var number_changes: Array[NumberChange] = []
-## Its effects on the Skill's tags. Its tag changes apply in the tag pass (see TagPass); its number changes stack with every other Modifier's.
+## Its effects on the Skill's tags. Its tag changes apply in the tag pass (see TagPass); its number
+## changes stack with every other Modifier's.
 @export var tag_changes: Array[TagChange] = []
 
 
