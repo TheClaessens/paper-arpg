@@ -12,7 +12,7 @@ var hits: Array[Hurtbox] = [] # every Hurtbox the ball fired by _fire() reported
 func test_flies_along_its_direction_then_disappears_after_its_range() -> void:
 	var projectile: Projectile = ProjectileScene.instantiate()
 	projectile.direction = Vector3.LEFT
-	projectile.snapshot = Snapshot.new([], {Fireball.SPEED: 60.0, Skill.RANGE: 5.0}, []) # 1 unit per frame at 60 Hz
+	projectile.snapshot = Snapshot.new([], {Fireball.PROJECTILE_SPEED: 60.0, Skill.RANGE: 5.0}, []) # 1 unit per frame at 60 Hz
 	add_child_autoqfree(projectile)
 	await wait_physics_frames(2)
 	assert_lt(projectile.global_position.x, -0.5, "moving left")
@@ -52,7 +52,7 @@ func _fire(tags: Array[StringName]) -> Projectile:
 	hits.clear()
 	var projectile: Projectile = ProjectileScene.instantiate()
 	projectile.direction = Vector3.RIGHT
-	projectile.snapshot = Snapshot.new(tags, {Fireball.SPEED: 15.0, Skill.RANGE: 12.0}, [])
+	projectile.snapshot = Snapshot.new(tags, {Fireball.PROJECTILE_SPEED: 15.0, Skill.RANGE: 12.0}, [])
 	projectile.collision_mask |= Faction.hostile_mask(Faction.Id.PLAYER)
 	projectile.hit.connect(hits.append)
 	add_child_autoqfree(projectile)

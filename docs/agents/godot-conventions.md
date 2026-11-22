@@ -24,6 +24,7 @@ A scene or resource file holds only the values written in it, an enum as its num
 - **A default is part of every file that doesn't set it.** Attack auto-aims only because `Skill.aim` defaults to `AUTO`; `pierce.tres` adds Pierce only because `TagChange.kind` defaults to `ADD`. Before changing a default, find the `.tscn` and `.tres` files that attach the script, or a script extending it, without a line for the property, and the scenes that instance those without overriding it. Write the old value into each one that should keep it, in the same commit as the new default.
 - **Renaming or removing an export** leaves every file that sets it with a line the script no longer has. Change those files in the same commit.
 - **A Skill tag is declared in `skills/skill_tag.gd`** before a scene or Modifier file writes it, and game code names it by its `SkillTag` constant, never as text.
+- **A number's name means one thing on every Skill that has it**, because a Modifier file names a number without knowing which Skill has it. Name a number for what it is: Fireball's ball speed is `Projectile speed`, so a Modifier on it can't change another Skill's unrelated speed.
 
 `tests/test_content.gd` reads every Skill in every scene and every Modifier file, and fails on a tag that isn't declared, a number no Skill has, an empty effect slot or a missing Cooldown. It can't see enums, defaults or renames: keep those by hand.
 

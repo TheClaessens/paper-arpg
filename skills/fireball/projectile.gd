@@ -1,6 +1,6 @@
 class_name Projectile
 extends Area3D
-## A shot flying straight along `direction` at its Snapshot's Speed until it has flown its
+## A shot flying straight along `direction` at its Snapshot's Projectile speed until it has flown its
 ## Snapshot's Range or touches something. With Pierce among its Snapshot's tags it passes through
 ## the first Hurtbox it hits; a wall stops it always.
 ## It looks for walls and props on the `world` layer, and for Hurtboxes on the layers the Skill
@@ -11,7 +11,7 @@ signal hit(hurtbox: Hurtbox)
 
 ## A unit direction on the ground.
 var direction := Vector3.FORWARD
-## The Snapshot of the activation that fired it: its Speed (world units per second), Range
+## The Snapshot of the activation that fired it: its Projectile speed (world units per second), Range
 ## (world units) and whether it has Pierce. Set before it enters the tree.
 var snapshot: Snapshot
 
@@ -25,7 +25,7 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	var step := snapshot.number(Fireball.SPEED) * delta
+	var step := snapshot.number(Fireball.PROJECTILE_SPEED) * delta
 	global_position += direction * step
 	_flown += step
 	if _flown >= snapshot.number(Skill.RANGE):

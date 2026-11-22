@@ -10,8 +10,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] Fireball's number is named as settled, in the constant, the export, `numbers()` and the doc comments.
-- [ ] A search for `Fireball.SPEED`, `&"Speed"` and Fireball's `speed` export comes back clean in code, tests and docs; only records of what was remain (`.scratch/combat/spec.md`, the reports, `.scratch/future-proofing-review/`).
-- [ ] C15 fails the content test; reverted, it passes.
-- [ ] The glossary entry (if agreed), the conventions bullet and the skill-tags spec's lines 49 and 65 read as the spec gives them.
+- [x] Fireball's number is named as settled, in the constant, the export, `numbers()` and the doc comments.
+- [x] A search for `Fireball.SPEED`, `&"Speed"` and Fireball's `speed` export comes back clean in code, tests and docs; only records of what was remain (`.scratch/combat/spec.md`, the reports, `.scratch/future-proofing-review/`).
+- [x] C15 fails the content test; reverted, it passes.
+- [x] The glossary entry (if agreed), the conventions bullet and the skill-tags spec's lines 49 and 65 read as the spec gives them.
 - [ ] `tools/check.sh` passes; checked once in game: Fireball flies as before, and with `modifier pierce on` it passes through one zombie and stops at the next.
