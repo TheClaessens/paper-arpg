@@ -212,7 +212,7 @@ func test_a_tag_changer_applies_its_number_changes_too() -> void:
 	assert_eq(_snapshot(SPELL, [pierces]).number(Skill.RANGE), 12.0)
 
 
-func test_a_tag_changers_number_changes_are_a_pool_of_their_own() -> void:
+func test_a_tag_changers_number_changes_stack_with_everyone_elses() -> void:
 	var pierces := _tagger("pierce", [&"Projectile"], TagChange.Kind.ADD, &"Pierce")
 	var change := NumberChange.new()
 	change.number = Skill.RANGE
@@ -220,7 +220,26 @@ func test_a_tag_changers_number_changes_are_a_pool_of_their_own() -> void:
 	change.amount = 50.0
 	pierces.number_changes = [change]
 	var snapshot := _snapshot(SPELL, [_modifier([], Skill.RANGE, NumberChange.Kind.FLAT, 2.0), pierces])
-	assert_eq(snapshot.number(Skill.RANGE), 17.0, "10 × 1.5, then + 2")
+	assert_eq(snapshot.number(Skill.RANGE), 18.0, "(10 + 2) × 1.5")
+
+
+func test_numbers_stack_the_same_whichever_modifier_changes_tags() -> void:
+	var pierces := _tagger("pierce", [&"Projectile"], TagChange.Kind.ADD, &"Pierce")
+	var increased := NumberChange.new()
+	increased.number = Skill.RANGE
+	increased.kind = NumberChange.Kind.INCREASED
+	increased.amount = 20.0
+	var more := NumberChange.new()
+	more.number = Skill.RANGE
+	more.kind = NumberChange.Kind.MORE
+	more.amount = 50.0
+	pierces.number_changes = [increased, more]
+	var snapshot := _snapshot(SPELL, [
+		pierces,
+		_modifier([], Skill.RANGE, NumberChange.Kind.FLAT, 2.0),
+		_modifier([], Skill.RANGE, NumberChange.Kind.INCREASED, 10.0),
+	])
+	assert_almost_eq(snapshot.number(Skill.RANGE), 23.4, 0.0001, "(10 + 2) × 1.3 × 1.5, as with no tag change")
 
 
 func test_two_modifiers_that_switch_each_other_off_still_end() -> void:

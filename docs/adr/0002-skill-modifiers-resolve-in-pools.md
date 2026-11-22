@@ -12,3 +12,4 @@ Each activation of a Skill builds a Snapshot from the Skill and every Modifier t
 
 - A Modifier that should change both what a Skill is and what it deals lists both effects; the code never infers one from the other.
 - A conversion "backwards" along the order does nothing. Which types exist and in what order is a design choice made with damage.
+- A pool holds one kind of effect, whichever Modifier it comes from. A Modifier that changes tags has its tag changes in the first pool, and its number changes stack with every other Modifier's: Fireball's Range 10 with "Projectiles pierce an Enemy and have 50% increased Range" and "+2 Range" is (10 + 2) × 1.5 = 18 (decided 2026-11-22, `.scratch/modifier-stacking/spec.md`). Whether a Modifier that replaces a damage-type tag also converts its damage as it replaces the tag is decided with damage.

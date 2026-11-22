@@ -10,11 +10,11 @@
 
 **Tests:** `test_a_tag_changers_number_changes_are_a_pool_of_their_own` becomes `test_a_tag_changers_number_changes_stack_with_everyone_elses`, 17 → 18; new `test_numbers_stack_the_same_whichever_modifier_changes_tags`, 23.4. Change or write each first: on `master`, and on step 1's branch, they get 17 and 22.
 
-- [ ] Range 10, a tag-changing Modifier with 50% increased Range and a plain "+2 Range": 18.
-- [ ] Range 10, a tag-changing Modifier with 20% increased and 50% more Range, a plain "+2 Range" and a plain "10% increased Range": 23.4, as in `test_flat_then_increased_summed_then_each_more`, where no Modifier changes tags.
-- [ ] `of()` gathers the number changes of every Modifier that applies in one list and calls `_stack` once per number; `counted` is still there. `_stack`, `skills/tag_pass.gd` and step 1's `ponytail:` comment above `why.append(...)` are untouched.
-- [ ] `of()`'s doc reads as the spec gives it after ticket 01.
-- [ ] Every other test passes unchanged, step 1's `test_a_flat_cut_stops_at_zero` included.
-- [ ] Skill-tags rule 6, its new deferred decision and ADR 0002's third consequence read as the spec gives them.
-- [ ] `grep -rn -E "tag_pool|number_pool|pool.of.their.own|two pools" autoloads characters skills ui scenes props rendering tests tools` prints nothing, nor does `grep -rn -i "with all their effects" GLOSSARY.md docs .scratch --exclude-dir=future-proofing-review --exclude-dir=modifier-stacking --exclude-dir=issues`.
-- [ ] `tools/check.sh` passes.
+- [x] Range 10, a tag-changing Modifier with 50% increased Range and a plain "+2 Range": 18.
+- [x] Range 10, a tag-changing Modifier with 20% increased and 50% more Range, a plain "+2 Range" and a plain "10% increased Range": 23.4, as in `test_flat_then_increased_summed_then_each_more`, where no Modifier changes tags.
+- [x] `of()` gathers the number changes of every Modifier that applies in one list and calls `_stack` once per number; `counted` is still there. `_stack`, `skills/tag_pass.gd` and step 1's `ponytail:` comment above `why.append(...)` are untouched.
+- [x] `of()`'s doc reads as the spec gives it after ticket 01.
+- [x] Every other test passes unchanged, step 1's `test_a_flat_cut_stops_at_zero` included.
+- [x] Skill-tags rule 6, its new deferred decision and ADR 0002's third consequence read as the spec gives them.
+- [x] `grep -rn -E "tag_pool|number_pool|pool.of.their.own|two pools" autoloads characters skills ui scenes props rendering tests tools` prints nothing, nor does `grep -rn -i "with all their effects" GLOSSARY.md docs .scratch --exclude-dir=future-proofing-review --exclude-dir=modifier-stacking --exclude-dir=issues`.
+- [x] `tools/check.sh` passes.
