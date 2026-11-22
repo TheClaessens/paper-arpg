@@ -91,7 +91,7 @@ func squash(amount: float) -> void:
 
 ## Drops the card through the ground line over SINK_TIME, speeding up as it goes, rocking a
 ## little side to side, while the Blob shadow shrinks and fades. Emits `sunk` at the end. A tween
-## on the game's time, so a hitstop holds it still and the hit's flash and squash show first.
+## on the game's time, so a hitstop holds it still and the Hit's flash and squash show first.
 func sink() -> void:
 	var tween := create_tween().set_parallel()
 	tween.tween_property(self, ^"_sink", 1.0, SINK_TIME)

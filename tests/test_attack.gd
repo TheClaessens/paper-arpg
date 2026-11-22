@@ -1,7 +1,7 @@
 extends GutTest
 ## The Attack's Sweep along Facing: a Hurtbox counts when its centre lies inside it. Whether it
 ## is within Range is asked of the physics engine first (see test_hurtbox.gd).
-## A swing's hit freezes the world, unlike a projectile's (see test_projectile.gd).
+## A swing's Hit freezes the world, unlike a projectile's (see test_projectile.gd).
 
 const AttackScene := preload("res://skills/attack/attack.tscn")
 const PlayerScene := preload("res://characters/player/player.tscn")
@@ -95,3 +95,20 @@ func test_an_enemys_swing_hits_the_players_faction_not_the_enemies() -> void:
 	assert_signal_emit_count(player_side, "hit_taken", 1)
 	assert_signal_not_emitted(other.hurtbox, "hit_taken", "another Enemy isn't hostile to an Enemy")
 	assert_signal_not_emitted(swinger.hurtbox, "hit_taken", "nor is the swinger itself")
+
+
+# One activation makes one Hit, whichever Hurtboxes it reaches.
+
+func test_one_swing_lands_one_hit_dealt_by_the_player() -> void:
+	var attack := _players_attack()
+	var landed: Array[Hit] = []
+	for z: float in [-0.4, 0.4]:
+		var zombie: Enemy = ZombieScene.instantiate()
+		add_child_autofree(zombie)
+		zombie.global_position = Vector3(1.0, 0.0, z)
+		zombie.hurtbox.hit_taken.connect(func(hit: Hit, _direction: Vector3) -> void: landed.append(hit))
+	await wait_physics_frames(2) # the physics world learns where they stand
+	attack.try_activate(Vector3.RIGHT, [])
+	assert_eq(landed.size(), 2, "both zombies took a Hit")
+	assert_same(landed[0], landed[1], "the same one")
+	assert_same(landed[0].dealer, attack.character, "dealt by the player")

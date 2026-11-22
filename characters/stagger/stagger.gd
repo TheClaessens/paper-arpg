@@ -1,7 +1,7 @@
 class_name Stagger
 extends Node
-## A Character's Stagger (see GLOSSARY.md): the short time after a hit when it slides with the
-## knockback and doesn't walk. Another hit restarts it; a hit with a Stagger of 0 doesn't stagger.
+## A Character's Stagger (see GLOSSARY.md): the short time after a Hit when it slides with the
+## knockback and doesn't walk. Another Hit restarts it; a Hit with a Stagger of 0 doesn't stagger.
 ## The Character starts it when hit and asks it each physics frame whether it is staggered and how
 ## fast to slide, then moves itself, as it asks Movement how fast to walk. It has no process of
 ## its own, so it stops when its Character stops. A Character without one is never staggered.

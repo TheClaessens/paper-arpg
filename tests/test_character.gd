@@ -40,7 +40,7 @@ func test_without_a_stagger_a_hit_doesnt_push() -> void:
 	zombie.get_node("Stagger").free()
 	add_child_autofree(zombie)
 	var snapshot := Snapshot.new([], {Skill.DAMAGE: 10.0, Skill.KNOCKBACK: 0.35, Skill.STAGGER: 0.05}, [])
-	zombie.hurtbox.take_hit(Vector3.RIGHT, snapshot)
+	zombie.hurtbox.take_hit(Hit.new(snapshot, null, true), Vector3.RIGHT)
 	assert_eq(zombie.health.current, zombie.health.max_health - 10.0, "it took the Damage")
 	var stood := zombie.global_position
 	await wait_physics_frames(10)

@@ -82,7 +82,7 @@ func _on_velocity_computed(safe_velocity: Vector3) -> void:
 		_standee.face(velocity)
 
 
-## At 0 Health: stops chasing and sliding (so the killing hit doesn't knock it back), leaves
+## At 0 Health: stops chasing and sliding (so the killing Hit doesn't knock it back), leaves
 ## every collision layer so nothing can hit, aim at, ring or bump into it, hides its Health bar,
 ## and sinks through the floor where it stood. Gone once the sink ends.
 func _die() -> void:
