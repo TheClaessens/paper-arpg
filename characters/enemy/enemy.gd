@@ -2,8 +2,8 @@ class_name Enemy
 extends CharacterBody3D
 ## A Character of the Enemies' Faction (see GLOSSARY.md). Stands still until its Aggro notices
 ## the player, then chases them along the navmesh for good, stopping within reach.
-## A hit on its Hurtbox staggers it: it slides away with the knockback and doesn't chase until
-## the Stagger ends.
+## A hit on its Hurtbox lowers its Health by the hit's Damage and staggers it: it slides away
+## with the knockback and doesn't chase until the Stagger ends.
 
 ## The Enemy's Faction: the Enemies', unless its scene says otherwise. It puts its Hurtbox on
 ## that Faction's layer.
@@ -23,6 +23,8 @@ var _knockback := Vector3.ZERO # direction times distance
 
 ## The part of the Enemy that Skills hit.
 @onready var hurtbox: Hurtbox = $Hurtbox
+## How much more Damage it can take.
+@onready var health: Health = $Health
 @onready var _movement: Movement = $Movement
 @onready var _standee: Standee = $Standee
 @onready var _agent: NavigationAgent3D = $NavigationAgent3D
@@ -48,9 +50,11 @@ static func knockback_left(distance: float, stagger: float, left: float) -> floa
 	return distance * (left / stagger) ** 2
 
 
-## Hit on its Hurtbox: pushed the `snapshot`'s Knockback in world units along `direction` (a
-## unit vector on the ground), sliding without chasing for its Stagger in seconds.
+## Hit on its Hurtbox: loses the `snapshot`'s Damage from its Health and is pushed the
+## `snapshot`'s Knockback in world units along `direction` (a unit vector on the ground),
+## sliding without chasing for its Stagger in seconds.
 func _on_hit_taken(direction: Vector3, snapshot: Snapshot) -> void:
+	health.damage(snapshot.number(Skill.DAMAGE))
 	# ponytail: a Stagger of 0 would need an instant push; the shortest slide stands in for it.
 	_stagger_time = maxf(snapshot.number(Skill.STAGGER), 0.02)
 	_stagger_left = _stagger_time

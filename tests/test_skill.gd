@@ -164,3 +164,23 @@ func test_it_runs_its_own_cooldown() -> void:
 	recording.try_activate(Vector3.RIGHT, [])
 	await wait_physics_frames(6) # 0.1 s at 60 Hz
 	assert_true(recording.is_ready())
+
+
+# Damage is one of the Skill's numbers, so the Snapshot holds it after Modifiers.
+
+func test_attack_and_fireball_deal_their_damage() -> void:
+	var attack: Skill = autofree(preload("res://skills/attack/attack.tscn").instantiate())
+	var fireball: Skill = autofree(preload("res://skills/fireball/fireball.tscn").instantiate())
+	assert_eq(attack.snapshot([]).number(Skill.DAMAGE), 10.0)
+	assert_eq(fireball.snapshot([]).number(Skill.DAMAGE), 20.0)
+
+
+func test_a_modifier_on_damage_changes_it() -> void:
+	var attack: Skill = autofree(preload("res://skills/attack/attack.tscn").instantiate())
+	var harder := Modifier.new()
+	var change := NumberChange.new()
+	change.number = Skill.DAMAGE
+	change.kind = NumberChange.Kind.INCREASED
+	change.amount = 50.0
+	harder.number_changes = [change]
+	assert_eq(attack.snapshot([harder]).number(Skill.DAMAGE), 15.0, "10, 50% increased")

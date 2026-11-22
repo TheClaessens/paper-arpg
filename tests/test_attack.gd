@@ -42,4 +42,5 @@ func test_a_swing_hits_a_zombie_and_not_the_players_faction_in_the_same_spot() -
 	attack.try_activate(Vector3.RIGHT, [])
 	assert_signal_emit_count(zombie.hurtbox, "hit_taken", 1)
 	assert_signal_not_emitted(friend, "hit_taken")
+	assert_eq(zombie.health.current, 40.0, "50 less the Attack's Damage of 10")
 	Engine.time_scale = 1.0 # the hitstop the hit started

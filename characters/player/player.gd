@@ -49,6 +49,9 @@ var skills: Array[Skill]:
 
 var _face_aim_left := 0.0 # time left facing the last activation's aim
 
+## How much more Damage the player can take.
+@onready var health: Health = $Health
+
 @onready var _controls: Controls = $Controls
 @onready var _movement: Movement = $Movement
 @onready var _standee: Standee = $Standee
@@ -62,6 +65,8 @@ func _enter_tree() -> void:
 	Console.register(&"tp", _cmd_tp, "tp <x> <z>: move the player to a spot on the ground.")
 	Console.register(&"bar", _cmd_bar, "bar <1-5> <skill|empty>: put a Skill in a Skill slot (1 is the main slot), or empty it.")
 	Console.register(&"activate", _cmd_activate, "activate <1-5> [<x> <z>]: press a Skill slot, auto-aimed or aimed at an offset on the ground.")
+	Console.register(&"damage", _cmd_damage, "damage <amount>: take Damage off the player's Health.")
+	Console.register(&"heal", _cmd_heal, "heal <amount>: heal the player's Health.")
 	Console.register(&"modifier", _cmd_modifier, "modifier [<name> on|off]: switch a proof Modifier on the player, or list them and why each applies to each Skill.")
 
 
@@ -189,6 +194,23 @@ func _cmd_activate(args: PackedStringArray) -> String:
 		return "activate %d at %s %s" % [slot + 1, args[1], args[2]]
 	skill_bar.press(slot)
 	return "activate %d" % (slot + 1)
+
+
+func _cmd_damage(args: PackedStringArray) -> String:
+	return _change_health(args, "damage", health.damage)
+
+
+func _cmd_heal(args: PackedStringArray) -> String:
+	return _change_health(args, "heal", health.heal)
+
+
+## Runs the `command` console command: `change` the player's Health by the amount in `args`, then
+## says what it is now, rounded.
+func _change_health(args: PackedStringArray, command: String, change: Callable) -> String:
+	if args.size() != 1 or not args[0].is_valid_float() or args[0].to_float() < 0.0:
+		return "Usage: %s <amount>" % command
+	change.call(args[0].to_float())
+	return "Health %d" % roundi(health.current)
 
 
 func _cmd_modifier(args: PackedStringArray) -> String:

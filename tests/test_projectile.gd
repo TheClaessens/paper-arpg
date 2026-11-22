@@ -141,3 +141,16 @@ func test_it_flies_through_a_hurtbox_of_its_own_faction() -> void:
 	await wait_physics_frames(30)
 	assert_eq(hits, [zombie], "never hits the player's Faction, and isn't stopped by it")
 	assert_freed(ball)
+
+
+func test_a_fireball_lowers_a_zombies_health_by_its_damage() -> void:
+	var fireball: Fireball = preload("res://skills/fireball/fireball.tscn").instantiate()
+	add_child_autoqfree(fireball)
+	var zombie: Enemy = ZombieScene.instantiate()
+	add_child_autofree(zombie)
+	zombie.global_position = Vector3(2.0, 0.0, 0.0)
+	await wait_physics_frames(2)
+	fireball.try_activate(Vector3.RIGHT, [])
+	await wait_physics_frames(30)
+	assert_eq(zombie.health.current, 30.0, "50 less the Fireball's Damage of 20")
+	Engine.time_scale = 1.0 # the hitstop the hit started

@@ -25,6 +25,7 @@ const IMPLIED_TAGS: Dictionary[StringName, Array] = {
 ## The names of the Skill's numbers (see numbers()), as Modifiers and Snapshots know them.
 const COOLDOWN := &"Cooldown"
 const RANGE := &"Range"
+const DAMAGE := &"Damage"
 const KNOCKBACK := &"Knockback"
 const STAGGER := &"Stagger"
 
@@ -50,6 +51,8 @@ const STAGGER := &"Stagger"
 		update_configuration_warnings()
 ## The Skill's Range: how far it reaches from the Character's centre, in world units.
 @export var range := 1.0
+## How much Health a hit takes away (its Damage).
+@export var damage := 0.0
 ## How far a hit pushes an Enemy, in world units.
 @export var knockback := 0.0
 ## How long a hit Enemy slides without chasing (its Stagger), in seconds.
@@ -114,7 +117,7 @@ static func with_implied(given: Array[StringName]) -> Array[StringName]:
 ## The Skill's numbers by name, for Modifiers to change. A Skill with numbers of its own adds
 ## them to these.
 func numbers() -> Dictionary[StringName, float]:
-	return {COOLDOWN: cooldown, RANGE: range, KNOCKBACK: knockback, STAGGER: stagger}
+	return {COOLDOWN: cooldown, RANGE: range, DAMAGE: damage, KNOCKBACK: knockback, STAGGER: stagger}
 
 
 ## Activates the Skill aimed at `aim` with the Character's `modifiers`, unless it is cooling

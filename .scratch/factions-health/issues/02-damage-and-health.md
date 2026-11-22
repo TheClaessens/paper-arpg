@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] Attack's and Fireball's Snapshots carry Damage 10 and 20; a Modifier on Damage changes it.
-- [ ] Health clamps, ignores 0 Damage, reports each change, and dies exactly once; after death it ignores damage and heal.
-- [ ] Hitting a zombie lowers its Health by the Skill's Damage.
-- [ ] `damage` and `heal` change the player's Health, stop at 0 and 100, and healing at 0 leaves it at 0.
+- [x] Attack's and Fireball's Snapshots carry Damage 10 and 20; a Modifier on Damage changes it.
+- [x] Health clamps, ignores 0 Damage, reports each change, and dies exactly once; after death it ignores damage and heal.
+- [x] Hitting a zombie lowers its Health by the Skill's Damage.
+- [x] `damage` and `heal` change the player's Health, stop at 0 and 100, and healing at 0 leaves it at 0.
 - [ ] GUT tests cover the above; `tools/check.sh` passes; checked once in game with the Console.

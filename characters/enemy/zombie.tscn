@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://characters/movement.gd" id="4_movement"]
 [ext_resource type="PackedScene" path="res://characters/aggro/aggro.tscn" id="5_aggro"]
 [ext_resource type="PackedScene" path="res://characters/hurtbox/hurtbox.tscn" id="6_hurtbox"]
+[ext_resource type="Script" path="res://characters/health/health.gd" id="7_health"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 radius = 0.25
@@ -41,3 +42,7 @@ neighbor_distance = 3.0
 [node name="Aggro" parent="." unique_id=1938276006 instance=ExtResource("5_aggro")]
 
 [node name="Hurtbox" parent="." unique_id=1938276007 instance=ExtResource("6_hurtbox")]
+
+[node name="Health" type="Node" parent="." unique_id=1938276008]
+script = ExtResource("7_health")
+max_health = 50.0
