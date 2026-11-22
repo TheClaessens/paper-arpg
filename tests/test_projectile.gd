@@ -1,20 +1,33 @@
 extends GutTest
-## A Projectile flies straight along its direction and disappears once it has flown its
-## Snapshot's Range. It keeps the Snapshot of the throw that fired it. It stops at the first
-## hostile Hurtbox it hits, or with Pierce at the second, hits each once, and stops at any wall.
+## A ball (Projectile) flies straight from beside the Character that threw it and ends once it has
+## flown its Range. It carries its throw's Hit and lands it itself, so it flies on when its Skill
+## and its Character are gone. It stops at the first hostile Hurtbox it touches, or with Pierce at
+## the second, lands on each once, and stops at any wall. after_each frees every ball a test threw:
+## a ball lives beside its Character, not under it.
 
 const ProjectileScene := preload("res://skills/fireball/projectile.tscn")
 const ZombieScene := preload("res://characters/enemy/zombie.tscn")
 const PlayerScene := preload("res://characters/player/player.tscn")
+const FireballScene := preload("res://skills/fireball/fireball.tscn")
 
-var hits: Array[Hurtbox] = [] # every Hurtbox the ball fired by _fire() reported hitting
+var hits: Array[Hurtbox] = [] # every Hurtbox a Hit landed on, in order, read from the zombies
+
+
+func before_each() -> void:
+	hits.clear()
+
+
+func after_each() -> void:
+	Engine.time_scale = 1.0 # in case a test froze it
+	for ball in _balls():
+		ball.free() # a ball lives beside its Character, not under it: free it, or it flies on into the next test
 
 
 func test_flies_along_its_direction_then_disappears_after_its_range() -> void:
-	var projectile: Projectile = ProjectileScene.instantiate()
-	projectile.direction = Vector3.LEFT
-	projectile.snapshot = Snapshot.new([], {Fireball.PROJECTILE_SPEED: 60.0, Skill.RANGE: 5.0}, []) # 1 unit per frame at 60 Hz
-	add_child_autoqfree(projectile)
+	var projectile: Projectile = add_child_autoqfree(ProjectileScene.instantiate())
+	var dealer: Character = autofree(Character.new())
+	var snapshot := Snapshot.new([], {Fireball.PROJECTILE_SPEED: 60.0, Skill.RANGE: 5.0}, []) # 1 unit per frame at 60 Hz
+	projectile.launch(Hit.new(snapshot, dealer, false), Vector3.ZERO, Vector3.LEFT, 0)
 	await wait_physics_frames(2)
 	assert_lt(projectile.global_position.x, -0.5, "moving left")
 	assert_almost_eq(projectile.global_position.z, 0.0, 0.001, "straight")
@@ -31,11 +44,10 @@ func test_a_ball_in_flight_keeps_its_throws_snapshot() -> void:
 	farther.number_changes = [change]
 	var modifiers: Array[Modifier] = [farther]
 	fireball.try_activate(Vector3.RIGHT, modifiers)
-	var ball: Projectile = fireball.get_child(0)
+	var ball: Projectile = _balls()[0]
 	modifiers.clear() # the Character loses the Modifier while the ball flies
-	assert_eq(ball.snapshot.number(Skill.RANGE), 15.0, "still 10 + 5")
+	assert_eq(ball.hit.snapshot.number(Skill.RANGE), 15.0, "still 10 + 5")
 	assert_eq(fireball.snapshot(modifiers).number(Skill.RANGE), 10.0, "the next throw goes 10")
-
 
 
 ## The player's own Fireball, the player standing at the origin with its physics off (no camera
@@ -46,26 +58,34 @@ func _players_fireball() -> Fireball:
 	return player.get_node("Skills/Fireball")
 
 
-## A zombie at `x`, by its Hurtbox.
+## The balls in the test's node: those a test made itself and those the player's Fireball threw
+## beside the player.
+func _balls() -> Array[Node]:
+	return find_children("*", "Projectile", false, false)
+
+
+## A zombie at `x`, by its Hurtbox. A Hit landing on it is recorded in `hits`.
 func _zombie_at(x: float) -> Hurtbox:
 	var zombie: Enemy = ZombieScene.instantiate()
 	add_child_autofree(zombie)
 	zombie.global_position = Vector3(x, 0.0, 0.0)
-	return zombie.hurtbox
+	var hurtbox := zombie.hurtbox
+	hurtbox.hit_taken.connect(func(_hit: Hit, _direction: Vector3) -> void: hits.append(hurtbox))
+	return hurtbox
 
 
-## A ball the player's Fireball fired, flying right from the origin at body height, 0.25 units
-## a frame, as far as 12.
-func _fire(tags: Array[StringName]) -> Projectile:
-	hits.clear()
-	var projectile: Projectile = ProjectileScene.instantiate()
-	projectile.direction = Vector3.RIGHT
-	projectile.snapshot = Snapshot.new(tags, {Fireball.PROJECTILE_SPEED: 15.0, Skill.RANGE: 12.0}, [])
-	projectile.collision_mask |= Faction.hostile_mask(Faction.Id.PLAYER)
-	projectile.hit.connect(hits.append)
-	add_child_autoqfree(projectile)
-	projectile.global_position = Vector3.UP * 0.5
-	return projectile
+## A ball thrown from the origin along `Vector3.RIGHT`, hostile to the player's Faction, carrying a
+## Hit with `tags` and `speed` (0.25 units a frame at 15) that does `damage` and no knockback or
+## stagger: a Range of 12.
+func _fire(tags: Array[StringName], speed := 15.0, damage := 0.0) -> Projectile:
+	var numbers: Dictionary[StringName, float] = {
+		Fireball.PROJECTILE_SPEED: speed, Skill.RANGE: 12.0, Skill.DAMAGE: damage, Skill.KNOCKBACK: 0.0, Skill.STAGGER: 0.0,
+	}
+	var dealer: Character = autofree(Character.new())
+	var hit := Hit.new(Snapshot.new(tags, numbers, []), dealer, false)
+	var ball: Projectile = add_child_autoqfree(ProjectileScene.instantiate())
+	ball.launch(hit, Vector3.ZERO, Vector3.RIGHT, Faction.hostile_mask(Faction.Id.PLAYER))
+	return ball
 
 
 func test_without_pierce_it_stops_at_the_first_enemy() -> void:
@@ -109,9 +129,8 @@ func test_it_hits_an_enemy_only_once_even_when_it_touches_it_again() -> void:
 	var second := _zombie_at(6.0)
 	await wait_physics_frames(2)
 	var ball := _fire([&"Pierce"])
-	ball.hit.connect(func(hurtbox: Hurtbox) -> void:
-		if hurtbox == first:
-			first.set_deferred(&"global_position", Vector3(4.0, 0.0, 0.0))) # knocked ahead of the ball
+	first.hit_taken.connect(func(_hit: Hit, _direction: Vector3) -> void:
+		first.set_deferred(&"global_position", Vector3(4.0, 0.0, 0.0))) # knocked ahead of the ball
 	await wait_physics_frames(40)
 	assert_eq(hits, [first, second], "touching the first again neither hits it nor stops the ball")
 	assert_freed(ball)
@@ -121,9 +140,9 @@ func test_a_ball_in_flight_keeps_pierce_when_the_modifier_goes() -> void:
 	var fireball := _players_fireball()
 	var modifiers: Array[Modifier] = [load("res://skills/modifiers/pierce.tres")]
 	fireball.try_activate(Vector3.RIGHT, modifiers)
-	var ball: Projectile = fireball.get_child(0)
+	var ball: Projectile = _balls()[0]
 	modifiers.clear() # Pierce switched off while the ball flies
-	assert_has(ball.snapshot.tags, &"Pierce")
+	assert_has(ball.hit.snapshot.tags, &"Pierce")
 	assert_does_not_have(fireball.snapshot(modifiers).tags, &"Pierce", "the next throw doesn't pierce")
 
 
@@ -141,12 +160,13 @@ func test_a_fireball_hit_knocks_back_without_freezing_the_world() -> void:
 	var fireball := _players_fireball()
 	var zombie := _zombie_at(2.0)
 	fireball.try_activate(Vector3.RIGHT, [])
-	var ball: Projectile = fireball.get_child(0)
-	var time_scales: Array[float] = []
-	ball.hit.connect(func(_hurtbox: Hurtbox) -> void: time_scales.append(Engine.time_scale)) # after Fireball lands the Hit
-	await wait_physics_frames(20)
+	var lowest := 1.0 # sampled each frame, not in hit_taken: land() emits that before it plays the impact
+	for i in 20:
+		await wait_physics_frames(1)
+		lowest = minf(lowest, Engine.time_scale)
 	Engine.time_scale = 1.0 # in case it froze, for the tests after this one
-	assert_eq(time_scales, [1.0] as Array[float], "hit once, and the world kept running")
+	assert_eq(hits, [zombie], "hit once")
+	assert_eq(lowest, 1.0, "the world never froze")
 	assert_gt(zombie.global_position.x, 2.0, "knocked back")
 
 
@@ -203,3 +223,28 @@ func test_a_piercing_ball_lands_its_throws_one_hit_on_both() -> void:
 	assert_eq(landed.size(), 2, "both zombies took a Hit")
 	assert_same(landed[0], landed[1], "the throw's one Hit, not one per contact")
 	assert_same(landed[0].dealer, fireball.character, "dealt by the player")
+
+
+func test_a_ball_whose_character_is_freed_mid_flight_still_lands_its_hit() -> void:
+	var fireball := _players_fireball()
+	var zombie: Enemy = _zombie_at(3.0).get_parent()
+	await wait_physics_frames(2)
+	fireball.try_activate(Vector3.RIGHT, [])
+	fireball.character.free() # the player and its Fireball, with the ball in flight
+	await wait_physics_frames(30)
+	assert_eq(zombie.health.current, 30.0, "the ball flew on and landed its Hit")
+
+
+func test_an_enemys_ball_goes_into_its_level_and_goes_with_it() -> void:
+	var level: Node3D = add_child_autofree(Node3D.new()) # stands in for a Level
+	var zombie: Enemy = ZombieScene.instantiate()
+	level.add_child(zombie)
+	var fireball: Fireball = FireballScene.instantiate()
+	zombie.add_skill(fireball)
+	fireball.try_activate(Vector3.RIGHT, [])
+	var balls := level.find_children("*", "Projectile", true, false)
+	assert_eq(balls.size(), 1, "the zombie threw a ball")
+	var ball: Node = balls[0]
+	assert_eq(ball.get_parent(), level, "it is beside its Character, in the Level")
+	level.free()
+	assert_freed(ball, "it goes with its Level")

@@ -30,6 +30,13 @@ func before_each() -> void:
 	player.skill_bar.activation_requested.connect(func(_slot: int, aim: Vector3) -> void: aims.append(aim))
 
 
+## The balls a Fireball threw live beside the player, not under it: free them, or they fly on into
+## the next test.
+func after_each() -> void:
+	for ball in find_children("*", "Projectile", false, false):
+		ball.free()
+
+
 ## `seconds` pass: the player's Skills cool down (as each does in its own physics step), then
 ## its Skill bar works through its presses and holds.
 func _elapse(seconds: float) -> void:

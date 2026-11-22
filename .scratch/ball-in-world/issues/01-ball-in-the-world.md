@@ -19,11 +19,11 @@ This ticket changes where the ball lives and who lands its Hit, nothing about ho
 
 No scene changes: `projectile.tscn` and `fireball.tscn` stay as they are.
 
-- [ ] The spec folder and the glossary entries are the branch's first commit.
-- [ ] `skill.gd` gains `_add_to_world()` with the spec's doc and `ponytail:` comment, and nothing else.
-- [ ] `fireball.gd`: the spec's class doc and three-line `_activate`; no `LAUNCH_OFFSET`, `FLIGHT_HEIGHT`, `top_level`, `add_child` or `connect`.
-- [ ] `projectile.gd`: no signal; `hit`, `_direction`, `_flight`, the two constants, `launch()` and the `ponytail:` comment; flight, end check and Pierce counting as above.
-- [ ] The two new tests failed on the base and pass. The time-scale test failed once with Fireball's `FREEZES` set to true, then was reverted; the commit message or PR says so.
-- [ ] Every test file whose tests throw a ball frees them in `after_each`.
-- [ ] A search for `LAUNCH_OFFSET` and `FLIGHT_HEIGHT` outside `projectile.gd`, `.hit.connect`, `ball.snapshot`, `ball.direction`, and `get_child(0)` in `test_projectile.gd`, comes back clean in code and tests.
-- [ ] `tools/check.sh` passes, and the game runs: a Fireball thrown in `scenes/game.tscn` hits a zombie as on the base.
+- [x] The spec folder and the glossary entries are the branch's first commit.
+- [x] `skill.gd` gains `_add_to_world()` with the spec's doc and `ponytail:` comment, and nothing else.
+- [x] `fireball.gd`: the spec's class doc and three-line `_activate`; no `LAUNCH_OFFSET`, `FLIGHT_HEIGHT`, `top_level`, `add_child` or `connect`.
+- [x] `projectile.gd`: no signal; `hit`, `_direction`, `_flight`, the two constants, `launch()` and the `ponytail:` comment; flight, end check and Pierce counting as above.
+- [x] The two new tests failed on the base and pass. The time-scale test failed once with Fireball's `FREEZES` set to true, then was reverted; the commit message or PR says so.
+- [x] Every test file whose tests throw a ball frees them in `after_each`.
+- [x] A search for `LAUNCH_OFFSET` and `FLIGHT_HEIGHT` outside `projectile.gd`, `.hit.connect`, `ball.snapshot`, `ball.direction`, and `get_child(0)` in `test_projectile.gd`, comes back clean in code and tests.
+- [x] `tools/check.sh` passes, and the game runs: a Fireball thrown in `scenes/game.tscn` hits a zombie as on the base.
