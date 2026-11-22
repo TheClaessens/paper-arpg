@@ -10,6 +10,6 @@
 
 **Status:** ready-for-agent
 
-- [ ] `MOST_FOUND` is 128, with its doc and `ponytail:` comment; `around()` asks for that many and warns when it gets that many.
-- [ ] `nearest()` and `nearest_to()` are unchanged.
-- [ ] The two new tests pass; `tools/check.sh` passes.
+- [x] `MOST_FOUND` is 128, with its doc and `ponytail:` comment; `around()` asks for that many and warns when it gets that many.
+- [x] `nearest()` and `nearest_to()` are unchanged.
+- [x] The two new tests pass; `tools/check.sh` passes.

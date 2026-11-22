@@ -9,6 +9,12 @@ extends Area3D
 ## reads what the Hit does to it from `hit`.
 signal hit_taken(hit: Hit, direction: Vector3)
 
+# ponytail: one physics query, capped at MOST_FOUND and in no order. Past that a Skill misses the
+# rest and Auto-aim's nearest is the nearest of those found; around() warns. Ask in rings around
+# the centre, or keep a list of Hurtboxes, if a pack ever gets that big.
+## The most Hurtboxes around() finds at once.
+const MOST_FOUND := 128
+
 
 ## Takes `hit`, pushing along `direction`, and says whether it landed: off every layer (its
 ## Character has died) it misses, so a second Hit in the frame that killed the Character reports
@@ -44,7 +50,9 @@ static func nearest_to(spot: Vector3, positions: Array[Vector3], reach: float) -
 
 
 ## Every Hurtbox in `world` on the layers in `mask` with any part of it within `reach` of
-## `centre`. The physics engine finds them: the sphere looks for areas only, on `mask` only.
+## `centre`, up to MOST_FOUND of them, in no particular order: a warning says when that many were
+## found, since any more were left out. The physics engine finds them: the sphere looks for areas
+## only, on `mask` only.
 static func around(world: World3D, centre: Vector3, reach: float, mask: int) -> Array[Hurtbox]:
 	var sphere := SphereShape3D.new()
 	sphere.radius = reach
@@ -54,8 +62,11 @@ static func around(world: World3D, centre: Vector3, reach: float, mask: int) -> 
 	query.collision_mask = mask
 	query.collide_with_areas = true
 	query.collide_with_bodies = false
+	var results := world.direct_space_state.intersect_shape(query, MOST_FOUND)
+	if results.size() == MOST_FOUND:
+		push_warning("Hurtbox.around() found its most, %d Hurtboxes: any more were left out." % MOST_FOUND)
 	var hurtboxes: Array[Hurtbox] = []
-	for result in world.direct_space_state.intersect_shape(query, 32):
+	for result in results:
 		var hurtbox := result.collider as Hurtbox
 		if hurtbox:
 			hurtboxes.append(hurtbox)
