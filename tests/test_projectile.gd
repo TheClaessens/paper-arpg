@@ -190,3 +190,16 @@ func test_a_piercing_ball_passes_through_the_zombie_it_kills_and_stops_at_the_ne
 	assert_eq(deaths.size(), 1, "the first is killed")
 	assert_signal_emit_count(second, "hit_taken", 1, "the kill was its pierced hit")
 	assert_signal_not_emitted(third, "hit_taken", "it stopped at the second")
+
+
+func test_a_piercing_ball_lands_its_throws_one_hit_on_both() -> void:
+	var fireball := _players_fireball()
+	var landed: Array[Hit] = []
+	for x: float in [2.0, 4.0]:
+		_zombie_at(x).hit_taken.connect(func(hit: Hit, _direction: Vector3) -> void: landed.append(hit))
+	await wait_physics_frames(2)
+	fireball.try_activate(Vector3.RIGHT, [load("res://skills/modifiers/pierce.tres")])
+	await wait_physics_frames(40)
+	assert_eq(landed.size(), 2, "both zombies took a Hit")
+	assert_same(landed[0], landed[1], "the throw's one Hit, not one per contact")
+	assert_same(landed[0].dealer, fireball.character, "dealt by the player")

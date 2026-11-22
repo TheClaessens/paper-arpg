@@ -1,6 +1,6 @@
 extends GutTest
 ## A zombie at 0 Health dies: it stops chasing, can't be hit, aimed at or ringed, blocks no one,
-## and sinks where it stood before it is freed. A hit on it after that misses.
+## and sinks where it stood before it is freed. A Hit on it after that misses.
 
 const ZombieScene := preload("res://characters/enemy/zombie.tscn")
 
@@ -62,7 +62,7 @@ func test_a_hit_after_the_killing_hit_misses() -> void:
 	_swing(5)
 	watch_signals(zombie.hurtbox)
 	var snapshot := Snapshot.new([], {Skill.DAMAGE: 10.0}, [])
-	assert_false(zombie.hurtbox.take_hit(Vector3.RIGHT, snapshot), "missed")
+	assert_false(zombie.hurtbox.take_hit(attack._hit(snapshot), Vector3.RIGHT), "missed")
 	assert_signal_not_emitted(zombie.hurtbox, "hit_taken", "no flash, squash or Damage")
 	assert_signal_emit_count(zombie.health, "died", 1, "dies once")
 
@@ -70,6 +70,6 @@ func test_a_hit_after_the_killing_hit_misses() -> void:
 func test_hit_feedback_plays_only_when_a_hit_landed() -> void:
 	_swing(5)
 	Engine.time_scale = 1.0
-	var hits: Dictionary[Hurtbox, Vector3] = {zombie.hurtbox: Vector3.RIGHT}
-	attack._land_hits(hits, Snapshot.new([], {Skill.DAMAGE: 10.0}, []))
+	var pushes: Dictionary[Hurtbox, Vector3] = {zombie.hurtbox: Vector3.RIGHT}
+	attack._hit(Snapshot.new([], {Skill.DAMAGE: 10.0}, [])).land(pushes)
 	assert_eq(Engine.time_scale, 1.0, "no hitstop")

@@ -20,9 +20,9 @@ Nothing changes in play. See `.scratch/hit/spec.md` (rules 1, 2, 5 and 7; "The c
 
 **Status:** ready-for-agent
 
-- [ ] The spec folder and the glossary changes are the branch's first commit.
-- [ ] `skills/hit.gd` as the spec sketches it for ticket 01: plain fields, `land()` playing the impact once if any landed. No other field, no signal.
-- [ ] `take_hit(hit, direction)` and `hit_taken(hit, direction)` are the only forms; `Character._on_hit_taken(hit, direction)` reads `hit.snapshot`.
-- [ ] `skill.gd` has `_hit()` and no `_land_hits()`; Attack lands one Hit per swing and Fireball one per throw, made in `_activate()`, never inside the lambda.
-- [ ] A search for `_land_hits`, `take_hit(direction` and `hit_taken(direction` in `characters/ skills/ ui/ scenes/ tests/` comes back clean.
-- [ ] The moved tests and the two new ones pass; `tools/check.sh` passes.
+- [x] The spec folder and the glossary changes are the branch's first commit.
+- [x] `skills/hit.gd` as the spec sketches it for ticket 01: plain fields, `land()` playing the impact once if any landed. No other field, no signal.
+- [x] `take_hit(hit, direction)` and `hit_taken(hit, direction)` are the only forms; `Character._on_hit_taken(hit, direction)` reads `hit.snapshot`.
+- [x] `skill.gd` has `_hit()` and no `_land_hits()`; Attack lands one Hit per swing and Fireball one per throw, made in `_activate()`, never inside the lambda.
+- [x] A search for `_land_hits`, `take_hit(direction` and `hit_taken(direction` in `characters/ skills/ ui/ scenes/ tests/` comes back clean.
+- [x] The moved tests and the two new ones pass; `tools/check.sh` passes.

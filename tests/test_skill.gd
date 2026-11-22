@@ -1,43 +1,13 @@
 extends GutTest
-## Landing a Skill's hits: each Hurtbox hit tells its Enemy, which is pushed along its own
-## direction with the Snapshot's Knockback and Stagger. The impact plays once per call, not per
-## Hurtbox.
-
-const ZombieScene := preload("res://characters/enemy/zombie.tscn")
+## A Skill: it warns without a Cooldown, try_activate() is the one way to set it off, and its
+## numbers are what Modifiers change. Landing its Hit is test_hit.gd's.
 
 var skill: Skill
 
 
 func before_each() -> void:
 	skill = Skill.new()
-	skill.knockback = 0.35
-	skill.stagger = 0.05
 	add_child_autofree(skill)
-
-
-func after_each() -> void:
-	Engine.time_scale = 1.0
-
-
-func _zombie_at(x: float) -> Enemy:
-	var zombie: Enemy = ZombieScene.instantiate()
-	add_child_autofree(zombie)
-	zombie.global_position = Vector3(x, 0.0, 0.0)
-	return zombie
-
-
-func test_each_enemy_is_pushed_its_own_way() -> void:
-	var left := _zombie_at(-5.0)
-	var right := _zombie_at(5.0)
-	skill._land_hits({left.hurtbox: Vector3.LEFT, right.hurtbox: Vector3.RIGHT}, skill.snapshot([]))
-	await wait_physics_frames(30) # past the hitstop and the Stagger
-	assert_almost_eq(left.global_position.x, -5.35, 0.05)
-	assert_almost_eq(right.global_position.x, 5.35, 0.05)
-
-
-func test_no_hits_no_impact() -> void:
-	skill._land_hits({}, skill.snapshot([]))
-	assert_eq(Engine.time_scale, 1.0)
 
 
 # Every Skill needs a Cooldown: it is the only thing that limits how often a Skill is activated.

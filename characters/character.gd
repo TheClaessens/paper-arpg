@@ -2,7 +2,7 @@ class_name Character
 extends CharacterBody3D
 ## A Character (see GLOSSARY.md): the player's hero or an Enemy. It holds its Faction, its
 ## Modifiers and its Skills, and wires its components: its Health shows on its Health bar, and
-## a hit on its Hurtbox lowers its Health, starts its Stagger and flashes and squashes its
+## a Hit on its Hurtbox lowers its Health, starts its Stagger and flashes and squashes its
 ## Standee. Wiring and identity only: Player and Enemy decide where it walks and what it
 ## activates, and the script driving the body (the Enemy) slides with the Stagger. Without a
 ## Hurtbox it can't be hit; without a Stagger it is never staggered. It puts its Hurtbox on its
@@ -53,9 +53,12 @@ func add_skill(skill: Skill) -> void:
 	skill.character = self
 
 
-# A hit on its Hurtbox, pushing along `direction` (a unit vector on the ground): the one place a
-# hit lands on a Character. Damage first, then the Stagger, then the Standee.
-func _on_hit_taken(direction: Vector3, snapshot: Snapshot) -> void:
+# A Hit on its Hurtbox, pushing along `direction` (a unit vector on the ground): the one place a
+# Hit lands on a Character, whoever it is. Damage first, then the Stagger, then the Standee. What
+# it takes is worked out here and written nowhere on the Hit, which lands unchanged on the next
+# Hurtbox. The world's part of Hit feedback, the freeze and the shake, is Hit.land()'s.
+func _on_hit_taken(hit: Hit, direction: Vector3) -> void:
+	var snapshot := hit.snapshot
 	health.damage(snapshot.number(Skill.DAMAGE))
 	if _stagger:
 		_stagger.start(direction * snapshot.number(Skill.KNOCKBACK), snapshot.number(Skill.STAGGER))

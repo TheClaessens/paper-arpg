@@ -5,7 +5,7 @@ extends Area3D
 ## the first Hurtbox it hits; a wall stops it always.
 ## It looks for walls and props on the `world` layer, and for Hurtboxes on the layers the Skill
 ## that fired it adds to its mask (the ones hostile to the Faction of the Character that threw it). It reports a Hurtbox it touched with
-## `hit`; that Skill decides what the hit does.
+## `hit`, and that Skill lands the throw's Hit there.
 
 signal hit(hurtbox: Hurtbox)
 

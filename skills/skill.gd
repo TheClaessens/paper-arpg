@@ -61,6 +61,7 @@ const SHORTEST_COOLDOWN := 0.1
 ## Character.add_skill(). The Skill hits only Hurtboxes hostile to the Character's Faction, as it
 ## is at each activation. The Skill's own _ready() can run before it is set (a node's children are
 ## ready before it), so a Skill script doesn't read it there. A Skill without one can't be activated.
+## Its Hits name it as their dealer (see _hit()).
 var character: Character
 
 ## Seconds until the Skill can be activated again. The Skill runs this clock itself.
@@ -167,15 +168,9 @@ func hostile_mask() -> int:
 	return Faction.hostile_mask(character.faction)
 
 
-## Lands one activation's hits: each Hurtbox in `hits` is hit pushing along its direction (a
-## unit vector on the ground) with the activation's `snapshot`; its Character reads what the hit
-## does from that. The impact (screen shake, and a hitstop if `freezes`) plays once per call,
-## however many it hit, and only if at least one hit landed, so a Skill whose hits come at once
-## lands them in one call. For the Skills themselves.
-func _land_hits(hits: Dictionary[Hurtbox, Vector3], snapshot: Snapshot, freezes := true) -> void:
-	var landed := false
-	for hurtbox in hits:
-		if hurtbox.take_hit(hits[hurtbox], snapshot):
-			landed = true
-	if landed:
-		HitFeedback.shared().play_impact(get_viewport(), freezes)
+## This activation's Hit: made as `snapshot` and dealt by the Skill's Character. A Skill that hits
+## makes one per activation and lands that one on every Hurtbox it reaches (see Hit.land()), at
+## once or, for a ball, as it flies. `freezes`: whether its impact freezes the world; a
+## projectile's doesn't. For the Skills themselves.
+func _hit(snapshot: Snapshot, freezes := true) -> Hit:
+	return Hit.new(snapshot, character, freezes)

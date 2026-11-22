@@ -39,13 +39,13 @@ func _activate(snapshot: Snapshot, aim: Vector3) -> void:
 	var swing_range := snapshot.number(RANGE)
 	var swing_sweep := snapshot.number(SWEEP)
 	_show_swing(facing, swing_range, swing_sweep)
-	var hits: Dictionary[Hurtbox, Vector3] = {}
+	var pushes: Dictionary[Hurtbox, Vector3] = {}
 	for hurtbox in Hurtbox.around(get_world_3d(), global_position, swing_range, hostile_mask()):
 		var offset := hurtbox.global_position - global_position
 		if in_sweep(offset, facing, swing_sweep):
 			# Pushed straight away from its Character; one right on top goes along Facing.
-			hits[hurtbox] = Vector3(offset.x, 0.0, offset.z).normalized() if offset.length() > 0.01 else facing
-	_land_hits(hits, snapshot)
+			pushes[hurtbox] = Vector3(offset.x, 0.0, offset.z).normalized() if offset.length() > 0.01 else facing
+	_hit(snapshot).land(pushes)
 
 
 func _show_swing(facing: Vector3, swing_range: float, swing_sweep: float) -> void:

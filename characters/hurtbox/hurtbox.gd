@@ -2,21 +2,21 @@ class_name Hurtbox
 extends Area3D
 ## A Character's Hurtbox (see GLOSSARY.md): the part of it that Skills hit. Skills find it on the
 ## layers hostile to the Faction of the Character that has them (see around()), and the Character puts it on its own Faction's
-## layer. A Hurtbox doesn't look for anything; a hit is reported up to the Character through
+## layer. A Hurtbox doesn't look for anything; a Hit that lands on it is reported up to the Character through
 ## `hit_taken`. Its statics are how Skills and the player find Hurtboxes in the world.
 
-## A Skill hit it: pushing along `direction` (a unit vector on the ground), with the Damage,
-## Knockback and Stagger of the activation's `snapshot` for the Character to read.
-signal hit_taken(direction: Vector3, snapshot: Snapshot)
+## A Hit landed on it, pushing along `direction` (a unit vector on the ground). The Character
+## reads what the Hit does to it from `hit`.
+signal hit_taken(hit: Hit, direction: Vector3)
 
 
-## Hit by a Skill's activation made as `snapshot`, pushing along `direction`. Whether the hit
-## landed: off every layer (its Character has died) it misses, so a second hit in the frame
-## that killed the Character reports nothing.
-func take_hit(direction: Vector3, snapshot: Snapshot) -> bool:
+## Takes `hit`, pushing along `direction`, and says whether it landed: off every layer (its
+## Character has died) it misses, so a second Hit in the frame that killed the Character reports
+## nothing. Hit.land() calls it on each Hurtbox, then plays the impact.
+func take_hit(hit: Hit, direction: Vector3) -> bool:
 	if collision_layer == 0:
 		return false
-	hit_taken.emit(direction, snapshot)
+	hit_taken.emit(hit, direction)
 	return true
 
 
