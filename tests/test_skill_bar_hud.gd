@@ -221,3 +221,40 @@ func test_a_drag_back_to_where_it_began_is_a_tap() -> void:
 func test_a_drag_off_the_slot_and_back_to_where_it_began_cancels() -> void:
 	_touch(Vector2.ZERO, [Vector2(120.0, 0.0), Vector2.ZERO] as Array[Vector2])
 	assert_eq(aims, [] as Array[Vector3], "back on the slot after leaving it: cancelled")
+
+
+# A thumb that lands while a Skill cools down is passed on, as a held key is.
+
+func test_a_thumb_held_through_the_cooldown_repeats_when_it_ends() -> void:
+	var main: SkillSlotButton = hud.get_node("Slot0") # the Attack: 0.4 s Cooldown, repeats while held
+	main.touch_started.emit(main.centre())
+	main.touch_ended.emit(main.centre())
+	_elapse(0.016)
+	assert_eq(aims.size(), 1, "control: the first tap activated it")
+	main.touch_started.emit(main.centre()) # a tap during the Cooldown
+	main.touch_ended.emit(main.centre())
+	_elapse(0.5) # the Cooldown has ended
+	assert_eq(aims.size(), 1, "a tap during the Cooldown activates nothing, even once it has ended")
+	main.touch_started.emit(main.centre())
+	main.touch_ended.emit(main.centre())
+	_elapse(0.016)
+	assert_eq(aims.size(), 2, "a fresh Cooldown starts")
+	main.touch_started.emit(main.centre()) # a thumb that lands during it and stays
+	_elapse(0.2)
+	assert_eq(aims.size(), 2, "nothing while the Cooldown runs")
+	_elapse(0.3)
+	assert_eq(aims.size(), 3, "activated the moment the Cooldown ends")
+
+
+func test_a_skill_that_waits_for_the_lift_shows_no_aim_while_cooling_down() -> void:
+	button.touch_started.emit(button.centre())
+	button.touch_ended.emit(button.centre())
+	_elapse(0.016)
+	assert_eq(aims.size(), 1, "control: the tap activated Fireball")
+	button.touch_started.emit(button.centre()) # lands again during the Cooldown
+	button.touch_moved.emit(button.centre() + Vector2(-120.0, 0.0))
+	assert_false(_aim_marker_shows(), "no aim for a Skill that can't be activated now")
+	_elapse(5.0) # the Cooldown has ended
+	button.touch_ended.emit(button.centre() + Vector2(-120.0, 0.0))
+	_elapse(0.016)
+	assert_eq(aims.size(), 1, "the lift activates nothing")

@@ -4,10 +4,10 @@
 
 **Blocked by:** 03 (same file)
 
-**Status:** ready-for-agent
+**Status:** ready-for-human
 
 **Done when:**
 
-- [ ] Both tests pass; the first fails on the commit before.
-- [ ] `tools/check.sh` passes.
+- [x] Both tests pass; the first fails on the commit before.
+- [x] `tools/check.sh` passes.
 - [ ] On the iPhone, the developer taps the main slot, lands again at once and keeps holding: the Attack repeats as soon as its Cooldown ends. The developer keeps it, or reverts this commit.

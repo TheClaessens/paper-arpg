@@ -6,11 +6,12 @@ extends Control
 ## which. Each slot shows its Skill's cooldown, presses in when activated and flashes when ready.
 ##
 ## On touch, tapping a slot activates it (auto-aimed). Holding a Skill that repeats while held
-## (the Attack) keeps activating it, and dragging steers it. A Skill whose Aim mode waits for the
-## lift can instead be dragged off its slot: the Player shows where it would go, and lifting the
-## thumb activates it there. Dragging back onto the slot and lifting there cancels it. A thumb
-## taken away without lifting (the app losing focus, or the system cancelling the touch) ends its
-## hold and its aim, and activates nothing. So does a change of the slot's Skill under the thumb.
+## (the Attack) keeps activating it, even when the thumb lands during its Cooldown, and dragging
+## steers it. A Skill whose Aim mode waits for the lift can instead be dragged off its slot: the
+## Player shows where it would go, and lifting the thumb activates it there. Dragging back onto the
+## slot and lifting there cancels it. A thumb taken away without lifting (the app losing focus, or
+## the system cancelling the touch) ends its hold and its aim, and activates nothing. So does a
+## change of the slot's Skill under the thumb.
 ## Sizes are in viewport units: on an iPhone 17 Pro, 1 pt is about 1.6 of them.
 
 signal slot_chosen(slot: int)
@@ -101,18 +102,20 @@ func _cmd_touch(args: PackedStringArray) -> String:
 func _on_touch_started(at: Vector2, slot: int) -> void:
 	_landed[slot] = at
 	var skill := player.skill_bar.skill_in(slot)
-	if skill == null or not skill.is_ready():
+	if skill == null:
 		return
 	if skill.aim_mode.waits_for_lift:
-		if _aiming_slot == SkillBar.NONE: # one aim at a time: the first thumb keeps it
+		# An aim only for a Skill that can be activated now, and one aim at a time: the first
+		# thumb keeps it.
+		if skill.is_ready() and _aiming_slot == SkillBar.NONE:
 			_aiming_slot = slot # activated when the thumb lifts
 			_aimed = false
 			_left_slot = false
 	else:
-		player.skill_bar.press(slot)
+		player.skill_bar.press(slot) # ignored while the Cooldown runs
 		if skill.aim_mode.repeats_while_held:
 			_holding[slot] = true
-			player.skill_bar.set_held(slot, true)
+			player.skill_bar.set_held(slot, true) # activated the moment the Cooldown ends
 
 
 func _on_touch_moved(at: Vector2, slot: int) -> void:
