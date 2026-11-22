@@ -114,7 +114,7 @@ What would be the chain the conventions warn against:
 7. **No Level places the base, and it doesn't run on its own.** Off the tree it loads and instances without an error (`tools/load_all.gd`, `tests/test_content.gd`); in the tree its Standee fails its assertion for want of frames ("The base on its own").
 8. **No script changes, and nothing that names `zombie.tscn` changes**: the Level, the tests and the tools find it as today.
 9. **Play doesn't change**: `tools/simulate.gd` on the game scene prints the same lines as on the base branch.
-10. **The editor's first save of the two files changes no value**: it gives `enemy.tscn` a uid on its first line and writes the same uid in `zombie.tscn`'s line for it. At most it also writes uids on other `ext_resource` lines ("The editor's resave").
+10. **The editor's first save of the two files changes no value, and no node or its order**: it adds uids and `unique_id`s, and in `enemy.tscn` drops one default and moves one line, all listed in "The editor's resave".
 
 "Checking the split" checks rules 2 to 5; `tests/test_enemy_kinds.gd` rules 1 and 4; `tools/check.sh` rule 7; `git diff --stat` rule 8; "Checking by hand" rule 9; "The editor's resave" rule 10.
 
@@ -248,7 +248,7 @@ This is what the 4.7 editor writes for an inherited scene (Engine facts 1 to 4),
 
 Ticket 01, in a worktree no editor has open, then the developer's resave once, in ticket 04.
 
-The analysis held that inherited scenes must come from the editor, because their format is easy to get wrong by hand. The 4.7-stable source of the editor in use shows what the editor writes for an inherited scene (Engine facts 1 to 4), and `zombie.tscn` above is that, value for value: the base nodes it changes, each with its `index` and the base's `unique_id`; its own node in full; nothing equal to the base's. So the editor's first save adds only the uid it gives `enemy.tscn` (rule 10), and "Checking the split" proves the result before anything is committed: the engine builds the zombie it built before, and every line of today's file is in one of the two. The developer reads two short files and resaves them, instead of rebuilding the zombie by hand.
+The analysis held that inherited scenes must come from the editor, because their format is easy to get wrong by hand. The 4.7-stable source of the editor in use shows what the editor writes for an inherited scene (Engine facts 1 to 4), and `zombie.tscn` above is that, value for value: the base nodes it changes, each with its `index` and the base's `unique_id`; its own node in full; nothing equal to the base's. So the editor's first save changes no value and no node (rule 10; the uids and the two lines in `enemy.tscn` it does change are listed in "The editor's resave"), and "Checking the split" proves the result before anything is committed: the engine builds the zombie it built before, and every line of today's file is in one of the two. The developer reads two short files and resaves them, instead of rebuilding the zombie by hand.
 
 **How sure.** High, not certain: no Godot was run for this spec. Two things could still show in the resave: a uid the editor's cache holds for a file whose first line declares none (as step 6 warned), and a rule the source reading missed. The resave check shows either before its commit, and "The editor's resave" says which is harmless.
 
@@ -370,12 +370,28 @@ The editor rewrites a scene written outside it when it saves it ("The open edito
    git diff -U0 -- characters/enemy/
    ```
 
-   The first prints nothing (it keeps `index`, so a moved node shows). The second shows two changed lines: `enemy.tscn`'s first line, and `zombie.tscn`'s `1_base` line, each gaining the same `uid="uid://…"`.
+   The `scene_lines` comparison drops uids and `unique_id`s and sorts, so it prints only the dropped `height = 1.0` in `enemy.tscn` and nothing for `zombie.tscn` (it keeps `index`, so a moved node shows). The `git diff -U0` shows what is expected below, and nothing else.
 4. Commit the two files alone, as "Editor resave: enemy.tscn's uid".
 
-**Harmless:** a uid added to another `ext_resource` line. If its file's own first line declares none on the branch (today none of `standee.tscn`, `aggro.tscn`, `hurtbox.tscn`, `health_bar.tscn` and `zombie.tres` does), that first line goes in the same commit, or a fresh checkout fails `tools/check.sh` on "invalid UID", the rule step 6 set.
+**Expected in `enemy.tscn`** (read from the engine's source; the first save shows whether it holds):
 
-**Warning signs**, each meaning stop and look before committing:
+- A `uid` on its first line.
+- A `uid` on the `ext_resource` lines of the three scripts that have a `.gd.uid` file: `1_enemy` (`enemy.gd`), `4_movement` (`movement.gd`) and `7_health` (`health.gd`).
+- A `unique_id` on the `Skills` node.
+- On the `NavigationAgent3D` node, the line `height = 1.0` dropped (it is the built-in default), and `target_desired_distance` moved above `path_height_offset`.
+
+**Expected in `zombie.tscn`:**
+
+- A `uid` on its first line.
+- `enemy.tscn`'s new uid on the `1_base` line.
+- A `uid` on the `9_stagger` line.
+- A `unique_id` on the `Stagger` node.
+
+If an `ext_resource` file's own first line declares no uid on the branch (today none of `standee.tscn`, `aggro.tscn`, `hurtbox.tscn`, `health_bar.tscn` and `zombie.tres` does), the editor writing one on the line that names it is harmless, but that first line goes in the same commit, or a fresh checkout fails `tools/check.sh` on "invalid UID", the rule step 6 set.
+
+**A warning sign is anything else**: a changed value, a node that appears, disappears or moves, a `unique_id` that changes on a node that already had one, an override that vanishes from `zombie.tscn`.
+
+**Warning signs in detail**, each meaning stop and look before committing:
 
 - A property line added to `zombie.tscn`, dropped from it or changed: an override the text got wrong, such as a value the base already has.
 - A new entry in `zombie.tscn` for a base node (`[node name="CollisionShape3D" parent="." …]` with a value): the editor sees the kind holding a value that differs from the base's.
@@ -424,7 +440,7 @@ func test_every_enemy_kind_inherits_the_base_and_has_frames() -> void:
 	assert_true(problems.is_empty(), "; ".join(problems))
 
 
-func test_a_copy_is_no_kind() -> void:
+func test_a_bare_enemy_is_no_kind_and_has_no_frames() -> void:
 	var enemy := Enemy.new()
 	var copy := PackedScene.new()
 	copy.pack(enemy)
@@ -457,7 +473,7 @@ What each part does:
 - **How it asks a scene for its base.** `PackedScene.get_state()` is the scene file's contents; its `get_base_scene_state()` is the state of the scene it inherits, or null when it inherits none, and `get_path()` is that scene's path (Engine facts 6). Only the direct base counts: a kind of a kind reports the kind it inherits (open rule 4).
 - **A scene instanced inside another.** The test looks at each file's own root. The Level's root is a `Node3D`, so the Level isn't a kind; the zombies in it are instances of `zombie.tscn`, which the test checks as its own file. `game.tscn` and `player.tscn` have a plain `Node` and a `Player` at their roots. A scene that places the base itself under another root isn't a kind either and goes unchecked here: the base's Standee fails its assertion as soon as that scene runs, and `tests/test_game.gd` (step 5) runs the game scene and its Level (Out of scope: a check that nothing places the base).
 - **Frames.** The one value a kind must set, because the base has none (open rule 5). Speed and Health have working defaults.
-- **`test_a_copy_is_no_kind`** packs a bare `Enemy` into a scene in memory, as a copy saved without the base would be, and checks that both problems are reported, so the check can't quietly stop reporting (as `test_content.gd` checks its problem functions on hand-made broken content).
+- **`test_a_bare_enemy_is_no_kind_and_has_no_frames`** packs a bare `Enemy` into a scene in memory, as a copy saved without the base would be, and checks that both problems are reported, so the check can't quietly stop reporting (as `test_content.gd` checks its problem functions on hand-made broken content).
 
 **It can fail** (CODING_STANDARDS.md). Each of these, run once in ticket 02 and reverted, fails `test_every_enemy_kind_inherits_the_base_and_has_frames` with the message given:
 
@@ -491,7 +507,7 @@ None changes. Every test that uses the zombie preloads `zombie.tscn` and reads w
 The tools run the game scene, `res://scenes/game.tscn`. "The base branch" is `skill-character`, which this branch is stacked on.
 
 1. `tools/check.sh` passes.
-2. **The chase, frame for frame.** On the base branch and on this one, `godot --headless --path . --script res://tools/simulate.gd -- res://scenes/game.tscn 6 "tp 16 7.5"`, each into a file, then `diff` the two: no line differs. If two runs of the base branch already differ, compare to within 0.05 and say so in the PR.
+2. **The chase, frame for frame.** The repeatable form of `tools/simulate.gd` (its header): put an `override.cfg` next to `project.godot` with `[navigation]` and `avoidance/thread_model/avoidance_use_multiple_threads=false` on the next line, delete it afterwards, and on the base branch and on this one run `godot --fixed-fps 60 --headless --path . --script res://tools/simulate.gd -- res://scenes/game.tscn 4 "tp 19 4" "activate 1 1 0"`, each into a file, then compare the two (the filtered output's checksum, or `diff`): no line differs. What this build found: the filtered output's checksum was `fc6af6dbd110508d8e597824a4f40861` before and after, two runs each.
 3. **Play (F5).** The seven zombies look, idle and walk as before. `aggro` shows their rings at the same radius. A swing slides a zombie back and it walks back (its Stagger). Five swings kill one (Health 50), and its Health bar shows over it, as high as before.
 4. **In the editor.** Open `zombie.tscn`: the root's tooltip says "Inherits: res://characters/enemy/enemy.tscn", the Inspector shows a revert arrow beside Frames, Speed and Max Health, and `Stagger` is the zombie's own. Select `Movement` and press Delete: the editor refuses ("Can't operate on nodes the current scene inherits from!"). Close the tab without saving.
 5. **The iPhone**, optional: `tools/deploy_ios.sh`, which clears the export cache first. The zombies chase and die as before.

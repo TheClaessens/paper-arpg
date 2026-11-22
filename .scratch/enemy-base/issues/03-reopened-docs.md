@@ -16,9 +16,9 @@ Find each place by its text, not its line number: other steps edit these files.
 - [x] `.scratch/enemies/spec.md`: the decision reads as the spec gives it, "every Enemy kind reuses it", and "More Enemy kinds; elites, bosses and rarities."; requirement 6 and the commit list unchanged.
 - [x] `plan.md` decision 3 and row 8 read as the spec gives them, or are unchanged under open rule 6 b.
 - [x] The content-checks table's rows and the sentence after it read as the spec gives them.
-- [ ] `grep -rn "Enemy type" GLOSSARY.md docs .scratch/enemies` finds only the glossary's _Avoid_ line; `grep -rn "No inherited enemy base scene" docs .scratch/enemies` finds only the quotation in the reopened decision.
+- [x] `grep -rn "Enemy type" GLOSSARY.md docs .scratch/enemies` finds only the glossary's _Avoid_ line; `grep -rn "No inherited enemy base scene" docs .scratch/enemies` finds nothing now: the reopened decision paraphrases it.
 - [x] `tools/check.sh` passes.
 
 ## Comments
 
-The `grep -rn "Enemy type"` box is left unticked: besides the glossary's _Avoid_ line it also finds the reopened decision's quotation of the old sentence ("One Enemy type; extract a base…"), which the spec's own wording contains.
+The `grep -rn "Enemy type"` box was left open because the reopened decision quoted the old sentence. It now paraphrases it in the glossary's words, and the grep finds only the glossary's _Avoid_ line.

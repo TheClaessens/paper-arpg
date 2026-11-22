@@ -4,7 +4,7 @@
 
 **Files:** new `tests/test_enemy_kinds.gd` and its `.gd.uid` (written by the import step of `tools/check.sh`, committed with it).
 
-**Tests:** `test_every_enemy_kind_inherits_the_base_and_has_frames`, `test_a_copy_is_no_kind`. Run one file with `godot --headless --path . -s addons/gut/gut_cmdln.gd -gselect=test_enemy_kinds.gd -gexit`.
+**Tests:** `test_every_enemy_kind_inherits_the_base_and_has_frames`, `test_a_bare_enemy_is_no_kind_and_has_no_frames`, `test_a_standee_without_frames_is_reported`. Run one file with `godot --headless --path . -s addons/gut/gut_cmdln.gd -gselect=test_enemy_kinds.gd -gexit`.
 
 **Blocked by:** 01: on the zombie before the split the first test fails, so it lands after it and no commit holds a failing test. Open rules 3, 4 and 5 take their recommended answers unless the developer says otherwise: under 3 b the walk is `characters/enemy/` alone, under 4 b the test walks down the base scenes until it reaches the base, under 5 c the frames check goes.
 
