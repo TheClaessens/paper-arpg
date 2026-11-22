@@ -1,6 +1,8 @@
 // A Health bar: a dark frame around a red fill that covers `fraction` of the inside from the
 // left. The quad always faces the camera, so the bar reads flat on screen. Unshaded, like the
 // Standees.
+// ponytail: the frame is under one world pixel at pixel_height 240; size the bar in whole pixels
+// before animating it or giving it pixel art.
 shader_type spatial;
 render_mode unshaded, cull_disabled;
 
