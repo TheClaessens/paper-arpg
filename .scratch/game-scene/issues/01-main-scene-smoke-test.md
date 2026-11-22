@@ -10,8 +10,8 @@
 
 **Tests:** `tests/test_game.gd`, alone: `godot --headless --path . -s addons/gut/gut_cmdln.gd -gselect=test_game.gd -gexit`. It passes on today's main scene. To see it fail, break `scenes/sandbox.tscn:155` (the Skill bar HUD's `player`), then `:152` (the pause menu's `hud`), one at a time, as the spec says, and revert each with `git checkout -- scenes/sandbox.tscn`. Never commit a break.
 
-- [ ] The branch's first commit holds `.scratch/game-scene/` and the Level entry, worded as in the spec.
-- [ ] `tests/test_game.gd` is the spec's, line for line, and passes on today's main scene.
-- [ ] With the Skill bar HUD's path broken, it fails on "the Skill bar HUD's player" and on GUT's unexpected error from `SkillBarHud._ready`; with the pause menu's `hud` broken, on "the pause menu's Skill bar HUD". The PR says so.
-- [ ] If it fails on an engine error or warning that has nothing to do with the wiring, the message is reported, not hidden, and GUT's error tracking stays on (spec, Tests, "Needs a run").
-- [ ] No other test changes; `tools/check.sh` passes.
+- [x] The branch's first commit holds `.scratch/game-scene/` and the Level entry, worded as in the spec.
+- [x] `tests/test_game.gd` is the spec's, line for line, and passes on today's main scene.
+- [x] With the Skill bar HUD's path broken, it fails on "the Skill bar HUD's player" and on GUT's unexpected error from `SkillBarHud._ready`; with the pause menu's `hud` broken, on "the pause menu's Skill bar HUD". The PR says so.
+- [x] If it fails on an engine error or warning that has nothing to do with the wiring, the message is reported, not hidden, and GUT's error tracking stays on (spec, Tests, "Needs a run").
+- [x] No other test changes; `tools/check.sh` passes.
