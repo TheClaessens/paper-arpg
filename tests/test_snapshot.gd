@@ -275,6 +275,23 @@ func test_the_pierce_proof_modifier_gives_a_projectile_pierce_and_not_an_attack(
 	assert_eq(attack.why, ["Projectiles pierce an Enemy: missed, not Projectile"])
 
 
-func test_a_modifier_listed_twice_applies_once() -> void:
+func test_a_modifier_listed_twice_applies_twice() -> void:
 	var farther := _modifier([], Skill.RANGE, NumberChange.Kind.FLAT, 2.0)
-	assert_eq(_snapshot(SPELL, [farther, farther]).number(Skill.RANGE), 12.0)
+	assert_eq(_snapshot(SPELL, [farther, farther]).number(Skill.RANGE), 14.0, "10 + 2 + 2")
+	var copy := _modifier([], Skill.RANGE, NumberChange.Kind.FLAT, 2.0)
+	assert_eq(_snapshot(SPELL, [farther, copy]).number(Skill.RANGE), 14.0, "two copies count the same")
+
+
+func test_a_tag_changer_listed_twice_changes_the_tags_once_and_its_numbers_twice() -> void:
+	var to_holy := _tagger("Fire spells are now Holy", [&"Fire"], TagChange.Kind.REPLACE, &"Fire", &"Holy")
+	var change := NumberChange.new()
+	change.number = Skill.RANGE
+	change.amount = 2.0
+	to_holy.number_changes = [change]
+	var snapshot := _snapshot(SPELL, [to_holy, to_holy])
+	assert_eq(snapshot.tags, [&"Spell", &"Projectile", &"Holy"] as Array[StringName])
+	assert_eq(snapshot.number(Skill.RANGE), 14.0, "10 + 2 + 2")
+	assert_eq(snapshot.why, [
+		"Fire spells are now Holy: applied, replaces Fire with Holy",
+		"Fire spells are now Holy: applied, replaces Fire with Holy",
+	] as Array[String])

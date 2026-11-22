@@ -3,7 +3,7 @@
 The tag pass works out a Skill's final tags before any number is touched. We decided it runs in rounds:
 
 - Each round is every Modifier with tag changes whose filter matches the tags as they stand. They all apply together, and implied tags are worked out again before the next round.
-- Each Modifier applies at most once. Once it has applied, it stays applied, with all its effects, even if a later round removes a tag its filter needs.
+- Each entry in the Character's list of Modifiers applies at most once. Once it has applied, it stays applied, with all its effects, even if a later round removes a tag its filter needs.
 - A tag removed in the pass can't be added back.
 - The pass ends when a round is empty. Every other Modifier is judged on the final tags.
 
@@ -32,3 +32,4 @@ Fireball ends up Spell, Projectile, Holy, and both Modifiers apply. "Fire Skills
 
 - A Modifier with tag changes can apply although its filter misses the final tags. Its line in the Snapshot's why list says "applied", with what it did to the tags.
 - A Modifier that replaces a tag only added in the same round does nothing, because that tag arrives at the end of the round. Deferred until a real build hits it (see `.scratch/skill-tags/spec.md`).
+- The same Modifier listed twice, such as one Modifier file shared by two rings, applies twice: whatever hands out Modifiers decides what stacks (decided 2026-11-22, `.scratch/modifier-stacking/spec.md`). Both entries match in the same round, so its tag changes leave the tags as one entry's would, and both entries' number changes count.
