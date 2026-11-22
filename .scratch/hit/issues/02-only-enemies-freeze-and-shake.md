@@ -10,7 +10,7 @@
 
 **Status:** ready-for-agent
 
-- [ ] `land()` reads each Hurtbox's layer before calling its `take_hit()`, and plays the impact once, only for a landing on the Enemies' layer.
-- [ ] A Hit landed on the player's Faction leaves the time scale at 1 and the camera still; the killing Hit on a zombie freezes the world.
-- [ ] `HitFeedback`'s code is unchanged; its docs read as the spec gives them.
-- [ ] `tools/check.sh` passes.
+- [x] `land()` reads each Hurtbox's layer before calling its `take_hit()`, and plays the impact once, only for a landing on the Enemies' layer.
+- [x] A Hit landed on the player's Faction leaves the time scale at 1 and the camera still; the killing Hit on a zombie freezes the world.
+- [x] `HitFeedback`'s code is unchanged; its docs read as the spec gives them.
+- [x] `tools/check.sh` passes.

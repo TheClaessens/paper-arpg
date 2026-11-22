@@ -1,15 +1,17 @@
 class_name HitFeedback
 extends Resource
-## Hit feedback (see GLOSSARY.md): how the game shows the moment a Skill hits. Game-wide, not
+## Hit feedback (see GLOSSARY.md): how the game shows the moment a Hit lands. Game-wide, not
 ## per Skill: no game system changes it, and melee and ranged hits felt the same in the tuning
 ## study the values started from (see .scratch/combat/spec.md). One shared set,
-## `hit_feedback.tres`, serves everything: shared() returns it. Tune it in the editor. How hard a hit pushes (knockback, Stagger) belongs
-## to the Skill. The hit Enemy shows flash and squash; the Skill that hit plays the impact
-## (hitstop and screen shake). A projectile's hit shakes the screen but doesn't freeze the world.
+## `hit_feedback.tres`, serves everything: shared() returns it. Tune it in the editor. How hard a
+## Hit pushes (knockback, Stagger) belongs to the Skill. The Character hit shows the flash and
+## squash (see Character._on_hit_taken()); Hit.land() plays the impact, hitstop and screen shake,
+## and only for a Hit that landed on an Enemy. A projectile's Hit shakes the screen but doesn't
+## freeze the world.
 
 ## The whole game freezes this long.
 @export var hitstop := 0.06
-## The hit Enemy turns white this long.
+## The Character hit turns white this long.
 @export var flash := 0.1
 ## How far the hit Standee squashes at the peak: 0.3 is 30% wider and 30% shorter.
 @export var squash := 0.3
@@ -32,7 +34,7 @@ static func shared() -> HitFeedback:
 static var _hitstops := 0
 
 
-## The impact of a hit: freezes the game for `hitstop` if `freezes`, and shakes the viewport's camera.
+## The impact of a Hit on an Enemy (see Hit.land()): freezes the game for `hitstop` if `freezes`, and shakes the viewport's camera.
 func play_impact(viewport: Viewport, freezes := true) -> void:
 	if freezes and hitstop > 0.0:
 		_hitstops += 1

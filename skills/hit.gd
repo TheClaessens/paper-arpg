@@ -23,15 +23,19 @@ func _init(hit_snapshot: Snapshot, hit_dealer: Character, hit_freezes: bool) -> 
 
 ## Lands it on each Hurtbox in `pushes`, pushing each along its direction (a unit vector on the
 ## ground), and says whether it landed on any: a Hurtbox off every layer (its Character has died)
-## misses. The impact plays once, however many it landed on: the screen shakes, and the world
-## freezes if `freezes`.
+## misses. If it landed on an Enemy, the impact plays once, however many it landed on: the screen
+## shakes, and the world freezes if `freezes`. On any other Character it shows only on that
+## Character (see Character._on_hit_taken()), and the game keeps running.
 func land(pushes: Dictionary[Hurtbox, Vector3]) -> bool:
 	var landed := false
-	var impact_viewport: Viewport = null # the viewport of a Hurtbox it landed on
+	var impact_viewport: Viewport = null # the viewport of an Enemy's Hurtbox it landed on
 	for hurtbox in pushes:
+		# Asked before it lands: the killing Hit takes its Enemy's Hurtbox off every layer.
+		var on_enemy := hurtbox.collision_layer & Faction.layer(Faction.Id.ENEMIES) != 0
 		if hurtbox.take_hit(self, pushes[hurtbox]):
 			landed = true
-			impact_viewport = hurtbox.get_viewport()
+			if on_enemy:
+				impact_viewport = hurtbox.get_viewport()
 	if impact_viewport:
 		HitFeedback.shared().play_impact(impact_viewport, freezes)
 	return landed
