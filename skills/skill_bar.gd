@@ -7,8 +7,8 @@ extends Node
 ## A press on a ready Skill joins a queue, worked through in press order on the next physics
 ## frame; a press on a Skill still on Cooldown is ignored, not kept. A press may carry its own
 ## aim (a drag on touch); otherwise the Character aims the Skill. While a slot is held, a Skill
-## whose Aim mode repeats while held is asked for again whenever it is ready, aimed where the hold steers
-## it. Pausing, or the app losing focus, lets go of every slot. The Character connects
+## whose Aim mode repeats while held is asked for again whenever it is ready, aimed where the hold
+## steers it. Pausing, or the app losing focus, lets go of every slot. The Character connects
 ## `activation_requested`.
 
 ## `slot` asks to activate its Skill, which is ready. `aim` is the press's own aim, or NO_AIM to

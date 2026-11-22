@@ -4,7 +4,7 @@ extends Character
 ## where to walk, relative to the camera (pushing up walks up the screen), and which Skill
 ## slots of its Skill bar the player presses. It activates one of its Skills (see Character) when
 ## its Skill bar asks: aimed at the mouse cursor, along the right stick while it is pushed, or
-## else auto-aimed (see AimMode).
+## else auto-aimed (see _aim_for()).
 
 ## A Skill in `slot` was activated (the HUD presses its button in).
 signal skill_activated(slot: int)

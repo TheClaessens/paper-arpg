@@ -6,11 +6,11 @@ extends Control
 ## which. Each slot shows its Skill's cooldown, presses in when activated and flashes when ready.
 ##
 ## On touch, tapping a slot activates it (auto-aimed). Holding a Skill that repeats while held
-## (the Attack) keeps activating it, and dragging steers it. An aimed Skill can instead be
-## dragged off its slot: the Player shows where it would go, and lifting the thumb activates it there. Dragging back
-## onto the slot and lifting there cancels it. A thumb taken away without lifting (the app losing
-## focus, or the system cancelling the touch) ends its hold and its aim, and activates nothing.
-## So does a change of the slot's Skill under the thumb.
+## (the Attack) keeps activating it, and dragging steers it. A Skill whose Aim mode waits for the
+## lift can instead be dragged off its slot: the Player shows where it would go, and lifting the
+## thumb activates it there. Dragging back onto the slot and lifting there cancels it. A thumb
+## taken away without lifting (the app losing focus, or the system cancelling the touch) ends its
+## hold and its aim, and activates nothing. So does a change of the slot's Skill under the thumb.
 ## Sizes are in viewport units: on an iPhone 17 Pro, 1 pt is about 1.6 of them.
 
 signal slot_chosen(slot: int)
@@ -25,9 +25,9 @@ signal slot_chosen(slot: int)
 @export_range(60.0, 130.0, 5.0, "suffix:°") var fan_spread := 110.0
 ## Gap between the main slot and the safe area's right and bottom edges.
 @export var edge_margin := Vector2(26.0, 22.0)
-## How far a thumb may wander from where it landed and still be a tap; past it, the drag aims. Kept just above a
-## thumb's wobble: the spot follows the drag from the player outward, so a larger one would
-## leave the ground right around the player out of reach.
+## How far a thumb may wander from where it landed and still be a tap; past it, the drag aims.
+## Kept just above a thumb's wobble: the spot follows the drag from the player outward, so a
+## larger one would leave the ground right around the player out of reach.
 @export var drag_deadzone := 8.0
 ## How far a thumb drags to aim a spot Skill its whole Range.
 @export var drag_full_range := 177.0
@@ -149,8 +149,9 @@ func _on_touch_ended(at: Vector2, slot: int) -> void:
 	if not aiming or get_tree().paused or skill == null:
 		return
 	var drag := at - _landed[slot]
-	if not _aimed or drag.is_zero_approx():
-		player.skill_bar.press(slot) # a tap, or a drag back to where it began: auto-aimed
+	if not _aimed or (not _left_slot and drag.is_zero_approx()):
+		# A tap, or a drag that never left the slot and came back to where it began: auto-aimed.
+		player.skill_bar.press(slot)
 	elif not _over_cancel(slot, at):
 		player.skill_bar.press(slot, player.aim_from_drag(skill, drag, drag_full_range))
 

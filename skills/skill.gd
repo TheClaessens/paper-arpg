@@ -143,9 +143,9 @@ func number(name: StringName, modifiers: Array[Modifier]) -> float:
 
 ## What the Skill does when activated, as `snapshot` says, aimed at `aim`: an offset on the
 ## ground from the Character, with a direction. Its direction is where the Skill goes; for a Skill
-## whose Aim mode holds a spot, its length is how far. What the Skill does happens in this call, at the
-## moment it is activated; something it sets going, such as a ball, may go on by itself. A Skill
-## reads its numbers from `snapshot`, not from itself.
+## whose Aim mode holds a spot, its length is how far. What the Skill does happens in this call, at
+## the moment it is activated; something it sets going, such as a ball, may go on by itself. A
+## Skill reads its numbers from `snapshot`, not from itself.
 ## Each Skill overrides it; try_activate() calls it.
 func _activate(_snapshot: Snapshot, _aim: Vector3) -> void:
 	pass

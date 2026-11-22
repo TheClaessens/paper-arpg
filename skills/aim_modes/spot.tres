@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="AimMode" format=3]
+[gd_resource type="Resource" script_class="AimMode" format=3 uid="uid://bc0c0ucqudisw"]
 
 [ext_resource type="Script" path="res://skills/aim_mode.gd" id="1_2kcyj"]
 

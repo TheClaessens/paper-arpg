@@ -177,7 +177,7 @@ func test_a_skill_changed_under_a_held_thumb_ends_the_hold() -> void:
 
 # One thumb per slot: each slot's hold and aim belong to the thumb that landed on it.
 
-func test_a_second_hold_leaves_the_first_its_own() -> void:
+func test_each_lift_ends_its_own_hold() -> void:
 	player.skill_bar.set_skill(2, player.skill_bar.skill_in(0)) # the Attack also in slot 2
 	var slots: Array[int] = []
 	player.skill_bar.activation_requested.connect(func(slot: int, _aim: Vector3) -> void: slots.append(slot))
@@ -210,9 +210,14 @@ func test_a_second_aiming_thumb_is_ignored() -> void:
 	button.touch_ended.emit(aimed_to)
 	_elapse(0.016)
 	assert_eq(slots, [1] as Array[int], "the first thumb's lift activates its own slot")
-	assert_true(aims[0].is_finite(), "with the dragged Aim")
+	assert_almost_eq(aims[0], Vector3(10.0, 0.0, 0.0), Vector3.ONE * 0.001, "10 units to screen right: Fireball's Range along the drag")
 
 
 func test_a_drag_back_to_where_it_began_is_a_tap() -> void:
 	_touch(Vector2.ZERO, [Vector2(30.0, 0.0), Vector2.ZERO] as Array[Vector2])
 	assert_eq(aims, [SkillBar.NO_AIM] as Array[Vector3], "auto-aimed, as a tap is")
+
+
+func test_a_drag_off_the_slot_and_back_to_where_it_began_cancels() -> void:
+	_touch(Vector2.ZERO, [Vector2(120.0, 0.0), Vector2.ZERO] as Array[Vector2])
+	assert_eq(aims, [] as Array[Vector3], "back on the slot after leaving it: cancelled")

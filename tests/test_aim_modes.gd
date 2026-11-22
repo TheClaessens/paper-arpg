@@ -1,8 +1,8 @@
 extends GutTest
 ## The Aim modes, through a test-only Skill: a Skill whose Aim mode holds nothing goes along Facing
-## whatever the aim, and the aim marker shows a spot Skill's spot and rings what it picks out.
-## A drag aims a direction its full Range and a spot as far as it goes. The four files in
-## skills/aim_modes/ say what the glossary's Aim modes say.
+## whatever the aim, and the aim marker shows the spot of a Skill whose Aim holds one and rings
+## what it picks out. A drag aims a direction its full Range and a spot as far as it goes. The four
+## files in skills/aim_modes/ say what the spec's table says (.scratch/aim-modes/spec.md, rule 3).
 
 const PlayerScene := preload("res://characters/player/player.tscn")
 const ZombieScene := preload("res://characters/enemy/zombie.tscn")
