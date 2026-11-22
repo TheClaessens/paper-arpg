@@ -22,13 +22,13 @@ In order:
 
 If a check prints what the spec doesn't expect, stop and report it. Don't change a scene just to make a check pass: find out first why it failed.
 
-- [ ] The spec folder and the two glossary changes are the branch's first commit.
-- [ ] `enemy.tscn`: ten nodes in the spec's order, the root named `Enemy`, today's `unique_id`s and values, no frames, speed, maximum Health or Stagger, no uid on its first line.
-- [ ] `zombie.tscn`: its starting first line, three `ext_resource` lines, a root with `instance=ExtResource("1_base")` and `unique_id=1938276001`, and the four entries of the spec with their `index`es (1, 2, 6, 7) and `unique_id`s.
-- [ ] The line accounting prints exactly the spec's eight lines; the counts are 10 and 5 nodes, 7 and 3 `ext_resource` lines, and 0 sub-resources, connections and editable paths in `zombie.tscn`.
-- [ ] The dump comparison prints nothing. The base's dump, and the two outputs' line counts, go under `## Comments` for the PR.
-- [ ] `tools/check.sh` passes, and `git status` shows it changed neither scene; if it did, stop and report what changed.
+- [x] The spec folder and the two glossary changes are the branch's first commit.
+- [x] `enemy.tscn`: ten nodes in the spec's order, the root named `Enemy`, today's `unique_id`s and values, no frames, speed, maximum Health or Stagger, no uid on its first line.
+- [x] `zombie.tscn`: its starting first line, three `ext_resource` lines, a root with `instance=ExtResource("1_base")` and `unique_id=1938276001`, and the four entries of the spec with their `index`es (1, 2, 6, 7) and `unique_id`s.
+- [x] The line accounting prints exactly the spec's eight lines; the counts are 10 and 5 nodes, 7 and 3 `ext_resource` lines, and 0 sub-resources, connections and editable paths in `zombie.tscn`.
+- [x] The dump comparison prints nothing. The base's dump, and the two outputs' line counts, go under `## Comments` for the PR.
+- [x] `tools/check.sh` passes, and `git status` shows it changed neither scene; if it did, stop and report what changed.
 - [ ] The simulate runs match, line for line or within the spread step 2 found.
-- [ ] The commit holds the two scenes only; the branch so far changes `GLOSSARY.md`, `.scratch/enemy-base/` and those two files, and no script.
+- [x] The commit holds the two scenes only; the branch so far changes `GLOSSARY.md`, `.scratch/enemy-base/` and those two files, and no script.
 
 ## Comments
