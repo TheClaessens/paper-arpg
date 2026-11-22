@@ -7,8 +7,8 @@ extends Node
 ## A press on a ready Skill joins a queue, worked through in press order on the next physics
 ## frame; a press on a Skill still on Cooldown is ignored, not kept. A press may carry its own
 ## aim (a drag on touch); otherwise the Character aims the Skill. While a slot is held, a Skill
-## that repeats while held is asked for again whenever it is ready, aimed where the hold steers
-## it. Pausing, or the app losing focus, lets go of every slot. The Character connects
+## whose Aim mode repeats while held is asked for again whenever it is ready, aimed where the hold
+## steers it. Pausing, or the app losing focus, lets go of every slot. The Character connects
 ## `activation_requested`.
 
 ## `slot` asks to activate its Skill, which is ready. `aim` is the press's own aim, or NO_AIM to
@@ -45,8 +45,10 @@ func skill_in(slot: int) -> Skill:
 	return _slots[slot]
 
 
-## Puts `skill` in `slot`, or empties it with null.
+## Puts `skill` in `slot`, or empties it with null. A Skill without an Aim mode fails an assertion.
 func set_skill(slot: int, skill: Skill) -> void:
+	if skill:
+		assert(skill.aim_mode != null, "%s has no Aim mode: a Skill in a Skill slot needs one." % skill.name)
 	_slots[slot] = skill
 	changed.emit(slot, skill)
 
@@ -92,7 +94,7 @@ func advance() -> void:
 	_pressed_aims.clear()
 	for slot: int in _held:
 		var skill := _slots[slot]
-		if skill and skill.repeats_while_held:
+		if skill and skill.aim_mode.repeats_while_held:
 			_request(slot, _held[slot])
 
 

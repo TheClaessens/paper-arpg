@@ -161,8 +161,12 @@ The part of a Character that Skills hit. A Character without one can't be hit.
 _Avoid_: Hitbox, collider, hit area
 
 **Aim**:
-Where an activation of a Skill is sent: a direction on the ground, and for a Skill that lands on a spot, also how far. The mouse cursor, the right stick or a drag off the Skill slot sets it; otherwise Auto-aim does. A Skill activated around the player has none.
+Where an activation of a Skill is sent: a direction on the ground, and for a Skill that lands on a spot, also how far. The mouse cursor, the right stick or a drag off the Skill slot sets it; otherwise Auto-aim does. A Skill activated around the player has none. What a Skill's Aim holds is its Aim mode's to say.
 _Avoid_: Target, heading, direction
+
+**Aim mode**:
+How a Skill is aimed, shared by every Skill aimed the same way. It says what the Skill's Aim holds (nothing, a direction, or a spot), whether on touch the Skill waits for the thumb to lift so a drag off its slot can aim it, and whether holding its slot repeats it. There are four. Steer: the Attack goes off as the thumb lands, repeats while held, and a drag steers it. Line: a drag aims Fireball's direction and the lift activates it. Spot: a drag aims a spot and the lift activates the Skill there. Around: the Skill goes off around the player, with no Aim.
+_Avoid_: Targeting mode, aim type, cast mode
 
 **Auto-aim**:
 Aim chosen for the player: the nearest hostile Hurtbox within the Skill's Range and near Facing, or straight along Facing when there is none.

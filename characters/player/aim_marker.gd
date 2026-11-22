@@ -28,8 +28,9 @@ func show_aim(skill: Skill, aim: Vector3, reach: float, cancelling: bool) -> voi
 	_ring.outer_radius = reach
 	_ring.inner_radius = reach - RING_WIDTH
 	var flat := Vector3(aim.x, 0.0, aim.z)
-	_spot.visible = skill.aims_at_spot
-	_line.visible = not skill.aims_at_spot and flat.length() > 0.01
+	var spot := skill.aim_mode.holds == AimMode.Holds.SPOT
+	_spot.visible = spot
+	_line.visible = not spot and flat.length() > 0.01
 	if _spot.visible:
 		_spot.position = flat
 	elif _line.visible:

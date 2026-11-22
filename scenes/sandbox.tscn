@@ -9,7 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://3cr8gu01tmg6" path="res://props/table.tscn" id="9_y7qgn"]
 [ext_resource type="PackedScene" uid="uid://cgoetoa6kv3y3" path="res://props/stones.tscn" id="10_f4qvn"]
 [ext_resource type="PackedScene" path="res://characters/enemy/zombie.tscn" id="14_zombie"]
-[ext_resource type="NavigationMesh" path="res://scenes/sandbox_navmesh.tres" id="15_navmesh"]
+[ext_resource type="NavigationMesh" uid="uid://bss5uj3ivwxee" path="res://scenes/sandbox_navmesh.tres" id="15_navmesh"]
 
 [sub_resource type="Environment" id="Environment_dugpm"]
 background_mode = 1

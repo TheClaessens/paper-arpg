@@ -1,11 +1,12 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://skills/fireball/fireball.gd" id="1_fireball"]
+[ext_resource type="Resource" uid="uid://h0dl72cs6ogq" path="res://skills/aim_modes/line.tres" id="2_line"]
 [ext_resource type="Texture2D" path="res://assets/kenney/kenney_mobile-controls/Sprites/Icons/Default/icon_fire.png" id="3_icon"]
 
 [node name="Fireball" type="Node3D"]
 script = ExtResource("1_fireball")
-aim = 2
+aim_mode = ExtResource("2_line")
 cooldown = 4.0
 tags = Array[StringName]([&"Spell", &"Projectile", &"Fire"])
 title = "Fireball"

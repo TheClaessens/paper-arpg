@@ -122,19 +122,11 @@ func test_bar_finds_a_skill_by_its_node_name() -> void:
 
 
 
-# A thumb drag on screen becomes an aim on the ground: screen right and screen down are the
-# camera's right and back axes on the ground.
-
-func test_a_drag_aims_a_direction_skill_its_full_range() -> void:
-	var aim := Player.ground_aim(Vector2(30.0, 0.0), Vector3.RIGHT, Vector3.BACK, 10.0, 100.0, false)
-	assert_almost_eq(aim, Vector3(10.0, 0.0, 0.0), Vector3.ONE * 0.001)
-
-
-func test_a_drag_aims_a_spot_skill_as_far_as_it_goes() -> void:
-	var half := Player.ground_aim(Vector2(0.0, 50.0), Vector3.RIGHT, Vector3.BACK, 8.0, 100.0, true)
-	assert_almost_eq(half, Vector3(0.0, 0.0, 4.0), Vector3.ONE * 0.001, "half the drag, half the Range")
-	var past := Player.ground_aim(Vector2(0.0, 300.0), Vector3.RIGHT, Vector3.BACK, 8.0, 100.0, true)
-	assert_almost_eq(past, Vector3(0.0, 0.0, 8.0), Vector3.ONE * 0.001, "never past the Range")
+func test_every_skill_of_the_player_names_an_aim_mode() -> void:
+	for skill in player.skills:
+		assert_not_null(skill.aim_mode, "%s names an Aim mode" % skill.name)
+	assert_eq((player.get_node("Skills/Attack") as Skill).aim_mode, load("res://skills/aim_modes/steer.tres"))
+	assert_eq((player.get_node("Skills/Fireball") as Skill).aim_mode, load("res://skills/aim_modes/line.tres"))
 
 
 func test_after_an_activation_the_player_faces_the_aim_for_a_moment() -> void:

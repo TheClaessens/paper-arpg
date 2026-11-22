@@ -16,9 +16,11 @@ func before_each() -> void:
 	sword = autofree(Skill.new())
 	sword.character = character
 	sword.cooldown = 0.4
+	sword.aim_mode = AimMode.new()
 	fire = autofree(Skill.new())
 	fire.character = character
 	fire.cooldown = 0.6
+	fire.aim_mode = AimMode.new()
 	bar = autofree(SkillBar.new())
 	bar.set_skill(0, sword)
 	bar.set_skill(1, fire)
@@ -85,6 +87,12 @@ func test_changing_a_slot_says_so() -> void:
 	assert_null(bar.skill_in(0), "emptied")
 
 
+func test_a_skill_without_an_aim_mode_is_refused() -> void:
+	var bare: Skill = autofree(Skill.new())
+	bar.set_skill(2, bare)
+	assert_engine_error("has no Aim mode")
+
+
 # Cooldowns: a Skill's own clock, started by an activation. While it runs, the Skill can't be
 # activated from any slot it sits in; a press is ignored, not kept.
 
@@ -130,7 +138,7 @@ func test_a_plain_press_leaves_the_aim_to_the_character() -> void:
 # its Cooldown ends, aimed where the hold steers it.
 
 func test_holding_repeats_a_repeating_skill() -> void:
-	sword.repeats_while_held = true
+	sword.aim_mode = preload("res://skills/aim_modes/steer.tres")
 	bar.press(0)
 	bar.set_held(0, true)
 	_elapse(0.016)
@@ -151,7 +159,7 @@ func test_holding_does_not_repeat_other_skills() -> void:
 
 
 func test_a_hold_steers_the_next_activations() -> void:
-	sword.repeats_while_held = true
+	sword.aim_mode = preload("res://skills/aim_modes/steer.tres")
 	bar.press(0)
 	bar.set_held(0, true)
 	_elapse(0.016)
@@ -161,7 +169,7 @@ func test_a_hold_steers_the_next_activations() -> void:
 
 
 func test_pausing_lets_go() -> void:
-	sword.repeats_while_held = true
+	sword.aim_mode = preload("res://skills/aim_modes/steer.tres")
 	bar.press(0)
 	bar.set_held(0, true)
 	_elapse(0.016)
@@ -171,7 +179,7 @@ func test_pausing_lets_go() -> void:
 
 
 func test_losing_focus_lets_go() -> void:
-	sword.repeats_while_held = true
+	sword.aim_mode = preload("res://skills/aim_modes/steer.tres")
 	bar.press(0)
 	bar.set_held(0, true)
 	_elapse(0.016)

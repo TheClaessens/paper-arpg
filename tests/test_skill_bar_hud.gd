@@ -173,3 +173,88 @@ func test_a_skill_changed_under_a_held_thumb_ends_the_hold() -> void:
 	player.skill_bar.set_skill(0, player.skill_bar.skill_in(0)) # chosen again in the Skill drawer: still a change
 	_elapse(0.5) # the Attack's Cooldown ends: a hold would repeat it
 	assert_eq(aims.size(), 1, "the hold ended")
+
+
+# One thumb per slot: each slot's hold and aim belong to the thumb that landed on it.
+
+func test_each_lift_ends_its_own_hold() -> void:
+	player.skill_bar.set_skill(2, player.skill_bar.skill_in(0)) # the Attack also in slot 2
+	var slots: Array[int] = []
+	player.skill_bar.activation_requested.connect(func(slot: int, _aim: Vector3) -> void: slots.append(slot))
+	var main: SkillSlotButton = hud.get_node("Slot0")
+	var also: SkillSlotButton = hud.get_node("Slot2")
+	main.touch_started.emit(main.centre())
+	also.touch_started.emit(also.centre()) # a second thumb holds the Attack's other slot
+	_elapse(0.016)
+	main.touch_ended.emit(main.centre())
+	also.touch_ended.emit(also.centre())
+	var before := slots.size()
+	_elapse(0.5)
+	_elapse(0.5)
+	assert_eq(slots.slice(before), [] as Array[int], "no activation after both lifts, from any slot")
+
+
+func test_a_second_aiming_thumb_is_ignored() -> void:
+	player.skill_bar.set_skill(2, player.get_node("Skills/Fireball") as Skill) # Fireball also in slot 2
+	var slots: Array[int] = []
+	player.skill_bar.activation_requested.connect(func(slot: int, _aim: Vector3) -> void: slots.append(slot))
+	var also: SkillSlotButton = hud.get_node("Slot2")
+	var aimed_to := button.centre() + Vector2(60.0, 0.0)
+	button.touch_started.emit(button.centre())
+	button.touch_moved.emit(aimed_to)
+	also.touch_started.emit(also.centre()) # a second thumb taps the other slot
+	also.touch_ended.emit(also.centre())
+	_elapse(0.016)
+	assert_true(_aim_marker_shows(), "the first thumb keeps the aim")
+	assert_eq(slots, [] as Array[int], "nothing activated yet")
+	button.touch_ended.emit(aimed_to)
+	_elapse(0.016)
+	assert_eq(slots, [1] as Array[int], "the first thumb's lift activates its own slot")
+	assert_almost_eq(aims[0], Vector3(10.0, 0.0, 0.0), Vector3.ONE * 0.001, "10 units to screen right: Fireball's Range along the drag")
+
+
+func test_a_drag_back_to_where_it_began_is_a_tap() -> void:
+	_touch(Vector2.ZERO, [Vector2(30.0, 0.0), Vector2.ZERO] as Array[Vector2])
+	assert_eq(aims, [SkillBar.NO_AIM] as Array[Vector3], "auto-aimed, as a tap is")
+
+
+func test_a_drag_off_the_slot_and_back_to_where_it_began_cancels() -> void:
+	_touch(Vector2.ZERO, [Vector2(120.0, 0.0), Vector2.ZERO] as Array[Vector2])
+	assert_eq(aims, [] as Array[Vector3], "back on the slot after leaving it: cancelled")
+
+
+# A thumb that lands while a Skill cools down is passed on, as a held key is.
+
+func test_a_thumb_held_through_the_cooldown_repeats_when_it_ends() -> void:
+	var main: SkillSlotButton = hud.get_node("Slot0") # the Attack: 0.4 s Cooldown, repeats while held
+	main.touch_started.emit(main.centre())
+	main.touch_ended.emit(main.centre())
+	_elapse(0.016)
+	assert_eq(aims.size(), 1, "control: the first tap activated it")
+	main.touch_started.emit(main.centre()) # a tap during the Cooldown
+	main.touch_ended.emit(main.centre())
+	_elapse(0.5) # the Cooldown has ended
+	assert_eq(aims.size(), 1, "a tap during the Cooldown activates nothing, even once it has ended")
+	main.touch_started.emit(main.centre())
+	main.touch_ended.emit(main.centre())
+	_elapse(0.016)
+	assert_eq(aims.size(), 2, "a fresh Cooldown starts")
+	main.touch_started.emit(main.centre()) # a thumb that lands during it and stays
+	_elapse(0.2)
+	assert_eq(aims.size(), 2, "nothing while the Cooldown runs")
+	_elapse(0.3)
+	assert_eq(aims.size(), 3, "activated the moment the Cooldown ends")
+
+
+func test_a_skill_that_waits_for_the_lift_shows_no_aim_while_cooling_down() -> void:
+	button.touch_started.emit(button.centre())
+	button.touch_ended.emit(button.centre())
+	_elapse(0.016)
+	assert_eq(aims.size(), 1, "control: the tap activated Fireball")
+	button.touch_started.emit(button.centre()) # lands again during the Cooldown
+	button.touch_moved.emit(button.centre() + Vector2(-120.0, 0.0))
+	assert_false(_aim_marker_shows(), "no aim for a Skill that can't be activated now")
+	_elapse(5.0) # the Cooldown has ended
+	button.touch_ended.emit(button.centre() + Vector2(-120.0, 0.0))
+	_elapse(0.016)
+	assert_eq(aims.size(), 1, "the lift activates nothing")

@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://skills/attack/attack.gd" id="1_attack"]
+[ext_resource type="Resource" uid="uid://l378k54yqy7o" path="res://skills/aim_modes/steer.tres" id="3_steer"]
 [ext_resource type="Shader" path="res://skills/attack/swing.gdshader" id="2_swing"]
 [ext_resource type="Texture2D" path="res://assets/kenney/kenney_mobile-controls/Sprites/Icons/Default/icon_sword.png" id="4_icon"]
 
@@ -14,7 +15,7 @@ size = Vector2(2, 2)
 
 [node name="Attack" type="Node3D"]
 script = ExtResource("1_attack")
-repeats_while_held = true
+aim_mode = ExtResource("3_steer")
 tags = Array[StringName]([&"Attack", &"Melee"])
 title = "Attack"
 cooldown = 0.4

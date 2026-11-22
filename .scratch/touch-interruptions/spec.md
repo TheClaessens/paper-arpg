@@ -268,3 +268,7 @@ Checked against the Godot `4.7-stable` source and its class reference (the tag's
 - Ticket 04's hand tests pass on the iPhone and the Mac, and hand test 1 showed the stray Fireball on `master` (or the developer noted that it didn't).
 - The conventions, `aiming/spec.md:64` and `touch-controls/spec.md:23` carry the new wording.
 - The developer's answers to the open rules are written into this spec under a "Decisions" heading, and ticket 05 is done or marked `wontfix`.
+
+## Decisions
+
+- Open rule 1: yes, built in `.scratch/aim-modes/` (ticket 04), to be tried on the phone.

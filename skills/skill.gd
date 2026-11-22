@@ -12,10 +12,6 @@ extends Node3D
 ## Its Cooldown has run out: it can be activated again.
 signal ready_again
 
-## How a Skill aims. AROUND: activated where the Character stands. AUTO: toward the nearest
-## hostile Hurtbox near Facing. AIMED: auto-aimed too, and on touch it can also be aimed by hand.
-enum Aim { AROUND, AUTO, AIMED }
-
 ## The names of the Skill's numbers (see numbers()), as Modifiers and Snapshots know them.
 const COOLDOWN := &"Cooldown"
 const RANGE := &"Range"
@@ -34,12 +30,9 @@ const SHORTEST_COOLDOWN := 0.1
 @export var title := ""
 ## The Skill's picture on its Skill slot's button and in the Skill drawer.
 @export var icon: Texture2D
-## How the Skill aims.
-@export var aim := Aim.AUTO
-## Whether it lands on a spot (aimed by how far, too) rather than going a direction.
-@export var aims_at_spot := false
-## Whether holding its slot activates it again each time its Cooldown ends.
-@export var repeats_while_held := false
+## The Skill's Aim mode (see GLOSSARY.md): how the player aims it. A Skill in a Skill slot
+## needs one (see SkillBar.set_skill()); a Skill only an Enemy has needs none.
+@export var aim_mode: AimMode
 ## The Skill's Cooldown: how long after an activation starts before it can be activated again,
 ## from any slot. The only thing that limits how often it is activated, so every Skill needs one
 ## above 0. Modifiers can change it: the Cooldown that runs is the activation's Snapshot's, never
@@ -150,9 +143,9 @@ func number(name: StringName, modifiers: Array[Modifier]) -> float:
 
 ## What the Skill does when activated, as `snapshot` says, aimed at `aim`: an offset on the
 ## ground from the Character, with a direction. Its direction is where the Skill goes; for a Skill
-## that lands on a spot, its length is how far. What the Skill does happens in this call, at the
-## moment it is activated; something it sets going, such as a ball, may go on by itself. A Skill
-## reads its numbers from `snapshot`, not from itself.
+## whose Aim mode holds a spot, its length is how far. What the Skill does happens in this call, at
+## the moment it is activated; something it sets going, such as a ball, may go on by itself. A
+## Skill reads its numbers from `snapshot`, not from itself.
 ## Each Skill overrides it; try_activate() calls it.
 func _activate(_snapshot: Snapshot, _aim: Vector3) -> void:
 	pass

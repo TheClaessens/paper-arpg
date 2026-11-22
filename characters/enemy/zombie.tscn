@@ -1,8 +1,8 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://cech10ir0g2pw"]
 
-[ext_resource type="PackedScene" path="res://characters/enemy/enemy.tscn" id="1_base"]
+[ext_resource type="PackedScene" uid="uid://dkn8b6xmtlav2" path="res://characters/enemy/enemy.tscn" id="1_base"]
 [ext_resource type="SpriteFrames" path="res://characters/standee/frames/zombie.tres" id="3_frames"]
-[ext_resource type="Script" path="res://characters/stagger/stagger.gd" id="9_stagger"]
+[ext_resource type="Script" uid="uid://db81flkprq1lo" path="res://characters/stagger/stagger.gd" id="9_stagger"]
 
 [node name="Zombie" unique_id=1938276001 instance=ExtResource("1_base")]
 
@@ -12,7 +12,7 @@ frames = ExtResource("3_frames")
 [node name="Movement" parent="." index="2" unique_id=1938276004]
 speed = 2.5
 
-[node name="Stagger" type="Node" parent="." index="6"]
+[node name="Stagger" type="Node" parent="." index="6" unique_id=1630846365]
 script = ExtResource("9_stagger")
 
 [node name="Health" parent="." index="7" unique_id=1938276008]
