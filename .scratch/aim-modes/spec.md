@@ -177,12 +177,13 @@ func _on_touch_started(at: Vector2, slot: int) -> void:
 
 ### Ticket 03: a lift exactly where the thumb landed is a tap
 
-A thumb that drags past the deadzone, comes back to the exact point it landed on and lifts there gives an Aim with no direction. Today the Skill prints an error and isn't activated. From now on that lift is a tap: the Skill is activated auto-aimed. In `_on_touch_ended`:
+A thumb that drags past the deadzone without leaving the slot, comes back to the exact point it landed on and lifts there gives an Aim with no direction. Today the Skill prints an error and isn't activated. From now on that lift is a tap: the Skill is activated auto-aimed. A thumb that left the slot and came back still cancels, wherever on the slot it lifts (found in code review: the first version of this rule turned that cancel into a tap). In `_on_touch_ended`:
 
 ```gdscript
 	var drag := at - _landed[slot]
-	if not _aimed or drag.is_zero_approx():
-		player.skill_bar.press(slot) # a tap, or a drag back to where it began: auto-aimed
+	if not _aimed or (not _left_slot and drag.is_zero_approx()):
+		# A tap, or a drag that never left the slot and came back to where it began: auto-aimed.
+		player.skill_bar.press(slot)
 	elif not _over_cancel(slot, at):
 		player.skill_bar.press(slot, player.aim_from_drag(skill, drag, drag_full_range))
 ```
@@ -218,10 +219,11 @@ Docs, as that ticket lists them: the HUD's class comment gains "even when the th
 | 2 | `test_every_skill_of_the_player_names_an_aim_mode` | `test_player.gd` | Every Skill in `player.skills` has an `aim_mode`; Attack's is `steer.tres`, Fireball's is `line.tres`. | Yes |
 | 3 | `test_a_drag_aims_a_direction_its_full_range`, `test_a_drag_aims_a_spot_as_far_as_it_goes` | `test_aim_modes.gd` | The two moved `ground_aim` tests, on `line.tres` and `spot.tres`, same numbers. | Moved |
 | 4 | `test_each_aim_mode_file_says_what_the_spec_says` | `test_aim_modes.gd` | The four files' `holds`, `waits_for_lift` and `repeats_while_held` match the table in rule 3. | Yes |
-| 5 | `test_a_second_hold_leaves_the_first_its_own` | `test_skill_bar_hud.gd` (ticket 02) | The Attack also sits in slot 2. A thumb lands on slot 0, another on slot 2, both lift. After `_elapse(0.5)` twice, no activation is asked for after the lifts. Record the slot each request names. | Yes: slot 0 goes on repeating. |
-| 6 | `test_a_second_aiming_thumb_is_ignored` | same (ticket 02) | Fireball also sits in slot 2. A thumb on slot 1 drags 60 units right; a thumb taps slot 2; the marker still shows and nothing was activated; slot 1's thumb lifts: one activation, from slot 1, with the dragged Aim. | Yes: slot 2's tap throws the ball and slot 1's lift does nothing. |
+| 5 | `test_each_lift_ends_its_own_hold` | `test_skill_bar_hud.gd` (ticket 02) | The Attack also sits in slot 2. A thumb lands on slot 0, another on slot 2, both lift. After `_elapse(0.5)` twice, no activation is asked for after the lifts. Record the slot each request names. | Yes: slot 0 goes on repeating. |
+| 6 | `test_a_second_aiming_thumb_is_ignored` | same (ticket 02) | Fireball also sits in slot 2. A thumb on slot 1 drags 60 units right; a thumb taps slot 2; the marker still shows and nothing was activated; slot 1's thumb lifts: one activation, from slot 1, aimed 10 units to screen right (Fireball's Range along the drag). | Yes: slot 2's tap throws the ball and slot 1's lift does nothing. |
 | 7 | `test_a_drag_back_to_where_it_began_is_a_tap` | same (ticket 03) | `_touch(Vector2.ZERO, [Vector2(30.0, 0.0), Vector2.ZERO])` on Fireball: one activation, `SkillBar.NO_AIM`. | Yes: an engine error and no activation. |
-| 8 | `test_a_thumb_held_through_the_cooldown_repeats_when_it_ends`, `test_an_aimed_skill_cooling_down_shows_no_aim` | same (ticket 04) | Tests 9 and 10 of `.scratch/touch-interruptions/spec.md`, as written there. | 9 yes, 10 no |
+| 7b | `test_a_drag_off_the_slot_and_back_to_where_it_began_cancels` | same (code review) | `_touch(Vector2.ZERO, [Vector2(120.0, 0.0), Vector2.ZERO])` on Fireball: nothing is activated. | Passes on `master`; fails on ticket 03's first version, which activated it. |
+| 8 | `test_a_thumb_held_through_the_cooldown_repeats_when_it_ends`, `test_a_skill_that_waits_for_the_lift_shows_no_aim_while_cooling_down` (test 10 there, renamed: "an aimed Skill" was the old setting's word) | same (ticket 04) | Tests 9 and 10 of `.scratch/touch-interruptions/spec.md`, as written there. | 9 yes, 10 no |
 
 Every existing test passes, changed only where this spec says. `tools/check.sh` passes after every commit (the pre-commit hook runs it).
 
@@ -234,7 +236,7 @@ Tickets 01 to 03 change nothing a key, mouse or controller player can reach. Che
 The developer confirms these when reading the PR.
 
 1. **A second aiming thumb: the first keeps the aim** (ticket 02). The alternative is that the newer thumb takes the aim over and the first is dropped.
-2. **A drag back to exactly where it began is a tap** (ticket 03). The alternative is that it activates nothing.
+2. **A drag that never left the slot and comes back to exactly where it began is a tap** (ticket 03). The alternative is that it activates nothing. A drag that left the slot and came back cancels, as before.
 3. **A Skill that only an Enemy has needs no Aim mode** (rule 5). So no content check walks every Skill scene for one; the Skill bar's assertion and test 2 cover the player's.
 
 ## Out of scope, with what brings each back
