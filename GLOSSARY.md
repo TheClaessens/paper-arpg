@@ -49,7 +49,7 @@ The direction on the ground a Character points, at any angle. The player's Facin
 _Avoid_: Heading, orientation
 
 **Skill**:
-Something the player activates from a Skill slot, such as Fireball or Attack. The Character has its Skills; the Skill bar is only where they are slotted.
+Something a Character activates, such as Fireball or Attack; the player activates theirs from Skill slots. The Character has its Skills; the Skill bar is only where the player's are slotted.
 _Avoid_: Ability, spell, action, power
 
 **Activate**:
