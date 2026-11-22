@@ -1,10 +1,10 @@
 @tool
 class_name Fireball
 extends Skill
-## Fireball: throws a ball of fire straight where it is aimed. It flies at `speed` until it has flown
-## the Skill's Range, or touches a wall or a hostile Hurtbox (with Pierce, a second one). Each
-## Hurtbox it touches is hit, with the same Hit feedback as any other Skill except the hitstop: a
-## projectile's hit doesn't freeze the world.
+## Fireball: throws a ball of fire straight where it is aimed. It flies at its Projectile speed
+## until it has flown the Skill's Range, or touches a wall or a hostile Hurtbox (with Pierce, a
+## second one). Each Hurtbox it touches is hit, with the same Hit feedback as any other Skill except
+## the hitstop: a projectile's hit doesn't freeze the world.
 
 const ProjectileScene := preload("res://skills/fireball/projectile.tscn")
 ## Whether the ball's hit freezes the world: a projectile's hit doesn't.
@@ -14,16 +14,16 @@ const FREEZES := false
 const LAUNCH_OFFSET := 0.45
 const FLIGHT_HEIGHT := 0.5
 
-## The name of the ball's speed among the Skill's numbers.
-const SPEED := &"Speed"
+## The name of how fast the ball flies among the Skill's numbers (see GLOSSARY.md, Projectile speed).
+const PROJECTILE_SPEED := &"Projectile speed"
 
 ## How fast the ball flies, in world units per second.
-@export var speed := 12.0
+@export var projectile_speed := 12.0
 
 
 func numbers() -> Dictionary[StringName, float]:
 	var all := super()
-	all[SPEED] = speed
+	all[PROJECTILE_SPEED] = projectile_speed
 	return all
 
 

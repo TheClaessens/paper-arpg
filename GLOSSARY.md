@@ -120,6 +120,10 @@ _Avoid_: Activation, cast, invocation, instance
 How far a Skill reaches from the Character that has it: the length of a swing, or how far a projectile flies.
 _Avoid_: Reach, distance, radius
 
+**Projectile speed**:
+How fast a Skill's projectile flies, such as Fireball's ball. A number of the Skill that Modifiers change, named the same on every Skill that has a projectile, so one Modifier can speed them all.
+_Avoid_: Speed, ball speed, velocity
+
 **Sweep**:
 The angle a melee swing covers, centred on Facing.
 _Avoid_: Arc, cone, angle
