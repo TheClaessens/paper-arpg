@@ -28,8 +28,14 @@ The three breakages from the spec's "It can fail", each run on its own and rever
 
 Each failure message goes under `## Comments`, for the PR.
 
-- [ ] The test file is as the spec sketches it, with its doc comment, and both tests pass on the branch.
-- [ ] Each breakage failed the first test with its message and was undone; `git status` then shows only the new test file and its `.gd.uid`.
-- [ ] `tools/check.sh` passes.
+- [x] The test file is as the spec sketches it, with its doc comment, and both tests pass on the branch.
+- [x] Each breakage failed the first test with its message and was undone; `git status` then shows only the new test file and its `.gd.uid`.
+- [x] `tools/check.sh` passes.
 
 ## Comments
+
+The failure each breakage gave `test_every_enemy_kind_inherits_the_base_and_has_frames`:
+
+1. A plain copy: `res://characters/enemy/zombie.tscn inherits no scene: make a kind with Scene › New Inherited Scene from res://characters/enemy/enemy.tscn`
+2. A kind of a kind: `res://characters/enemy/elite_zombie.tscn inherits res://characters/enemy/zombie.tscn: a kind inherits res://characters/enemy/enemy.tscn itself`
+3. A kind without frames: `res://characters/enemy/blank.tscn gives its Standee no frames`
