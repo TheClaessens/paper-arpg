@@ -117,11 +117,15 @@ func numbers() -> Dictionary[StringName, float]:
 
 ## Activates the Skill aimed at `aim` with the Character's `modifiers`, unless it is cooling
 ## down: makes the activation's Snapshot, starts its Cooldown (the Snapshot's, never shorter than
-## SHORTEST_COOLDOWN), then does what the Skill does. Whether it activated. A Skill without a
-## Character fails an assertion.
+## SHORTEST_COOLDOWN), then does what the Skill does. Whether it activated. A Skill still cooling
+## down doesn't, and nor does one aimed with no direction on the ground, which also prints an
+## error. A Skill without a Character fails an assertion.
 func try_activate(aim: Vector3, modifiers: Array[Modifier]) -> bool:
 	assert(character != null, "%s has no Character: give it to one with Character.add_skill()." % name)
 	if not is_ready():
+		return false
+	if Vector3(aim.x, 0.0, aim.z).is_zero_approx(): # every Skill goes where aim.normalized() points
+		push_error("%s: an Aim needs a direction on the ground." % name)
 		return false
 	var made := snapshot(modifiers)
 	start_cooldown(made.number(COOLDOWN))
@@ -142,8 +146,10 @@ func number(name: StringName, modifiers: Array[Modifier]) -> float:
 
 
 ## What the Skill does when activated, as `snapshot` says, aimed at `aim`: an offset on the
-## ground from the Character. Its direction is where the Skill goes; for a Skill that lands on a
-## spot, its length is how far. A Skill reads its numbers from `snapshot`, not from itself.
+## ground from the Character, with a direction. Its direction is where the Skill goes; for a Skill
+## that lands on a spot, its length is how far. What the Skill does happens in this call, at the
+## moment it is activated; something it sets going, such as a ball, may go on by itself. A Skill
+## reads its numbers from `snapshot`, not from itself.
 ## Each Skill overrides it; try_activate() calls it.
 func _activate(_snapshot: Snapshot, _aim: Vector3) -> void:
 	pass

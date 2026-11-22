@@ -12,4 +12,4 @@
 
 - [x] `skill.gd` has no `_physics_process`; its `_notification()` is the spec's.
 - [x] The two new tests pass; `tools/check.sh` passes.
-- [x] In the game, a held Attack swings every 0.4 s and Fireball's slot sweep runs and flashes as before (or this is left to ticket 06).
+- [ ] In the game, a held Attack swings every 0.4 s and Fireball's slot sweep runs and flashes as before (or this is left to ticket 06).

@@ -174,3 +174,13 @@ func test_a_cooldown_waits_while_the_game_is_paused() -> void:
 	await wait_physics_frames(6) # counts the tree's frames, paused or not
 	get_tree().paused = false
 	assert_eq(recording.cooldown_left, 1.0)
+
+
+func test_an_aim_with_no_direction_on_the_ground_is_refused() -> void:
+	var recording := _recording(1.0, [])
+	assert_false(recording.try_activate(Vector3.ZERO, []))
+	assert_push_error("direction on the ground")
+	assert_false(recording.try_activate(Vector3(0.0, 0.3, 0.0), []), "straight up has none either")
+	assert_push_error("direction on the ground")
+	assert_eq(recording.snapshots.size(), 0, "nothing happened")
+	assert_eq(recording.cooldown_left, 0.0, "and no Cooldown started")

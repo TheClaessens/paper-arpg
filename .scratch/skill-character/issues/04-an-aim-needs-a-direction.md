@@ -10,6 +10,6 @@
 
 **Status:** ready-for-agent
 
-- [ ] `try_activate()` reads: the assertion, the Cooldown check, the Aim check, then today's three lines.
-- [ ] `_activate()`'s doc says what the Skill does happens in that call, at the moment it is activated.
-- [ ] The new test passes; `tools/check.sh` passes.
+- [x] `try_activate()` reads: the assertion, the Cooldown check, the Aim check, then today's three lines.
+- [x] `_activate()`'s doc says what the Skill does happens in that call, at the moment it is activated.
+- [x] The new test passes; `tools/check.sh` passes.
