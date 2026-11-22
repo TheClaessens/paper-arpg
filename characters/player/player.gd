@@ -86,9 +86,8 @@ func _on_activation_requested(slot: int, given_aim: Vector3) -> void:
 	var aim := given_aim if given_aim.is_finite() else _aim_for(skill)
 	if not skill.try_activate(aim, modifiers):
 		return
-	if not aim.is_zero_approx():
-		facing = aim.normalized() # turn to what it was aimed at, for a moment
-		_face_aim_left = FACE_AIM_TIME
+	facing = aim.normalized() # turn to what it was aimed at, for a moment
+	_face_aim_left = FACE_AIM_TIME
 	_standee.squash(ACTIVATE_STRETCH)
 	skill_activated.emit(slot)
 

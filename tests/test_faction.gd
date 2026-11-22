@@ -1,5 +1,5 @@
 extends GutTest
-## Factions: each has its own layer, and a Skill of one Faction looks on every other's.
+## Factions: each has its own layer, and a Skill whose Character is of one Faction looks on every other's.
 
 
 func test_the_players_skills_look_on_the_enemies_layer_only() -> void:

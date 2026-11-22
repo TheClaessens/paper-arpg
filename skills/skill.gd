@@ -1,11 +1,13 @@
 @tool
 class_name Skill
 extends Node3D
-## A Skill (see GLOSSARY.md): something the player activates from a Skill slot. Each Skill is
-## a node on the Character that has it, so it can reach the world from where the Character
-## stands. try_activate() is the one way to set it off, and the Skill runs its own Cooldown.
-## Subclasses do their work in _activate(). Each Skill script is a @tool, as this one is, so the
-## editor shows its configuration warnings.
+## A Skill (see GLOSSARY.md): something a Character activates, the player from a Skill slot.
+## Each Skill is a node under its Character's Skills node and knows that Character (see
+## `character`), so it acts from where the Character stands and hits what is hostile to the
+## Character's Faction. try_activate() is the one way to set it off. The Skill runs its own
+## Cooldown, and a Skill script's own _physics_process() can't stop it. Subclasses do their work in
+## _activate(). Each Skill script is a @tool, as this one is, so the editor shows its configuration
+## warnings.
 
 ## Its Cooldown has run out: it can be activated again.
 signal ready_again
@@ -55,9 +57,11 @@ const SHORTEST_COOLDOWN := 0.1
 ## How long a hit Enemy slides without chasing (its Stagger), in seconds.
 @export var stagger := 0.0
 
-## The Faction of the Character that has the Skill, given by that Character. The Skill hits
-## only Hurtboxes hostile to it.
-var faction: Faction.Id
+## The Character that has the Skill, set by that Character when it is ready and by
+## Character.add_skill(). The Skill hits only Hurtboxes hostile to the Character's Faction, as it
+## is at each activation. The Skill's own _ready() can run before it is set (a node's children are
+## ready before it), so a Skill script doesn't read it there. A Skill without one can't be activated.
+var character: Character
 
 ## Seconds until the Skill can be activated again. The Skill runs this clock itself.
 var cooldown_left := 0.0
@@ -86,9 +90,15 @@ func cool_down(delta: float) -> void:
 		ready_again.emit()
 
 
-func _physics_process(delta: float) -> void:
-	if not Engine.is_editor_hint():
-		cool_down(delta)
+# The Cooldown runs on internal physics processing: a Skill script's own _physics_process()
+# replaces a parent script's, but _notification() is called for every script that defines it,
+# so a Skill script's own _physics_process() can't stop the Cooldown, by accident or with
+# set_physics_process(false).
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_READY:
+		set_physics_process_internal(not Engine.is_editor_hint())
+	elif what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS:
+		cool_down(get_physics_process_delta_time())
 
 
 ## How much of the cooldown is left: 1 just activated, 0 ready.
@@ -107,11 +117,17 @@ func numbers() -> Dictionary[StringName, float]:
 	return {COOLDOWN: cooldown, RANGE: range, DAMAGE: damage, KNOCKBACK: knockback, STAGGER: stagger}
 
 
-## Activates the Skill aimed at `aim` with the Character's `modifiers`, unless it is cooling
-## down: makes the activation's Snapshot, starts its Cooldown (the Snapshot's, never shorter than
-## SHORTEST_COOLDOWN), then does what the Skill does. Whether it activated.
+## Activates the Skill aimed at `aim` with the Character's `modifiers`: makes the activation's
+## Snapshot, starts its Cooldown (the Snapshot's, never shorter than SHORTEST_COOLDOWN), then does
+## what the Skill does. Whether it activated. A Skill still cooling down doesn't, and nor does one
+## aimed with no direction on the ground, which also prints an error. A Skill without a Character
+## fails an assertion.
 func try_activate(aim: Vector3, modifiers: Array[Modifier]) -> bool:
+	assert(character != null, "%s has no Character: give it to one with Character.add_skill()." % name)
 	if not is_ready():
+		return false
+	if Vector3(aim.x, 0.0, aim.z).is_zero_approx(): # every Skill goes where aim.normalized() points
+		push_error("%s: an Aim needs a direction on the ground." % name)
 		return false
 	var made := snapshot(modifiers)
 	start_cooldown(made.number(COOLDOWN))
@@ -132,8 +148,10 @@ func number(name: StringName, modifiers: Array[Modifier]) -> float:
 
 
 ## What the Skill does when activated, as `snapshot` says, aimed at `aim`: an offset on the
-## ground from the Character. Its direction is where the Skill goes; for a Skill that lands on a
-## spot, its length is how far. A Skill reads its numbers from `snapshot`, not from itself.
+## ground from the Character, with a direction. Its direction is where the Skill goes; for a Skill
+## that lands on a spot, its length is how far. What the Skill does happens in this call, at the
+## moment it is activated; something it sets going, such as a ball, may go on by itself. A Skill
+## reads its numbers from `snapshot`, not from itself.
 ## Each Skill overrides it; try_activate() calls it.
 func _activate(_snapshot: Snapshot, _aim: Vector3) -> void:
 	pass
@@ -144,9 +162,9 @@ func target_for(_aim: Vector3) -> Node3D:
 	return null
 
 
-## The layers of every Faction hostile to the Skill's: where its hits look.
+## The layers of every Faction hostile to its Character's: where its hits look.
 func hostile_mask() -> int:
-	return Faction.hostile_mask(faction)
+	return Faction.hostile_mask(character.faction)
 
 
 ## Lands one activation's hits: each Hurtbox in `hits` is hit pushing along its direction (a

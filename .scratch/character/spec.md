@@ -276,10 +276,10 @@ The developer keeps the editor open, and it overwrites scenes changed on disk an
 
 Godot runs physics callbacks of equal priority "in tree order, or top to bottom as seen in the editor" (`Node._physics_process`, 4.7), and no node here sets a priority. `Skills` comes before `SkillBar` in `player.tscn`, so every Skill under it, including one given later with `add_skill()`, runs its Cooldown before the Skill bar asks for activations in the same frame. That is today's order for the Attack and Fireball (`player.tscn:69-75`); a Skill added with `add_child()` came after the bar (`test_aim_modes.gd:32`).
 
-That is enough, and no process priorities are needed. A held Attack (Cooldown 0.4 s, 24 frames at 60 Hz) repeats every 24 frames in either order:
+That is enough, and no process priorities are needed. A held Attack (Cooldown 0.4 s: 24 ticks at 60 Hz leave a rounding crumb above 0, so it repeats every 25 frames, about 0.417 s) repeats every 25 frames in either order:
 
-- **Skill before the bar:** activated in frame N; its Cooldown runs in N+1 to N+24 and ends in N+24; the bar, later in N+24, repeats it.
-- **Skill after the bar:** activated in frame N; its Cooldown runs later in N too and ends in N+23; the bar repeats it in N+24.
+- **Skill before the bar:** activated in frame N; its Cooldown runs in N+1 to N+25 and ends in N+25; the bar, later in N+25, repeats it.
+- **Skill after the bar:** activated in frame N; its Cooldown runs later in N too and ends in N+24; the bar repeats it in N+25.
 
 Only two things move by one frame: the slot's ready flash (`ready_again`) comes in the repeat's frame or the frame before, and a fresh press arriving in that one frame is taken or ignored (`press()` checks `is_ready()` when the press arrives, `skill_bar.gd:56-60`). With every Skill under `Skills`, those are the same for every Skill, whenever it came, for free.
 

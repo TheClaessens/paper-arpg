@@ -1,7 +1,7 @@
 class_name Hurtbox
 extends Area3D
 ## A Character's Hurtbox (see GLOSSARY.md): the part of it that Skills hit. Skills find it on the
-## layers hostile to their Faction (see around()), and the Character puts it on its own Faction's
+## layers hostile to the Faction of the Character that has them (see around()), and the Character puts it on its own Faction's
 ## layer. A Hurtbox doesn't look for anything; a hit is reported up to the Character through
 ## `hit_taken`. Its statics are how Skills and the player find Hurtboxes in the world.
 

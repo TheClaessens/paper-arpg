@@ -6,7 +6,7 @@ extends CharacterBody3D
 ## Standee. Wiring and identity only: Player and Enemy decide where it walks and what it
 ## activates, and the script driving the body (the Enemy) slides with the Stagger. Without a
 ## Hurtbox it can't be hit; without a Stagger it is never staggered. It puts its Hurtbox on its
-## Faction's layer and hands its Faction to its Skills; its body's collision layers and its
+## Faction's layer and hands itself to its Skills; its body's collision layers and its
 ## Aggro are its scene's.
 ## A script that extends it and has _ready() calls super() first: a subclass's _ready()
 ## replaces this one.
@@ -42,14 +42,15 @@ func _ready() -> void:
 		hurtbox.collision_layer = Faction.layer(faction)
 		hurtbox.hit_taken.connect(_on_hit_taken)
 	for skill in skills:
-		skill.faction = faction
+		skill.character = self
 
 
 ## Gives it `skill`: puts it under its Skills node, which stands where it stands and comes before
-## whatever activates its Skills, and hands it its Faction. Before or after it enters the tree.
+## whatever activates its Skills, and becomes its Character (Skill.character). Before or after it
+## enters the tree.
 func add_skill(skill: Skill) -> void:
 	$Skills.add_child(skill)
-	skill.faction = faction
+	skill.character = self
 
 
 # A hit on its Hurtbox, pushing along `direction` (a unit vector on the ground): the one place a

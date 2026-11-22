@@ -5,6 +5,7 @@ extends GutTest
 
 const ProjectileScene := preload("res://skills/fireball/projectile.tscn")
 const ZombieScene := preload("res://characters/enemy/zombie.tscn")
+const PlayerScene := preload("res://characters/player/player.tscn")
 
 var hits: Array[Hurtbox] = [] # every Hurtbox the ball fired by _fire() reported hitting
 
@@ -22,8 +23,7 @@ func test_flies_along_its_direction_then_disappears_after_its_range() -> void:
 
 
 func test_a_ball_in_flight_keeps_its_throws_snapshot() -> void:
-	var fireball: Fireball = preload("res://skills/fireball/fireball.tscn").instantiate()
-	add_child_autoqfree(fireball)
+	var fireball := _players_fireball()
 	var farther := Modifier.new()
 	var change := NumberChange.new()
 	change.number = Skill.RANGE
@@ -36,6 +36,14 @@ func test_a_ball_in_flight_keeps_its_throws_snapshot() -> void:
 	assert_eq(ball.snapshot.number(Skill.RANGE), 15.0, "still 10 + 5")
 	assert_eq(fireball.snapshot(modifiers).number(Skill.RANGE), 10.0, "the next throw goes 10")
 
+
+
+## The player's own Fireball, the player standing at the origin with its physics off (no camera
+## here to read input against, as in test_player.gd).
+func _players_fireball() -> Fireball:
+	var player: Player = add_child_autofree(PlayerScene.instantiate())
+	player.set_physics_process(false)
+	return player.get_node("Skills/Fireball")
 
 
 ## A zombie at `x`, by its Hurtbox.
@@ -110,8 +118,7 @@ func test_it_hits_an_enemy_only_once_even_when_it_touches_it_again() -> void:
 
 
 func test_a_ball_in_flight_keeps_pierce_when_the_modifier_goes() -> void:
-	var fireball: Fireball = preload("res://skills/fireball/fireball.tscn").instantiate()
-	add_child_autoqfree(fireball)
+	var fireball := _players_fireball()
 	var modifiers: Array[Modifier] = [load("res://skills/modifiers/pierce.tres")]
 	fireball.try_activate(Vector3.RIGHT, modifiers)
 	var ball: Projectile = fireball.get_child(0)
@@ -131,8 +138,7 @@ func test_a_piercing_ball_still_ends_at_its_range() -> void:
 
 
 func test_a_fireball_hit_knocks_back_without_freezing_the_world() -> void:
-	var fireball: Fireball = preload("res://skills/fireball/fireball.tscn").instantiate()
-	add_child_autoqfree(fireball)
+	var fireball := _players_fireball()
 	var zombie := _zombie_at(2.0)
 	fireball.try_activate(Vector3.RIGHT, [])
 	var ball: Projectile = fireball.get_child(0)
@@ -144,7 +150,7 @@ func test_a_fireball_hit_knocks_back_without_freezing_the_world() -> void:
 	assert_gt(zombie.global_position.x, 2.0, "knocked back")
 
 
-func test_it_flies_through_a_hurtbox_of_its_own_faction() -> void:
+func test_it_flies_through_a_hurtbox_of_its_throwers_faction() -> void:
 	var friend: Hurtbox = preload("res://characters/hurtbox/hurtbox.tscn").instantiate()
 	friend.collision_layer = Faction.layer(Faction.Id.PLAYER)
 	add_child_autofree(friend)
@@ -158,8 +164,7 @@ func test_it_flies_through_a_hurtbox_of_its_own_faction() -> void:
 
 
 func test_a_fireball_lowers_a_zombies_health_by_its_damage() -> void:
-	var fireball: Fireball = preload("res://skills/fireball/fireball.tscn").instantiate()
-	add_child_autoqfree(fireball)
+	var fireball := _players_fireball()
 	var zombie: Enemy = ZombieScene.instantiate()
 	add_child_autofree(zombie)
 	zombie.global_position = Vector3(2.0, 0.0, 0.0)
@@ -170,8 +175,7 @@ func test_a_fireball_lowers_a_zombies_health_by_its_damage() -> void:
 
 
 func test_a_piercing_ball_passes_through_the_zombie_it_kills_and_stops_at_the_next() -> void:
-	var fireball: Fireball = preload("res://skills/fireball/fireball.tscn").instantiate()
-	add_child_autoqfree(fireball)
+	var fireball := _players_fireball()
 	var dying: Enemy = _zombie_at(2.0).get_parent()
 	dying.health.damage(40.0) # the Fireball's 20 kills it
 	var deaths: Array[bool] = []

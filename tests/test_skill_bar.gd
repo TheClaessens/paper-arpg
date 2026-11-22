@@ -1,7 +1,8 @@
 extends GutTest
 ## The Skill bar: five Skill slots, each Skill limited only by its own Cooldown. Presses on
 ## ready Skills ask for them in press order on the next physics frame, and an empty slot does
-## nothing. Here a stand-in for the Character answers each request by activating the Skill.
+## nothing. Here a stand-in for the Character owns the Skills, and the test answers each request by
+## activating the Skill.
 
 var bar: SkillBar
 var sword: Skill
@@ -11,9 +12,12 @@ var aims: Array[Vector3] = []
 
 
 func before_each() -> void:
+	var character: Character = autofree(Character.new()) # a stand-in, kept out of the tree
 	sword = autofree(Skill.new())
+	sword.character = character
 	sword.cooldown = 0.4
 	fire = autofree(Skill.new())
+	fire.character = character
 	fire.cooldown = 0.6
 	bar = autofree(SkillBar.new())
 	bar.set_skill(0, sword)

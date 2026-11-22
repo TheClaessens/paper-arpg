@@ -9,8 +9,9 @@ var zombie: Enemy
 
 
 func before_each() -> void:
-	attack = preload("res://skills/attack/attack.tscn").instantiate()
-	add_child_autofree(attack)
+	var player: Player = add_child_autofree(preload("res://characters/player/player.tscn").instantiate())
+	player.set_physics_process(false) # no camera here to read input against, as in test_player.gd
+	attack = player.get_node("Skills/Attack")
 	zombie = ZombieScene.instantiate()
 	add_child_autoqfree(zombie)
 	zombie.global_position = Vector3(1.0, 0.0, 0.0)
