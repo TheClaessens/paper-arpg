@@ -4,3 +4,6 @@
 
 # macOS
 .DS_Store
+
+# Local engine settings (tools/play_check.sh writes one for its run)
+override.cfg

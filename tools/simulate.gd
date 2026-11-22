@@ -6,13 +6,9 @@ extends SceneTree
 ##   godot --headless --path . --script res://tools/simulate.gd -- \
 ##       res://scenes/game.tscn 6 "tp 16 7.5"
 ##
-## To compare two runs, add `--fixed-fps 60` to the command (before `--path`): it steps the game
-## without the wall clock, and without it the number of physics steps before the first command
-## varies with how long the first frames take. Even with it, positions differ by up to 0.01,
-## because the navigation server's avoidance runs on several threads. For output that is the
-## same run after run, also put a file `override.cfg` next to `project.godot` with
-## `[navigation]` and `avoidance/thread_model/avoidance_use_multiple_threads=false` on the next
-## line, and delete it afterwards (git doesn't ignore it: don't commit it).
+## To compare two runs, use `tools/play_check.sh`: a comparison needs `--fixed-fps 60` (the
+## number of physics steps before the first command otherwise varies with how long the first
+## frames take) and single-threaded navigation avoidance (otherwise positions differ by up to 0.01).
 ##
 ## The player stands still: nothing presses a key in a headless run.
 ## Keep project class names out of this file: a --script entry point compiles before
