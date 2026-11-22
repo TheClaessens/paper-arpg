@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Project check, run by the pre-commit hook. Fails if any script or scene doesn't load
+# Project check, run by the pre-commit hook. Fails if any script, scene or resource doesn't load
 # (parse errors, including typing warnings that project.godot treats as errors) or a test fails.
 # Set GODOT to use a Godot binary that isn't on PATH as `godot`.
 set -uo pipefail
@@ -25,7 +25,7 @@ step() {
 }
 
 step "import" "SCRIPT ERROR" "$GODOT" --headless --path . --import
-step "load every script and scene" "Parse Error|GDScript::reload|FAILED|load_all:" \
+step "load every script, scene and resource" "Parse Error|GDScript::reload|FAILED|load_all:" \
 	"$GODOT" --headless --path . --script res://tools/load_all.gd
 step "tests" "\[Failed\]|Passing Tests|Failing Tests|All tests passed" \
 	"$GODOT" --headless --path . -s addons/gut/gut_cmdln.gd

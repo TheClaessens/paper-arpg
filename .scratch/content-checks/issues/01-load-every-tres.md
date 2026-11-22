@@ -10,8 +10,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] `load_all` loads every `.gd`, `.tscn` and `.tres` file outside dot folders, `res://addons` and `res://assets`, and walks no other way than `find_files`.
-- [ ] `find_files(dir, extensions)` is static, with the doc comment from the spec.
-- [ ] Break L1 (`skills/modifiers/broken.tres`, nothing refers to it) fails `tools/check.sh` at the load step with `FAILED TO LOAD: res://skills/modifiers/broken.tres`; deleted, the check passes.
-- [ ] The headers of `load_all.gd` and `check.sh`, `check.sh`'s step label and the conventions' line 37 say "script, scene and resource".
-- [ ] `tools/check.sh` passes.
+- [x] `load_all` loads every `.gd`, `.tscn` and `.tres` file outside dot folders, `res://addons` and `res://assets`, and walks no other way than `find_files`.
+- [x] `find_files(dir, extensions)` is static, with the doc comment from the spec.
+- [x] Break L1 (`skills/modifiers/broken.tres`, nothing refers to it) fails `tools/check.sh` at the load step with `FAILED TO LOAD: res://skills/modifiers/broken.tres`; deleted, the check passes.
+- [x] The headers of `load_all.gd` and `check.sh`, `check.sh`'s step label and the conventions' line 37 say "script, scene and resource".
+- [x] `tools/check.sh` passes.
