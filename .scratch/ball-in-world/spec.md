@@ -14,7 +14,7 @@ Words: a *ball* is Fireball's projectile, the `Projectile` node (the glossary's 
 
 After step 9 a Skill makes one Hit per activation (its Snapshot, the Character that dealt it, whether its impact freezes the world), and a Hit lands itself. But the ball is still a child of the Fireball node: Fireball adds it with `add_child` and `top_level` on (`fireball.gd:35`, `:38`), the ball reports each Hurtbox it touches through its `hit` signal, and a lambda on Fireball lands the throw's one Hit there (`:37`, two lines after step 9). Three things follow:
 
-- **It dies with its Character.** `top_level` only stops a node following its parent's transform; freeing a node frees its children (Engine facts 6). A zombie frees itself 0.45 s after its killing hit (`enemy.gd:119`), while a Fireball flies about 0.8 s. No Enemy has a Skill yet, so it hasn't happened; the first Enemy projectile would vanish with its Enemy.
+- **It dies with its Character.** `top_level` only stops a node following its parent's transform; freeing a node frees its children (Engine facts 6). A zombie frees itself 0.45 s after its killing Hit (`enemy.gd:119`), while a Fireball flies about 0.8 s. No Enemy has a Skill yet, so it hasn't happened; the first Enemy projectile would vanish with its Enemy.
 - **It can't be anyone else's.** Landing needs the Fireball node, so nothing can carry a ball's Hit once its Skill is gone, and every later Skill that leaves something behind (a trap, a burning patch) would hang it under itself too.
 - **Its Pierce counts what its Hit missed.** The ball adds a Hurtbox to its count before anything lands (`projectile.gd:46-50`). A Hurtbox whose Character was killed earlier in the same physics step misses (`hurtbox.gd:17`) but still uses up the pass-through, so the ball stops there. The developer left it as rare (`.scratch/factions-health/issues/03-enemy-death.md`, Comments); it goes for free once the ball learns whether its Hit landed.
 
@@ -29,7 +29,7 @@ And two of its numbers break their own rules:
 | Who lands its Hit | Fireball, in a lambda on the ball's `hit` signal | the ball, with `hit.land()` |
 | What it carries | the Snapshot | the activation's Hit |
 | Its Character freed mid-flight | the ball goes with it | it flies on and lands its Hit |
-| How far it reaches | front at about 10.45 from the Character's centre, for Range 10 | front at exactly 10.0 |
+| How far it reaches | front at about 10.65 from the Character's centre, for Range 10 | front at exactly 10.0 |
 | Pierce | spent on every Hurtbox it touches | spent only on a Hit that landed |
 | Projectile speed 0 | never moves, never ends | ends where it starts |
 | Tunnelling | unmarked | a `ponytail:` comment with the speeds and the upgrade |
@@ -68,7 +68,7 @@ Game                                          the test's node (GutTest)
 5. **A ball's front reaches exactly its Range from the centre of its Character, as it stood at the throw.** Its Range is its Snapshot's. Its centre starts 0.45 ahead of the Character's centre and 0.5 up, its last position puts its front at the Range, and the physics step looks there before it ends. So it touches a Hurtbox whose near side is within Range on its line, and nothing wholly beyond Range.
 6. **Pierce is spent only on a Hit that landed.** A Hurtbox the ball touches without its Hit landing (its Character died earlier in the same physics step) doesn't count, and the ball flies on.
 7. **A ball that can't leave where it starts ends there**, at its first physics frame: one whose Projectile speed is 0, or whose Range ends inside it (a Range under 0.65). Open rule 3.
-8. **A frozen ball waits.** During a hitstop a ball neither moves nor ends; it flies on after.
+8. **A frozen ball waits.** A hitstop doesn't move a ball and doesn't cut its flight short; a ball that had already reached its end, or that can't fly, still ends. One whose last move came in the frame the freeze began ends in the first frozen frame (a real physics step had already looked at its end, so nothing is missed), and one with a Projectile speed of 0 thrown during a freeze ends at once. Any other ball flies on after the freeze.
 9. **Unchanged:** walls and props stop it, with or without Pierce; its Hit lands on each Hurtbox once, so touching one again after knocking it ahead does nothing; it never touches a Hurtbox of its own Character's Faction; landed on an Enemy, its Hit shakes the screen and doesn't freeze the world (step 9's `land()`); it keeps its throw's Snapshot whatever Modifiers do after.
 
 Nothing else changes in play.
@@ -88,10 +88,12 @@ Measured on the ground from the centre of the Character at the throw, for Fireba
 | Its centre at the end | 9.8 | 10.0 less its radius |
 | How far its centre flies | 9.8 − 0.45 = 9.35: 46 steps of 0.2 and a last one of 0.15, 47 physics frames, about 0.78 s | a step is Projectile speed / 60 |
 | The farthest zombie it touches, head-on | centre under 9.8 + 0.45 = 10.25: near side under 10.0 | |
-| After step 9 | last look at centre about 10.25, front 10.45: a zombie centred up to 10.70 | `projectile.gd:27-32` frees it in the frame it reaches Range, before the physics step looks |
+| After step 9 | last look at centre 10.45, front 10.65: a zombie centred up to about 10.90 | `projectile.gd:27-32` frees it in the frame it reaches Range, before the physics step looks |
 | The swing (Range 1.6), for comparison | any part within 1.6: a zombie centred up to 1.85 | `.scratch/combat/spec.md`, review decisions |
 
 The ball's last step is shortened so its centre stops at exactly 9.8; without that it overshoots by up to one step and its front reaches up to 10.2.
+
+The review of this branch worked the old ball's reach through in floating point and found the "After step 9" figure first written here (last look at centre about 10.25, front 10.45) was off. At a Projectile speed of 12 a step is exactly 0.2, but fifty additions of 0.2 sum to 9.999999999999996, just under 10, so the old ball took a 51st step: its last look was at centre 10.45, front 10.65, and it could hit a zombie centred up to about 10.90. The new ball's front stops at 10.0, so the reach drops by about 0.65, not 0.45. The code and its tests are right; the message of commit `fcd5045` repeats the earlier figure.
 
 ## The change, file by file
 
@@ -105,9 +107,10 @@ One new method, at the end of the file after step 9's `_hit()`:
 ## Puts `node` in the world beside the Skill's Character, where it lives on by itself and outlives
 ## the Skill and the Character: a ball in flight. Everything a Skill leaves in the world goes
 ## through here. For the Skills themselves.
-# ponytail: beside the Character, so in the game scene the player's things go into World, which a
-# Level change doesn't free, and an Enemy's into its Level, which takes them with it. Changing
-# Levels (the second Level) frees the player's too, or moves them under one node of World here.
+# ponytail: beside the Character means the player's things go into the game scene's World, which a
+# Level change doesn't free, and an Enemy's into its Level, which takes them with it. When changing
+# Levels is built (with the second Level), it must free the player's things, or this function must
+# put them under one node of World that the change frees.
 func _add_to_world(node: Node3D) -> void:
 	character.add_sibling(node)
 ```
@@ -121,7 +124,7 @@ No check of its own: `try_activate()` already asserts a Character (step 7), and 
   ```gdscript
   ## Fireball: throws a ball of fire (see Projectile) straight where it is aimed, carrying the
   ## activation's Hit. The ball lands the Hit itself on each hostile Hurtbox it touches, with the
-  ## same Hit feedback as any other Skill except the hitstop: a projectile's hit doesn't freeze the
+  ## same Hit feedback as any other Skill except the hitstop: a projectile's Hit doesn't freeze the
   ## world. It lives in the world beside the Character, so it flies on after the Skill and the
   ## Character are gone.
   ```
@@ -155,18 +158,28 @@ extends Area3D
 ## Hurtboxes on the layers launch() adds. It lives in the world beside that Character (see
 ## Skill._add_to_world()) and needs neither the Skill nor the Character once thrown, so it flies on
 ## and lands its Hit after they are gone.
+## It is Fireball's ball for now. With the second projectile Skill it becomes a piece Skills share,
+## in a folder of its own and with its own Projectile speed name.
 
 ## How far in front of its Character's centre it starts, and how high it flies.
 const LAUNCH_OFFSET := 0.45
 const FLIGHT_HEIGHT := 0.5
 
-## The Hit it carries and lands: its throw's Snapshot and the Character that threw it.
-var hit: Hit
+## The Hit it carries and lands: its throw's Snapshot and the Character that threw it. Set by
+## launch(); it never changes after.
+var hit: Hit:
+	get:
+		return _hit
+	set(_value):
+		assert(false, "A ball's Hit is set by launch() and never changes")
 
+var _hit: Hit
 var _direction := Vector3.FORWARD # a unit vector on the ground
 var _flight := 0.0 # how far its centre flies before it ends
 var _flown := 0.0
 var _hurtboxes_hit: Array[Hurtbox] = [] # those its Hit landed on
+
+@onready var _shape: SphereShape3D = ($CollisionShape3D as CollisionShape3D).shape
 
 
 func _ready() -> void:
@@ -174,21 +187,21 @@ func _ready() -> void:
 	area_entered.connect(_on_area_entered)
 
 
-## Throws it, once it is in the world (see Skill._add_to_world()), from `centre`, the centre of the
-## Character that throws it, along `direction` (a unit vector on the ground). It carries `ball_hit`,
-## which it lands on each Hurtbox it touches on the layers of `mask`. It starts LAUNCH_OFFSET along
-## `direction` and FLIGHT_HEIGHT up, and flies until its front is its Hit's Range from `centre` (see
-## GLOSSARY.md, Range). With a Projectile speed of 0, or a Range that ends inside it, it ends where
-## it starts.
+## Throws it, once it is in the world (see Skill._add_to_world(); it sets its position and reads its
+## shape, which need the tree), from `centre`, the centre of the Character that throws it, along
+## `direction` (a unit vector on the ground). It carries `ball_hit`, which it lands on each Hurtbox
+## it touches on the layers of `mask`. It starts LAUNCH_OFFSET along `direction` and FLIGHT_HEIGHT
+## up, and flies until its front is its Hit's Range from `centre` (see GLOSSARY.md, Range). With a
+## Projectile speed of 0, or a Range that ends inside it, it ends where it starts.
 func launch(ball_hit: Hit, centre: Vector3, direction: Vector3, mask: int) -> void:
-	hit = ball_hit
+	assert(is_inside_tree(), "A ball is launched once it is in the world: Skill._add_to_world() first.")
+	_hit = ball_hit
 	_direction = direction
 	collision_mask |= mask
 	global_position = centre + direction * LAUNCH_OFFSET + Vector3.UP * FLIGHT_HEIGHT
-	var radius := ((get_node(^"CollisionShape3D") as CollisionShape3D).shape as SphereShape3D).radius
 	var can_fly := hit.snapshot.number(Fireball.PROJECTILE_SPEED) > 0.0
 	# Its front is its radius ahead of its centre, and its centre starts LAUNCH_OFFSET out.
-	_flight = hit.snapshot.number(Skill.RANGE) - LAUNCH_OFFSET - radius if can_fly else 0.0
+	_flight = hit.snapshot.number(Skill.RANGE) - LAUNCH_OFFSET - _shape.radius if can_fly else 0.0
 
 
 # ponytail: moves by setting its position and trusts the physics step's overlaps, so it can skip
@@ -218,7 +231,8 @@ func _on_area_entered(area: Area3D) -> void:
 	var hurtbox := area as Hurtbox
 	if not hurtbox or hurtbox in _hurtboxes_hit: # touching it again after knocking it ahead
 		return
-	if not hit.land({hurtbox: _direction}): # its Character died earlier in this physics step
+	# The Hit missed: the Character of the Hurtbox it touched died earlier in this physics step.
+	if not hit.land({hurtbox: _direction}):
 		return
 	_hurtboxes_hit.append(hurtbox)
 	var passes_through := 1 if SkillTag.PIERCE in hit.snapshot.tags else 0
@@ -231,7 +245,7 @@ Line by line, against step 9's file:
 - **Leaves:** `signal hit(hurtbox)` (`:10`) and the class doc's last sentence, "It reports a Hurtbox it touched with `hit`, and that Skill lands the throw's Hit there." (`:7-8`, as step 9 words it); the public `direction` and `snapshot` (`:12-16`), which Fireball set one by one; `hit.emit(hurtbox)` (`:47`). `top_level` was set by Fireball and goes with Fireball's lines: the ball sits under `World`, a Level or a test's node, none of which moves.
 - **New:** the two constants (from `fireball.gd`), `hit`, `_direction`, `_flight`, `launch()`, the `ponytail:` comment.
 - **Changed:** `_physics_process` (`:27-32`) reads its Projectile speed from `hit.snapshot` (step 2's `Fireball.PROJECTILE_SPEED` stays), checks its end before it moves and shortens its last step; `_on_area_entered` (`:40-50`) lands the Hit and counts the Hurtbox only if it landed (step 2's `SkillTag.PIERCE` stays).
-- **The radius** is read from the ball's own `CollisionShape3D` (its `shape` as a `SphereShape3D`), so `projectile.tscn` stays the one place its size is set. `launch()` runs once the ball is in the tree, so the node is there to read.
+- **The radius** is read from the ball's own `CollisionShape3D`, kept in an `@onready` field (`_shape`), so `projectile.tscn` stays the one place its size is set. `launch()` runs once the ball is in the tree (it asserts so), so the field is set. `hit` is readable (two tests read it) but refuses writes as `Hit`'s fields do; `launch()` sets the private `_hit`.
 - **Why the end check comes first:** a position the ball moves to is looked at by the physics step at the end of that frame and reported at the start of the next (Engine facts 1). Ended in the same frame as its last move, it is deleted before that step (Engine facts 2) and its last position is never looked at; ended at the start of the next frame, after the report, it is.
 - **Why a Projectile speed of 0 sets the flight to 0, rather than a check each frame:** a hitstop makes `delta` 0 too, and a ball frozen by an Attack's hitstop must fly on afterwards (rule 8). The ball tests its Projectile speed, never its step. A Range under 0.65 gives a flight below 0, which the same first check ends: the ball never steps backwards.
 
@@ -249,7 +263,7 @@ Line by line, against step 9's file:
 3. **Launched.** `launch()` gives it its Hit, its direction and its mask (the `world` layer plus the hostile Hurtbox layers), puts it 0.45 ahead of the Character's centre and 0.5 up, and works out its flight (9.35 for Fireball). From here it reads nothing from the Skill or the Character.
 4. **Each physics frame**, 60 a second, in the engine's order (Engine facts 1):
    1. The signals for what the last physics step found it overlapping, walls and props through `body_entered`, Hurtboxes through `area_entered` (item 5).
-   2. Its `_physics_process`. At its end, it `queue_free()`s and is deleted before the physics step (Engine facts 2). Otherwise it moves one step: its Projectile speed times `delta`, the last one shortened to end exactly at its flight. During a hitstop `delta` is 0: it holds still and doesn't end.
+   2. Its `_physics_process`. At its end, it `queue_free()`s and is deleted before the physics step (Engine facts 2). Otherwise it moves one step: its Projectile speed times `delta`, the last one shortened to end exactly at its flight. During a hitstop `delta` is 0: it holds still and its flight isn't cut short (rule 8: one already at its end, or that can't fly, still ends).
    3. The physics step finds what it overlaps where it now is.
 
    So every position it moves to is looked at once, its last one included. In play the step right after the throw also looks at the spot where it starts, since it isn't processed until the next frame; a ball thrown from a test's body after `wait_physics_frames` moves once before its first look (Known limits).
@@ -297,7 +311,7 @@ The file's helpers, as they end:
 - `after_each()`: `Engine.time_scale = 1.0` (in case a test froze it), then frees every ball, as above.
 - `_balls() -> Array[Node]`: `find_children("*", "Projectile", false, false)`, the balls in the test's node: those a test made itself, and those the player's Fireball threw beside the player.
 - `_zombie_at(x)`: as today, and its Hurtbox's `hit_taken` appends that Hurtbox to `hits` (a lambda taking step 9's arguments, `(_hit: Hit, _direction: Vector3)`). Hits are read from the zombies now: the ball has no signal.
-- `_fire(tags, speed := 15.0, damage := 0.0) -> Projectile`: a ball made in the test, `add_child_autoqfree`d, then `launch()`ed from the origin along `Vector3.RIGHT` with the mask hostile to the player's Faction, carrying a Hit whose Snapshot holds `tags` and the numbers `{Fireball.PROJECTILE_SPEED: speed, Skill.RANGE: 12.0, Skill.DAMAGE: damage, Skill.KNOCKBACK: 0.0, Skill.STAGGER: 0.0}`, with no dealer and no freeze, made as step 9's `test_hit.gd` makes one: `Hit.new(snapshot, null, false)` (its open rule 3; answered b, the dealer is a stand-in `autofree(Character.new())` instead). It starts at (0.45, 0.5, 0), moves 0.25 a frame at 15, and its front stops at 12. The Damage, Knockback and Stagger are new: the ball now lands its Hit on real zombies, whose Character reads all three (`Snapshot.number()` asserts on a number it lacks). At 0 a zombie neither loses Health nor moves (step 1: Health ignores 0; step 6: a Stagger of 0 does nothing).
+- `_fire(tags, projectile_speed := 15.0, damage := 0.0) -> Projectile`: a ball made in the test, `add_child_autoqfree`d, then `launch()`ed from the origin along `Vector3.RIGHT` with the mask hostile to the player's Faction, carrying a Hit whose Snapshot holds `tags` and the numbers `{Fireball.PROJECTILE_SPEED: projectile_speed, Skill.RANGE: 12.0, Skill.DAMAGE: damage, Skill.KNOCKBACK: 0.0, Skill.STAGGER: 0.0}`, with no dealer and no freeze, made as step 9's `test_hit.gd` makes one: `Hit.new(snapshot, null, false)` (its open rule 3; answered b, the dealer is a stand-in `autofree(Character.new())` instead), as `test_flies_along_its_direction_then_disappears_after_its_range` makes its Hit too. It starts at (0.45, 0.5, 0), moves 0.25 a frame at 15, and its front stops at 12. The Damage, Knockback and Stagger are new: the ball now lands its Hit on real zombies, whose Character reads all three (`Snapshot.number()` asserts on a number it lacks). At 0 a zombie neither loses Health nor moves (step 1: Health ignores 0; step 6: a Stagger of 0 does nothing).
 - `_players_fireball()`: step 7's, unchanged.
 
 Every test, as step 9 leaves it:
@@ -330,13 +344,14 @@ All in `tests/test_projectile.gd`. "The base" is step 9's branch (`hit`).
 | `test_an_enemys_ball_goes_into_its_level_and_goes_with_it` | 01 | Rules 2 and 4: a `Node3D` standing in for a Level (`add_child_autofree`), a zombie in it, a Fireball (`fireball.tscn`) given to the zombie with `add_skill()` and thrown along `Vector3.RIGHT`. The ball, found with `level.find_children("*", "Projectile", true, false)`, has the Level as its parent; after `level.free()` it is freed. No physics frame is needed. | Fails: the ball's parent is the zombie's Fireball. |
 | `test_a_ball_flies_on_past_a_zombie_its_hit_missed` | 02 | Rule 6: a zombie at 2 with 10 Health left (`health.damage(40.0)`), a second at 4; two balls `_fire([], 15.0, 10.0)`, no Pierce, side by side, so both touch the first zombie in the same physics step. One ball's Hit kills it and that ball ends; the other's misses it and flies on to the second. 20 frames later `hits == [first, second]`, read before the first zombie's 0.45 s sink frees it. | Fails before ticket 02: the second ball counts the dead zombie and stops; `hits` is `[first]`. |
 | `test_a_fireballs_front_reaches_its_range` | 03 | Rule 5, the near side: the player's Fireball (Range 10) thrown at a zombie centred at 10.15, its near side 9.9 from the player's centre: 55 frames later its Health is 30. The ball touches it only from its last position (centre 9.8, 0.35 away; the one before, 9.65, is 0.5 away). | Passes: the base reaches farther. It guards the end check's place: a ball that ends in the frame of its last move never has that position looked at, and misses. |
-| `test_a_fireball_never_touches_a_zombie_wholly_beyond_its_range` | 03 | Rule 5, the far side: the same throw at a zombie centred at 10.35, near side 10.1: 55 frames later its Health is 50 and `_balls()` is empty. | Fails: the base's ball looks with its centre at about 10.25, 0.1 from the zombie's, and hits it. |
+| `test_a_fireball_never_touches_a_zombie_wholly_beyond_its_range` | 03 | Rule 5, the far side: the same throw at a zombie centred at 10.35, near side 10.1: 55 frames later its Health is 50 and `_balls()` is empty. | Fails: the base's ball looks with its centre at 10.45, 0.1 from the zombie's, and hits it. |
+| `test_a_fireballs_last_step_is_cut_short_at_its_range` | 03 | Rule 5, the last step: a zombie centred at 10.27, near side 10.02 (the ball and the Hurtbox's straight part are both at height 0.5, so the horizontal gap is the whole distance): 55 frames later its Health is 50. Added by the review. | Fails without the `minf` clamp on the last step: a step of 0.2 puts the front at 10.05, which touches it. |
 | `test_a_ball_with_no_projectile_speed_ends` | 04 | Rule 7: `_fire([], 0.0)`; 3 frames later it is freed. | Fails: it never moves and never ends. |
 | `test_a_ball_frozen_by_a_hitstop_flies_on_after_it` | 04 | Rule 8: a zombie at 4, `_fire([])`, then `Engine.time_scale = 0.0` as a hitstop does; 10 frames later the ball is not freed; `Engine.time_scale = 1.0`, and 30 frames later `hits == [zombie]`. | Passes: a guard. It fails if a ball's end is tested on its step, which a hitstop makes 0, instead of its Projectile speed. |
 
 Why these positions: the zombies at 10.15 and 10.35 are beyond their Aggro radius (6) of the player, so they never notice it; one at 3 notices the player and stands too (no navmesh in a test, `.scratch/skill-character/spec.md` Engine facts 8), and keeps standing once the player is freed (a freed target reads as false, Engine facts 8). The two Range tests can't share a throw: Fireball's 4 s Cooldown allows one per test, and two zombies 0.2 apart on one line would shove each other.
 
-`tests/test_projectile.gd`'s doc comment becomes: "A ball (Projectile) flies straight from beside the Character that threw it and ends where its front reaches its Range from that Character's centre. It carries its throw's Hit and lands it itself, so it flies on when its Skill and its Character are gone. It stops at the first hostile Hurtbox its Hit lands on, or with Pierce at the second, lands on each once, flies on past one its Hit misses, and stops at any wall. after_each frees every ball a test threw: a ball lives beside its Character, not under it."
+`tests/test_projectile.gd`'s doc comment becomes: "A ball (Projectile) flies straight from beside the Character that threw it and ends where its front reaches its Range from that Character's centre. It carries its throw's Hit and lands it itself, so it flies on when its Skill and its Character are gone. It stops at the first hostile Hurtbox its Hit lands on, or with Pierce at the second, lands on each once, flies on past one its Hit misses, and stops at any wall. Its front reaches exactly its Range, never farther. A ball that can't fly ends where it starts. A ball frozen by a hitstop flies on after it. A ball outlives its Character, and an Enemy's goes into its Level and goes with it. after_each frees every ball a test threw: a ball lives beside its Character, not under it."
 
 ## Checking by hand
 
@@ -383,13 +398,17 @@ On this branch, and on the base (`hit`) where a comparison is asked for. Take th
   > What one activation of a Skill does to each Hurtbox it reaches. It carries the activation's Snapshot and the Character that dealt it, and lands unchanged on every Hurtbox the activation reaches: each Character hit works out what it does to them. A projectile carries its Hit and lands it itself, even after the Skill and the Character that dealt it are gone.
   > _Avoid_: Strike, damage event, attack (the Attack is a Skill)
 
-Hit feedback ("A projectile's hit doesn't freeze the world"), Hurtbox, Aim and Activate still say what the code does.
+Hit feedback ("A projectile's Hit doesn't freeze the world"), Hurtbox, Aim and Activate still say what the code does.
 
 **`docs/agents/godot-conventions.md`** (ticket 05):
 
+- "Call down, signal up", the sentences on handing a child a reference (find them by their text), which now read:
+
+  > A parent may hand a child a reference to what the child needs, as a Character hands itself to each of its Skills (`Skill.character`), and the child may use what it was handed. What stays ruled out is a child finding its parent by itself, with `get_parent()` or a path. A Skill uses its Character in three ways: it reads the Character's Faction to know what is hostile, its Hits name the Character as their dealer, and it puts what it leaves in the world beside the Character. A Skill puts a node in the world only through `Skill._add_to_world()`, never by adding it to another node itself.
+
 - "Levels and navigation", a bullet after step 5's three on the game scene and the Level (find it by its text):
 
-  > - What a Skill leaves in the world, such as a ball in flight, goes beside its Character (`Skill._add_to_world()`): the player's into `World`, where a Level change doesn't free it, and an Enemy's into its Level, which frees it with itself. Whatever changes Levels, at the second Level, must free the player's too.
+  > - What a Skill leaves in the world, such as a ball in flight, goes beside its Character, by the rule in "Call down, signal up": the player's into `World`, where a Level change doesn't free it, and an Enemy's into its Level, which frees it with itself. Whatever changes Levels, at the second Level, must free the player's too.
 
 - "Tests and checks", at the end of step 7's paragraph that starts "A test that activates a Skill gives it a Character":
 
@@ -440,9 +459,9 @@ Lines this step touches in files other steps touch:
 1. **How far a ball reaches** (plan.md's working answer, the analysis's Brief D).
    - **a. Its front reaches exactly its Range from the Character's centre** (recommended, and written above): the same rule as the swing and Auto-aim.
    - b. Its centre travels to Range: its front reaches Range + 0.2.
-   - c. As after step 9: its centre flies Range from 0.45 out, and the physics step never looks at its last position: its front reaches about 10.45.
+   - c. As after step 9: its centre flies Range from 0.45 out, and the physics step never looks at its last position: its front reaches about 10.65.
 
-   *In play:* under a, a zombie whose body crosses the ring is hit and one wholly outside it never is; under b a sliver of 0.2 past the ring can be hit, under c 0.45. *Why a:* what the ring shows is what is reached, for every Skill. *Touches:* `launch()`'s flight and the two Range tests.
+   *In play:* under a, a zombie whose body crosses the ring is hit and one wholly outside it never is; under b a sliver of 0.2 past the ring can be hit, under c 0.65. *Why a:* what the ring shows is what is reached, for every Skill. *Touches:* `launch()`'s flight and the two Range tests.
 
 2. **Where a Skill puts what it leaves in the world.**
 
@@ -458,6 +477,12 @@ Lines this step touches in files other steps touch:
    - **a. It ends at its first physics frame, where it starts** (recommended, rule 7). In play the physics step right after the throw looks there, so it can still land its Hit on a Hurtbox touching it at the start; with a Range under 0.65 that Hurtbox may lie a little beyond the Range.
    - b. Fireball throws nothing: the activation still starts its Cooldown, and nothing is hit. A check in `_activate` that knows the ball's radius and offset.
    - c. The ball starts nearer the Character, so its front is at the Range from the start; with a Range under 0.2 it starts inside the Character.
+
+   For the short Ranges, where the ball's front is at its last look (old ball, new ball):
+
+   - Range 0.5: old 1.05, new 0.65 (the ball ends at its first frame).
+   - Range 0.65: old 1.25, new 0.65 (ends at its first frame).
+   - Range 0.66: old 1.25, new 0.66 (one step of 0.01, ends at its second frame).
 
    *In play:* nothing reaches either today: Fireball's Range is 10 and its Projectile speed 12, and no Modifier changes them by that much. A Range of 0 breaks the Attack anyway (`.scratch/number-bounds/spec.md`, Out of scope). *Why a:* no extra code; the first check in `_physics_process` covers both. Revisit with the first Modifier that can cut Range under 0.65.
 

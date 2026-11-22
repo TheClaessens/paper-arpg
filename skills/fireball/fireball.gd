@@ -3,7 +3,7 @@ class_name Fireball
 extends Skill
 ## Fireball: throws a ball of fire (see Projectile) straight where it is aimed, carrying the
 ## activation's Hit. The ball lands the Hit itself on each hostile Hurtbox it touches, with the
-## same Hit feedback as any other Skill except the hitstop: a projectile's hit doesn't freeze the
+## same Hit feedback as any other Skill except the hitstop: a projectile's Hit doesn't freeze the
 ## world. It lives in the world beside the Character, so it flies on after the Skill and the
 ## Character are gone.
 

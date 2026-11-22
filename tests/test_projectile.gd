@@ -2,7 +2,10 @@ extends GutTest
 ## A ball (Projectile) flies straight from beside the Character that threw it and ends where its
 ## front reaches its Range from that Character's centre. It carries its throw's Hit and lands it
 ## itself, so it flies on when its Skill and its Character are gone. It stops at the first hostile
-## Hurtbox it touches, or with Pierce at the second, lands on each once, and stops at any wall.
+## Hurtbox its Hit lands on, or with Pierce at the second, lands on each once, flies on past one its
+## Hit misses, and stops at any wall. Its front reaches exactly its Range, never farther. A ball that
+## can't fly ends where it starts. A ball frozen by a hitstop flies on after it. A ball outlives its
+## Character, and an Enemy's goes into its Level and goes with it.
 ## after_each frees every ball a test threw: a ball lives beside its Character, not under it.
 
 const ProjectileScene := preload("res://skills/fireball/projectile.tscn")
@@ -25,9 +28,8 @@ func after_each() -> void:
 
 func test_flies_along_its_direction_then_disappears_after_its_range() -> void:
 	var projectile: Projectile = add_child_autoqfree(ProjectileScene.instantiate())
-	var dealer: Character = autofree(Character.new())
 	var snapshot := Snapshot.new([], {Fireball.PROJECTILE_SPEED: 60.0, Skill.RANGE: 5.0}, []) # 1 unit per frame at 60 Hz
-	projectile.launch(Hit.new(snapshot, dealer, false), Vector3.ZERO, Vector3.LEFT, 0)
+	projectile.launch(Hit.new(snapshot, null, false), Vector3.ZERO, Vector3.LEFT, 0)
 	await wait_physics_frames(2)
 	assert_lt(projectile.global_position.x, -0.5, "moving left")
 	assert_almost_eq(projectile.global_position.z, 0.0, 0.001, "straight")
@@ -74,15 +76,14 @@ func _zombie_at(x: float) -> Hurtbox:
 	return hurtbox
 
 
-## A ball thrown from the origin along `Vector3.RIGHT`, hostile to the player's Faction, carrying a
-## Hit with `tags` and `speed` (0.25 units a frame at 15) that does `damage` and no knockback or
-## stagger: a Range of 12.
-func _fire(tags: Array[StringName], speed := 15.0, damage := 0.0) -> Projectile:
+## A ball thrown from the origin along `Vector3.RIGHT`, looking on the layers hostile to the
+## player's Faction (so its Hit lands on Enemies), carrying a Hit with `tags` and `projectile_speed`
+## (0.25 units a frame at 15) that does `damage` and no knockback or stagger: a Range of 12.
+func _fire(tags: Array[StringName], projectile_speed := 15.0, damage := 0.0) -> Projectile:
 	var numbers: Dictionary[StringName, float] = {
-		Fireball.PROJECTILE_SPEED: speed, Skill.RANGE: 12.0, Skill.DAMAGE: damage, Skill.KNOCKBACK: 0.0, Skill.STAGGER: 0.0,
+		Fireball.PROJECTILE_SPEED: projectile_speed, Skill.RANGE: 12.0, Skill.DAMAGE: damage, Skill.KNOCKBACK: 0.0, Skill.STAGGER: 0.0,
 	}
-	var dealer: Character = autofree(Character.new())
-	var hit := Hit.new(Snapshot.new(tags, numbers, []), dealer, false)
+	var hit := Hit.new(Snapshot.new(tags, numbers, []), null, false)
 	var ball: Projectile = add_child_autoqfree(ProjectileScene.instantiate())
 	ball.launch(hit, Vector3.ZERO, Vector3.RIGHT, Faction.hostile_mask(Faction.Id.PLAYER))
 	return ball
@@ -164,7 +165,6 @@ func test_a_fireball_hit_knocks_back_without_freezing_the_world() -> void:
 	for i in 20:
 		await wait_physics_frames(1)
 		lowest = minf(lowest, Engine.time_scale)
-	Engine.time_scale = 1.0 # in case it froze, for the tests after this one
 	assert_eq(hits, [zombie], "hit once")
 	assert_eq(lowest, 1.0, "the world never froze")
 	assert_gt(zombie.global_position.x, 2.0, "knocked back")
@@ -257,7 +257,7 @@ func test_a_ball_flies_on_past_a_zombie_its_hit_missed() -> void:
 	await wait_physics_frames(2)
 	_fire([], 15.0, 10.0)
 	_fire([], 15.0, 10.0) # side by side: both touch the first zombie in the same physics step
-	await wait_physics_frames(20)
+	await wait_physics_frames(20) # about 14 frames at 0.25 a frame to cross the 3.1 to the second zombie; the rest is slack
 	assert_eq(hits, [first, second], "the ball whose Hit missed the dead zombie flew on to the second")
 
 
@@ -266,7 +266,7 @@ func test_a_fireballs_front_reaches_its_range() -> void:
 	var zombie: Enemy = _zombie_at(10.15).get_parent() # its near side is 9.9 from the player's centre
 	await wait_physics_frames(2)
 	fireball.try_activate(Vector3.RIGHT, [])
-	await wait_physics_frames(55)
+	await wait_physics_frames(55) # its flight takes 47 frames at Projectile speed 12, and one more to end; the rest is slack
 	assert_eq(zombie.health.current, 30.0, "the ball's front reaches the Range of 10")
 
 
@@ -275,9 +275,21 @@ func test_a_fireball_never_touches_a_zombie_wholly_beyond_its_range() -> void:
 	var zombie: Enemy = _zombie_at(10.35).get_parent() # its near side is 10.1 from the player's centre
 	await wait_physics_frames(2)
 	fireball.try_activate(Vector3.RIGHT, [])
-	await wait_physics_frames(55)
+	await wait_physics_frames(55) # its flight takes 47 frames at Projectile speed 12, and one more to end; the rest is slack
 	assert_eq(zombie.health.current, 50.0, "untouched")
 	assert_eq(_balls(), [] as Array[Node], "the ball has ended")
+
+
+func test_a_fireballs_last_step_is_cut_short_at_its_range() -> void:
+	var fireball := _players_fireball()
+	# Its near side is 10.02 from the player's centre. A step is 0.2, so an unclipped last step would
+	# put the front at 10.05 and touch it; the clipped one stops the front at 10.0. The ball and the
+	# Hurtbox's straight part are both at height 0.5, so the horizontal gap is the whole distance.
+	var zombie: Enemy = _zombie_at(10.27).get_parent()
+	await wait_physics_frames(2)
+	fireball.try_activate(Vector3.RIGHT, [])
+	await wait_physics_frames(55) # 47 frames of flight and one to end; the rest is slack
+	assert_eq(zombie.health.current, 50.0, "the front stopped at the Range of 10, short of its near side")
 
 
 func test_a_ball_with_no_projectile_speed_ends() -> void:
