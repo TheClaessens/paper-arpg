@@ -45,7 +45,9 @@ To check a change visually, `tools/screenshot.gd` opens a scene, runs console co
 
 Reach for these before writing a one-off check script.
 
-A test that simulates a screen touch sends it with `get_viewport().push_input(event, true)`. Without `true` the position is read as window coordinates and lands somewhere else. Touch on the Skill bar's buttons is tested by emitting a `SkillSlotButton`'s `touch_started`/`touch_moved`/`touch_ended` signals: under GUT, pushed touch and mouse events don't reach them.
+A test that keeps a node's `_physics_process` from running calls `set_physics_process(false)` after `add_child`: a node whose script has `_physics_process` turns it back on when it becomes ready.
+
+A test that simulates a screen touch sends it with `get_viewport().push_input(event, true)`. Without `true` the position is read as window coordinates and lands somewhere else. Pushed that way, a touch reaches a `SkillSlotButton` too; emitting its `touch_started`/`touch_moved`/`touch_ended` signals tests the HUD without one.
 
 To try a change on the iPhone, `tools/deploy_ios.sh` exports, installs and launches the debug build. Its header lists the known failures and their fixes.
 
