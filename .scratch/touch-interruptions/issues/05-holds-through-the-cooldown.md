@@ -29,7 +29,7 @@ Also: the HUD's class doc comment says that holding a Skill that repeats while h
 
 **Blocked by:** 02: A lost finger on a Skill slot activates nothing (same file, next to its changes); the developer's answer to the spec's open rule 1.
 
-**Status:** ready-for-human
+**Status:** done
 
 Built in `.scratch/aim-modes/` (ticket 04), as the last commit of that branch so it reverts alone; waiting for the developer's try on the phone.
 

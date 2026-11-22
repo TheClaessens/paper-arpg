@@ -1,6 +1,6 @@
 # Future-proofing: plan and decisions
 
-Status: steps 1 to 10 merged into `master` on 2026-11-22 (#22 to #31, then one resave commit); step 11 is `.scratch/aim-modes/`
+Status: done. All eleven steps are merged into `master` (#22 to #32, 2026-11-22). What is left is under "At their triggers, not now".
 
 ## Where it stands (2026-11-22)
 

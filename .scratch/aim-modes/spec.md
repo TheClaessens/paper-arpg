@@ -1,6 +1,6 @@
 # Aim modes
 
-Status: ready-for-agent
+Status: done (merged with PR #32 on 2026-11-22)
 
 Step 11 of `.scratch/future-proofing-review/plan.md`. Agreed in chat on 2026-11-22: how a Skill is aimed becomes one named, saved thing that Skills share, the **Aim mode**. Play stays the same, apart from three touch fixes listed under "The touch fixes".
 
