@@ -9,6 +9,11 @@ extends Area3D
 signal hit_taken(direction: Vector3, snapshot: Snapshot)
 
 
-## Hit by a Skill's activation made as `snapshot`, pushing along `direction`.
-func take_hit(direction: Vector3, snapshot: Snapshot) -> void:
+## Hit by a Skill's activation made as `snapshot`, pushing along `direction`. Whether the hit
+## landed: off every layer (its Character has died) it misses, so a second hit in the frame
+## that killed the Character reports nothing.
+func take_hit(direction: Vector3, snapshot: Snapshot) -> bool:
+	if collision_layer == 0:
+		return false
 	hit_taken.emit(direction, snapshot)
+	return true

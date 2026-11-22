@@ -154,3 +154,24 @@ func test_a_fireball_lowers_a_zombies_health_by_its_damage() -> void:
 	await wait_physics_frames(30)
 	assert_eq(zombie.health.current, 30.0, "50 less the Fireball's Damage of 20")
 	Engine.time_scale = 1.0 # the hitstop the hit started
+
+
+func test_a_piercing_ball_passes_through_the_zombie_it_kills_and_stops_at_the_next() -> void:
+	var fireball: Fireball = preload("res://skills/fireball/fireball.tscn").instantiate()
+	add_child_autoqfree(fireball)
+	var dying: Enemy = _zombie_at(2.0).get_parent()
+	dying.health.damage(40.0) # the Fireball's 20 kills it
+	var deaths: Array[bool] = []
+	dying.health.died.connect(func() -> void: deaths.append(true))
+	var second := _zombie_at(4.0)
+	var third := _zombie_at(6.0)
+	await wait_physics_frames(2)
+	watch_signals(second)
+	watch_signals(third)
+	fireball.try_activate(Vector3.RIGHT, [load("res://skills/modifiers/pierce.tres")])
+	Engine.time_scale = 1.0
+	await wait_physics_frames(40)
+	assert_eq(deaths.size(), 1, "the first is killed")
+	assert_signal_emit_count(second, "hit_taken", 1, "the kill was its pierced hit")
+	assert_signal_not_emitted(third, "hit_taken", "it stopped at the second")
+	Engine.time_scale = 1.0

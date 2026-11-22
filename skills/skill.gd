@@ -276,10 +276,11 @@ func _hurtboxes_within(reach: float) -> Array[Hurtbox]:
 ## Lands one activation's hits: each Hurtbox in `hits` is hit pushing along its direction (a
 ## unit vector on the ground) with the activation's `snapshot`; its Character reads what the hit
 ## does from that. The impact (hitstop, screen shake) plays once for the whole activation,
-## however many it hit. For the Skills themselves.
+## however many it hit, and only if at least one hit landed. For the Skills themselves.
 func _land_hits(hits: Dictionary[Hurtbox, Vector3], snapshot: Snapshot) -> void:
-	if hits.is_empty():
-		return
+	var landed := false
 	for hurtbox in hits:
-		hurtbox.take_hit(hits[hurtbox], snapshot)
-	HitFeedback.shared().play_impact(get_viewport())
+		if hurtbox.take_hit(hits[hurtbox], snapshot):
+			landed = true
+	if landed:
+		HitFeedback.shared().play_impact(get_viewport())

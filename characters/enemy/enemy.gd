@@ -3,7 +3,8 @@ extends CharacterBody3D
 ## A Character of the Enemies' Faction (see GLOSSARY.md). Stands still until its Aggro notices
 ## the player, then chases them along the navmesh for good, stopping within reach.
 ## A hit on its Hurtbox lowers its Health by the hit's Damage and staggers it: it slides away
-## with the knockback and doesn't chase until the Stagger ends.
+## with the knockback and doesn't chase until the Stagger ends. At 0 Health it dies: it sinks
+## through the floor where it stood and is gone.
 
 ## The Enemy's Faction: the Enemies', unless its scene says otherwise. It puts its Hurtbox on
 ## that Faction's layer.
@@ -33,6 +34,7 @@ var _knockback := Vector3.ZERO # direction times distance
 func _ready() -> void:
 	hurtbox.collision_layer = Faction.layer(faction)
 	hurtbox.hit_taken.connect(_on_hit_taken)
+	health.died.connect(_die)
 	($Aggro as Aggro).aggroed.connect(func(target: Node3D) -> void: _target = target)
 	_agent.velocity_computed.connect(_on_velocity_computed)
 	_agent.max_speed = _movement.speed # avoidance never speeds an Enemy past its own top speed
@@ -99,6 +101,19 @@ func _on_velocity_computed(safe_velocity: Vector3) -> void:
 	else:
 		_standee.play(&"walk")
 		_standee.face(velocity)
+
+
+## At 0 Health: stops chasing and sliding (so the killing hit doesn't knock it back), leaves
+## every collision layer so nothing can hit, aim at, ring or bump into it, and sinks through the
+## floor where it stood. Gone once the sink ends.
+func _die() -> void:
+	set_physics_process(false)
+	_standee.play(&"idle") # no walk wobble on top of the sink's
+	_agent.avoidance_enabled = false # other Enemies no longer steer around it
+	collision_layer = 0
+	hurtbox.collision_layer = 0
+	_standee.sunk.connect(queue_free)
+	_standee.sink()
 
 
 ## Staggered: slides with the knockback and doesn't steer. Skips the navigation agent, which

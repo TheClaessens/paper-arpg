@@ -6,9 +6,9 @@
 
 **Status:** ready-for-agent
 
-- [ ] Five Attacks kill a zombie; it sinks in place in 0.45 s after the hitstop and is then freed.
-- [ ] The killing hit doesn't knock it back.
-- [ ] While sinking it can't be hit, auto-aimed or ringed, and doesn't block other Characters.
-- [ ] A second hit on it in the same frame misses: no flash, no Hit feedback of its own, no second `died`. Hit feedback plays only when at least one hit landed.
-- [ ] A Pierce projectile passes through the zombie it kills and stops at the next Hurtbox.
+- [x] Five Attacks kill a zombie; it sinks in place in 0.45 s after the hitstop and is then freed.
+- [x] The killing hit doesn't knock it back.
+- [x] While sinking it can't be hit, auto-aimed or ringed, and doesn't block other Characters.
+- [x] A second hit on it in the same frame misses: no flash, no Hit feedback of its own, no second `died`. Hit feedback plays only when at least one hit landed.
+- [x] A Pierce projectile passes through the zombie it kills and stops at the next Hurtbox.
 - [ ] GUT tests cover the above; `tools/check.sh` passes; checked once in game.
