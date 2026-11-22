@@ -32,11 +32,11 @@ var skill_bar: SkillBar:
 	get:
 		return $SkillBar
 
-## The Skills the player has: every Skill node it holds.
+## The Skills the player has: every Skill under its Skills node.
 var skills: Array[Skill]:
 	get:
 		var found: Array[Skill] = []
-		for child in get_children():
+		for child in $Skills.get_children():
 			if child is Skill:
 				found.append(child as Skill)
 		return found
@@ -208,10 +208,10 @@ func _cmd_bar(args: PackedStringArray) -> String:
 		skill_bar.set_skill(slot, null)
 		return "bar %d empty" % (slot + 1)
 	for skill in skills:
-		if skill.title.to_lower() == args[1].to_lower():
+		if String(skill.name).to_lower() == args[1].to_lower():
 			skill_bar.set_skill(slot, skill)
 			return "bar %d %s" % [slot + 1, skill.title]
-	return "Unknown Skill '%s'. The player has: %s" % [args[1], ", ".join(skills.map(func(skill: Skill) -> String: return skill.title))]
+	return "Unknown Skill '%s'. The player has: %s" % [args[1], ", ".join(skills.map(func(skill: Skill) -> String: return skill.name))]
 
 
 func _cmd_activate(args: PackedStringArray) -> String:

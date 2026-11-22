@@ -97,6 +97,23 @@ func test_its_skills_are_the_skill_nodes_it_holds() -> void:
 	assert_eq(titles, ["Attack", "Fireball"] as Array[String])
 
 
+func test_its_skills_stand_where_it_stands() -> void:
+	player.global_position = Vector3(3.0, 0.0, -2.0)
+	for skill in player.skills:
+		assert_eq(skill.global_position, Vector3(3.0, 0.0, -2.0), "%s stands with the player" % skill.name)
+
+
+func test_its_skills_come_before_its_skill_bar() -> void:
+	assert_lt(player.get_node("Skills").get_index(), player.skill_bar.get_index(), "so a Skill's Cooldown runs before the Skill bar asks")
+
+
+func test_bar_finds_a_skill_by_its_node_name() -> void:
+	var fireball: Skill = player.get_node("Skills/Fireball")
+	fireball.title = "Ball of fire"
+	assert_eq(Console.execute("bar 2 fireball"), "bar 2 Ball of fire")
+	assert_eq(player.skill_bar.skill_in(1), fireball)
+
+
 
 # A thumb drag on screen becomes an aim on the ground: screen right and screen down are the
 # camera's right and back axes on the ground.
@@ -129,7 +146,7 @@ func test_after_an_activation_the_player_faces_the_aim_for_a_moment() -> void:
 
 func test_bar_puts_a_skill_in_a_slot_and_empties_it() -> void:
 	assert_eq(Console.execute("bar 2 fireball"), "bar 2 Fireball")
-	assert_eq(player.skill_bar.skill_in(1), player.get_node("Fireball"))
+	assert_eq(player.skill_bar.skill_in(1), player.get_node("Skills/Fireball"))
 	assert_eq(Console.execute("bar 2 empty"), "bar 2 empty")
 	assert_null(player.skill_bar.skill_in(1))
 
@@ -249,7 +266,7 @@ func test_auto_aim_ignores_height() -> void:
 
 
 func test_auto_aim_at_a_body_in_range_goes_as_far_as_the_range() -> void:
-	var attack: Skill = player.get_node("Attack") # Range 1.6, which a 32-bit length can't hold exactly
+	var attack: Skill = player.get_node("Skills/Attack") # Range 1.6, which a 32-bit length can't hold exactly
 	player.facing = Vector3.RIGHT
 	var zombie: Enemy = ZombieScene.instantiate()
 	add_child_autofree(zombie)
@@ -260,7 +277,7 @@ func test_auto_aim_at_a_body_in_range_goes_as_far_as_the_range() -> void:
 
 
 func test_the_players_skills_never_aim_at_the_players_faction() -> void:
-	var attack: Skill = player.get_node("Attack")
+	var attack: Skill = player.get_node("Skills/Attack")
 	player.facing = Vector3.RIGHT
 	var friend: Hurtbox = preload("res://characters/hurtbox/hurtbox.tscn").instantiate()
 	friend.collision_layer = Faction.layer(Faction.Id.PLAYER)

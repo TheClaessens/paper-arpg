@@ -50,3 +50,5 @@ max_health = 50.0
 
 [node name="HealthBar" parent="." unique_id=1938276009 instance=ExtResource("8_health_bar")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+
+[node name="Skills" type="Node3D" parent="."]

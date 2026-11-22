@@ -12,9 +12,9 @@
 
 The scene edits are made in text, in a worktree no editor has open, and checked with the spec's scene check before the commit. After the commit the developer reloads the project before saving anything in the editor.
 
-- [ ] The spec folder and the two glossary entries are the branch's first commit.
-- [ ] `player.tscn`: `Skills` (a `Node3D`, no transform, no `unique_id`) after `FacingArrow`'s `Mesh` and before `Attack`; `Attack` and `Fireball` under it, keeping `unique_id`s 1240203622 and 877120161; `main_skill = NodePath("../Skills/Attack")`. The scene check shows only the `Skills` line and `main_skill`'s new path.
-- [ ] `zombie.tscn` ends with an empty `Skills` `Node3D`; the scene check shows only that line.
-- [ ] `player.skills` lists the Skills under `Skills`. `bar 2 fireball` finds the node `Fireball` whatever its title, and "Unknown Skill" lists node names.
-- [ ] The five path changes and the three new tests are in; `tools/check.sh` passes.
+- [x] The spec folder and the two glossary entries are the branch's first commit.
+- [x] `player.tscn`: `Skills` (a `Node3D`, no transform, no `unique_id`) after `FacingArrow`'s `Mesh` and before `Attack`; `Attack` and `Fireball` under it, keeping `unique_id`s 1240203622 and 877120161; `main_skill = NodePath("../Skills/Attack")`. The scene check shows only the `Skills` line and `main_skill`'s new path.
+- [x] `zombie.tscn` ends with an empty `Skills` `Node3D`; the scene check shows only that line.
+- [x] `player.skills` lists the Skills under `Skills`. `bar 2 fireball` finds the node `Fireball` whatever its title, and "Unknown Skill" lists node names.
+- [x] The five path changes and the three new tests are in; `tools/check.sh` passes.
 - [ ] `screenshot.gd` with `"tp 19 4" "activate 1 1 0"` (spec, Checking by hand, item 3) shows the swing at the player.

@@ -57,7 +57,7 @@ func test_a_slot_takes_a_skill_from_the_drawer() -> void:
 	_button("SkillBarItem").pressed.emit()
 	_choose_slot(1)
 	_button("Fireball").pressed.emit()
-	assert_eq(player.skill_bar.skill_in(1), player.get_node("Fireball"))
+	assert_eq(player.skill_bar.skill_in(1), player.get_node("Skills/Fireball"))
 	assert_null(_button("Fireball"), "the drawer closed")
 
 

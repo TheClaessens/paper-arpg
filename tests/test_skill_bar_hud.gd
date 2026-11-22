@@ -21,7 +21,7 @@ func before_each() -> void:
 	player = PlayerScene.instantiate()
 	add_child_autofree(player)
 	player.set_physics_process(false) # after add_child, or _ready turns it back on
-	player.skill_bar.set_skill(1, player.get_node("Fireball") as Skill)
+	player.skill_bar.set_skill(1, player.get_node("Skills/Fireball") as Skill)
 	hud = HudScene.instantiate()
 	hud.player = player
 	add_child_autofree(hud)
