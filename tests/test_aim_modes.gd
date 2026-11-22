@@ -24,8 +24,8 @@ var skill: TestSkill
 
 func before_each() -> void:
 	player = PlayerScene.instantiate()
-	player.set_physics_process(false) # no camera here to read input against
 	add_child_autofree(player)
+	player.set_physics_process(false) # no camera here to read input against; after add_child, or _ready turns it back on
 	skill = TestSkill.new()
 	skill.cooldown = 1.0
 	skill.range = 2.0

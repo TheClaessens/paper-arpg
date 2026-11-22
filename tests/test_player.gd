@@ -9,8 +9,8 @@ var player: Player
 
 func before_each() -> void:
 	player = PlayerScene.instantiate()
-	player.set_physics_process(false) # no camera here to read input against
 	add_child_autofree(player)
+	player.set_physics_process(false) # no camera here to read input against; after add_child, or _ready turns it back on
 
 
 func test_tp_moves_the_player() -> void:
@@ -249,7 +249,6 @@ func test_auto_aim_ignores_height() -> void:
 
 func test_auto_aim_at_a_body_in_range_goes_as_far_as_the_range() -> void:
 	var attack: Skill = player.get_node("Attack") # Range 1.6, which a 32-bit length can't hold exactly
-	player.set_physics_process(false) # off once in the tree, or _ready turns it back on: the player stays put
 	player.facing = Vector3.RIGHT
 	var zombie: Enemy = ZombieScene.instantiate()
 	add_child_autofree(zombie)

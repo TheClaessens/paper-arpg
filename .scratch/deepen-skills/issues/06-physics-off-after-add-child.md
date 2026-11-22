@@ -4,5 +4,5 @@
 
 **Status:** ready-for-agent
 
-- [ ] Each of those `before_each` turns physics off after `add_child`.
-- [ ] Tests that turn physics back on themselves still pass; `tools/check.sh` passes.
+- [x] Each of those `before_each` turns physics off after `add_child`.
+- [x] Tests that turn physics back on themselves still pass; `tools/check.sh` passes.

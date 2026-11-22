@@ -14,8 +14,8 @@ var player: Player
 
 func before_each() -> void:
 	player = PlayerScene.instantiate()
-	player.set_physics_process(false) # no camera here to read input against
 	add_child_autofree(player)
+	player.set_physics_process(false) # no camera here to read input against; after add_child, or _ready turns it back on
 	hud = HudScene.instantiate()
 	hud.player = player
 	menu = MenuScene.instantiate()
