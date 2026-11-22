@@ -48,7 +48,7 @@ func test_a_hit_on_the_player_neither_freezes_nor_shakes_the_world() -> void:
 	var player: Player = PlayerScene.instantiate()
 	player.add_child(HurtboxScene.instantiate()) # player.tscn has none yet: the first Enemy Skill will bring one
 	add_child_autofree(player)
-	player.set_physics_process(false) # no camera here to read input against, as in test_player.gd
+	player.set_physics_process(false) # nothing drives the Player here, so it doesn't read input against the camera
 	var landed := Hit.new(_snapshot(10.0, 0.0, 0.0), null, true).land({player.hurtbox: Vector3.RIGHT})
 	assert_true(landed)
 	assert_eq(player.health.current, 90.0, "it took the Damage")

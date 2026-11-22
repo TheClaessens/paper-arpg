@@ -50,9 +50,9 @@ const SHORTEST_COOLDOWN := 0.1
 		update_configuration_warnings()
 ## The Skill's Range: how far it reaches from the Character's centre, in world units.
 @export var range := 1.0
-## How much Health a hit takes away (its Damage).
+## How much Health a Hit takes away (its Damage).
 @export var damage := 0.0
-## How far a hit pushes an Enemy, in world units.
+## How far a Hit pushes an Enemy, in world units.
 @export var knockback := 0.0
 ## How long a hit Enemy slides without chasing (its Stagger), in seconds.
 @export var stagger := 0.0
@@ -163,7 +163,7 @@ func target_for(_aim: Vector3) -> Node3D:
 	return null
 
 
-## The layers of every Faction hostile to its Character's: where its hits look.
+## The layers of every Faction hostile to its Character's: where its Hits look.
 func hostile_mask() -> int:
 	return Faction.hostile_mask(character.faction)
 

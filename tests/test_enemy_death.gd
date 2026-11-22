@@ -19,7 +19,7 @@ func before_each() -> void:
 
 
 func after_each() -> void:
-	Engine.time_scale = 1.0 # the hitstops the hits started
+	Engine.time_scale = 1.0 # the hitstops the Hits started
 
 
 ## Swings the Attack at the zombie `times` times, its Cooldown skipped.
@@ -50,9 +50,9 @@ func test_it_sinks_where_it_stood_and_is_freed_after_the_sink() -> void:
 	Engine.time_scale = 1.0
 	await wait_seconds(0.3)
 	assert_not_freed(zombie, "still sinking")
-	assert_almost_eq(zombie.global_position, Vector3(1.0, 0.0, 0.0), Vector3.ONE * 0.001, "the killing hit doesn't knock it back")
+	assert_almost_eq(zombie.global_position, Vector3(1.0, 0.0, 0.0), Vector3.ONE * 0.001, "the killing Hit doesn't knock it back")
 	await wait_seconds(0.25)
-	assert_freed(zombie, "gone 0.45 s after the hit")
+	assert_freed(zombie, "gone 0.45 s after the Hit")
 
 
 ## Stands in for one Attack and one Fireball landing in the same frame, where the second finds

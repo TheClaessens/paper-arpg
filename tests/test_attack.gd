@@ -1,7 +1,7 @@
 extends GutTest
 ## The Attack's Sweep along Facing: a Hurtbox counts when its centre lies inside it. Whether it
 ## is within Range is asked of the physics engine first (see test_hurtbox.gd).
-## A swing's hit freezes the world, unlike a projectile's (see test_projectile.gd).
+## A swing's Hit freezes the world, unlike a projectile's (see test_projectile.gd).
 
 const AttackScene := preload("res://skills/attack/attack.tscn")
 const PlayerScene := preload("res://characters/player/player.tscn")

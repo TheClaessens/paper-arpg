@@ -1,7 +1,7 @@
 class_name HitFeedback
 extends Resource
 ## Hit feedback (see GLOSSARY.md): how the game shows the moment a Hit lands. Game-wide, not
-## per Skill: no game system changes it, and melee and ranged hits felt the same in the tuning
+## per Skill: no game system changes it, and melee and ranged Hits felt the same in the tuning
 ## study the values started from (see .scratch/combat/spec.md). One shared set,
 ## `hit_feedback.tres`, serves everything: shared() returns it. Tune it in the editor. How hard a
 ## Hit pushes (knockback, Stagger) belongs to the Skill. The Character hit shows the flash and
@@ -23,7 +23,7 @@ extends Resource
 static var _shared: HitFeedback
 
 ## The game's one set of Hit feedback. Kept once loaded: load() alone forgets a resource
-## nothing holds, and would read the file again on every hit.
+## nothing holds, and would read the file again on every Hit.
 static func shared() -> HitFeedback:
 	if _shared == null:
 		_shared = load("res://skills/hit_feedback.tres")

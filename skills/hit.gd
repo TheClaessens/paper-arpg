@@ -26,7 +26,9 @@ var freezes: bool:
 		assert(false, "A Hit never changes")
 
 var _snapshot: Snapshot
-var _dealer: WeakRef # a freed dealer reads as null: a typed getter can't return a freed one
+# The dealer can be freed while a Hit naming it lives on (an Enemy dying before its ball lands). A
+# plain reference would hold a freed object, an error to read through a typed property; this reads null.
+var _dealer: WeakRef
 var _freezes: bool
 
 
@@ -48,7 +50,7 @@ func land(pushes: Dictionary[Hurtbox, Vector3]) -> bool:
 	var impact_viewport: Viewport = null # the viewport of an Enemy's Hurtbox it landed on
 	for hurtbox in pushes:
 		# Asked before it lands: the killing Hit takes its Enemy's Hurtbox off every layer.
-		var on_enemy := hurtbox.collision_layer & Faction.layer(Faction.Id.ENEMIES) != 0
+		var on_enemy := hurtbox.is_of(Faction.Id.ENEMIES)
 		if hurtbox.take_hit(self, pushes[hurtbox]):
 			landed = true
 			if on_enemy:

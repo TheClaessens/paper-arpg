@@ -79,3 +79,14 @@ func test_around_warns_when_it_finds_its_most() -> void:
 	await wait_physics_frames(2)
 	assert_eq(Hurtbox.around(get_tree().root.world_3d, Vector3.ZERO, 1.0, ENEMIES).size(), Hurtbox.MOST_FOUND, "the rest are left out")
 	assert_push_warning("found its most")
+
+
+func test_a_hurtbox_is_of_the_faction_whose_layer_it_is_on() -> void:
+	var enemy: Hurtbox = HurtboxScene.instantiate()
+	enemy.collision_layer = ENEMIES
+	add_child_autofree(enemy)
+	assert_true(enemy.is_of(Faction.Id.ENEMIES))
+	assert_false(enemy.is_of(Faction.Id.PLAYER))
+	enemy.collision_layer = 0
+	assert_false(enemy.is_of(Faction.Id.ENEMIES), "off every layer it is of none")
+	assert_false(enemy.is_of(Faction.Id.PLAYER))

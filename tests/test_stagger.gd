@@ -1,6 +1,6 @@
 extends GutTest
 ## A Stagger slides its Character exactly its knockback, fastest at first; a frozen frame moves
-## nothing; another hit restarts it; a Stagger of 0 does nothing.
+## nothing; another Hit restarts it; a Stagger of 0 does nothing.
 
 ## Far more steps than any Stagger here needs (at most about 4).
 const MAX_STEPS := 100
@@ -34,7 +34,7 @@ func test_knockback_left_over_the_stagger() -> void:
 
 
 func test_a_whole_stagger_slides_exactly_its_knockback() -> void:
-	assert_false(stagger.is_active(), "not before a hit")
+	assert_false(stagger.is_active(), "not before a Hit")
 	for delta: float in [1.0 / 60.0, 1.0 / 45.0]:
 		stagger.start(Vector3(0.35, 0.0, 0.0), 0.05)
 		assert_true(stagger.is_active())

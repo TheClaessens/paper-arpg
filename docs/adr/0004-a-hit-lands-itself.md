@@ -4,7 +4,7 @@ One activation of a Skill makes one Hit, fixed once made: the activation's Snaps
 
 ## Considered Options
 
-- **A hit as two loose arguments, landed by the Skill** (`take_hit(direction, snapshot)` and `Skill._land_hits()`, until `.scratch/hit/spec.md`). Rejected: a projectile can't land a hit once its Skill is gone, and each new fact on a hit, such as who dealt it, would change every receiver's signature.
+- **A hit as two loose arguments, landed by the Skill** (`take_hit(direction, snapshot)` and `Skill._land_hits()`, until `.scratch/hit/spec.md`). Rejected: with it a projectile couldn't land a hit once its Skill was gone, and each new fact on a hit, such as who dealt it, would have changed every receiver's signature.
 - **Per-target results on the Hit**: Damage after resistances written back by the Character hit, or a Hit per Hurtbox to hold them. Rejected: a result written on the one Hit would reach the next Hurtbox it lands on, and a Hit per Hurtbox splits what is one activation's.
 
 ## Consequences

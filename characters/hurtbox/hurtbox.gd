@@ -18,12 +18,19 @@ const MOST_FOUND := 128
 
 ## Takes `hit`, pushing along `direction`, and says whether it landed: off every layer (its
 ## Character has died) it misses, so a second Hit in the frame that killed the Character reports
-## nothing. Hit.land() calls it on each Hurtbox, then plays the impact.
+## nothing. Hit.land() calls it on each Hurtbox; if the Hit landed on an Enemy it then plays the
+## impact.
 func take_hit(hit: Hit, direction: Vector3) -> bool:
 	if collision_layer == 0:
 		return false
 	hit_taken.emit(hit, direction)
 	return true
+
+
+## Whether it is on `faction`'s layer: its Character is of that Faction and can still be hit.
+## Off every layer (its Character has died) it is of none.
+func is_of(faction: Faction.Id) -> bool:
+	return collision_layer & Faction.layer(faction) != 0
 
 
 ## The Hurtbox on the layers in `mask` nearest `spot` on the ground within `reach` of it, or

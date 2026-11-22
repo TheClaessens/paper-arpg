@@ -61,8 +61,10 @@ Nothing else changes in play.
 **How "an Enemy" is asked.** By the Hurtbox's layer, read before the Hurtbox takes the Hit:
 
 ```gdscript
-var on_enemy := hurtbox.collision_layer & Faction.layer(Faction.Id.ENEMIES) != 0
+var on_enemy := hurtbox.is_of(Faction.Id.ENEMIES)
 ```
+
+In code review the question moved into `Hurtbox` (`is_of()`), so no code outside the Hurtbox reads its physics layer as game state.
 
 - **The layer is the Faction.** `Character._ready()` puts its Hurtbox on `Faction.layer(faction)` (step 6), and an Enemy is "a Character of the Enemies' Faction" (GLOSSARY.md). Skills already find Hurtboxes by these layers (`hostile_mask()`), so what a Skill aims at and what plays the impact read the same fact.
 - **Not the Character.** A Hurtbox has no way to its Character but reaching up (`get_parent()`, `owner`), which "Call down, signal up" rules out, and a test's bare Hurtbox has none. Asking the Character's class (`is Enemy`) would also disagree with the glossary once charm exists: a charmed Enemy fights for the player.
@@ -135,7 +137,7 @@ func land(pushes: Dictionary[Hurtbox, Vector3]) -> bool:
 	var impact_viewport: Viewport = null # the viewport of an Enemy's Hurtbox it landed on
 	for hurtbox in pushes:
 		# Asked before it lands: the killing Hit takes its Enemy's Hurtbox off every layer.
-		var on_enemy := hurtbox.collision_layer & Faction.layer(Faction.Id.ENEMIES) != 0
+		var on_enemy := hurtbox.is_of(Faction.Id.ENEMIES)
 		if hurtbox.take_hit(self, pushes[hurtbox]):
 			landed = true
 			if on_enemy:
@@ -169,13 +171,23 @@ Ticket 01:
   ```gdscript
   ## Takes `hit`, pushing along `direction`, and says whether it landed: off every layer (its
   ## Character has died) it misses, so a second Hit in the frame that killed the Character reports
-  ## nothing. Hit.land() calls it on each Hurtbox, then plays the impact.
+  ## nothing. Hit.land() calls it on each Hurtbox; if the Hit landed on an Enemy it then plays the
+  ## impact.
   func take_hit(hit: Hit, direction: Vector3) -> bool:
   	if collision_layer == 0:
   		return false
   	hit_taken.emit(hit, direction)
   	return true
   ```
+
+Ticket 02 (moved here in code review), `is_of()` after `take_hit()`: the question whether a Hurtbox is of the Enemies' Faction, which `Hit.land()` asks before it lands.
+
+```gdscript
+## Whether it is on `faction`'s layer: its Character is of that Faction and can still be hit.
+## Off every layer (its Character has died) it is of none.
+func is_of(faction: Faction.Id) -> bool:
+	return collision_layer & Faction.layer(faction) != 0
+```
 
 Ticket 03, a constant after the signal and the cap in `around()` (`:46-62`):
 
@@ -369,13 +381,13 @@ Not by hand: a Hit on the player (no Enemy Skill and no player Hurtbox yet) and 
 
 - **Unchanged:** Hurtbox ("that Skills hit", "can't be hit": the verb), Faction ("their Skills hit each other": the verb), Pierce ("the first Enemy it hits": the verb; step 10 decides whether a Hit that missed spends Pierce), Health (no "hit"), Snapshot.
 
-**`docs/agents/godot-conventions.md`**, "Composition": a new paragraph at the end of the section, after "Components and anything outside them carry `GLOSSARY.md` names…" (find it by its text; step 6 adds its paragraph after the section's first):
+**`docs/agents/godot-conventions.md`**: a new section, "Frozen frames", after "Autoloads" (code review moved it there from the end of "Composition"), holding:
 
 > `HitFeedback` is the only game code that sets `Engine.time_scale`: a hitstop sets it to 0, and the last hitstop to end sets it back to 1. While it is 0, every `delta` is 0, so a component that divides by `delta` returns early on 0, as `Stagger.next_velocity()` does.
 
 **`.scratch/factions-health/spec.md`:**
 
-- **Rule 3** (`:11`) becomes: "3. **A hit is a Hit** (`skills/hit.gd`): the activation's Snapshot, the Character that dealt it, and whether its impact freezes the world. Where it pushes goes with it to each Hurtbox (`take_hit(hit, direction)`). The Character that was hit reads Damage, Knockback and Stagger from the Snapshot and writes nothing back. Later effects (a burn, a curse) read their own numbers from the same Snapshot, and a fact a later hit needs is a new field on the Hit, so `take_hit` and `hit_taken` never change shape. (Reopened by `.scratch/hit/spec.md`: the dealer and the freeze joined the Snapshot.)"
+- **Rule 3** (`:11`) becomes: "3. **A hit is a Hit** (`skills/hit.gd`): the activation's Snapshot, the Character that dealt it, and whether its impact freezes the world. Where it pushes goes with it to each Hurtbox (`take_hit(hit, direction)`). The Character that was hit reads Damage, Knockback and Stagger from the Snapshot and writes nothing back. Later effects (a burn, a curse) read their own numbers from the same Snapshot, and a fact a later hit needs is a new field on the Hit, so `take_hit` and `hit_taken` never change shape. (Reopened by `.scratch/hit/spec.md`: the dealer and the freeze joined the Hit; the Snapshot holds neither.)"
 - **Requirement 3** (`:21`): "`take_hit(direction: Vector3, snapshot: Snapshot)` emits `hit_taken(direction, snapshot)` (call down, signal up)." becomes "`take_hit(hit: Hit, direction: Vector3)` emits `hit_taken(hit, direction)` (call down, signal up) and returns whether the Hit landed (since `.scratch/hit/spec.md`)."; the rest stays.
 - **Requirement 4**, its second bullet (`:24`), becomes: "A Skill makes one Hit per activation (`Skill._hit()`), and `Hit.land()` takes `Dictionary[Hurtbox, Vector3]`, calls `take_hit` on each, then plays the impact once if it landed on an Enemy (since `.scratch/hit/spec.md`; it was `Skill._land_hits()`)."
 - **Requirement 7**, as step 6 leaves it: "`health.damage(snapshot.number(Skill.DAMAGE))`" becomes "`health.damage(hit.snapshot.number(Skill.DAMAGE))`"; the rest stays.
@@ -423,7 +435,7 @@ Lines this step touches in files other steps touch, and what step 10 finds.
 - **`characters/enemy/enemy.gd:5`, `:109`, `characters/standee/standee.gd:94`**: one word each, in doc comments step 6 keeps.
 - **Tests**: `test_skill.gd` loses `:1-40`'s landing part (step 1 added a test after `:83`, step 7 changed `_recording()` and appended tests, all kept); `test_enemy_death.gd` `:2-3`, `:59-74` (step 7 changed its `before_each`); `test_character.gd` (step 6's test); `test_attack.gd`, `test_projectile.gd` and `test_hurtbox.gd` gain tests at their ends. **Step 10 rewrites `test_projectile.gd`:** `test_a_piercing_ball_lands_its_throws_one_hit_on_both` records from the zombies' `hit_taken`, so it holds as written, but step 10's ball outlives the player and the test must then free it, as step 10 has every test that fires do.
 - **`GLOSSARY.md`**: Hit (new), Damage, Damage type, Hit feedback, Stagger. Step 2 added Projectile speed, step 5 Level, step 6 Character and Stagger, step 7 Skill. Step 10 may add to Hit that a projectile carries its Hit even after the Character that dealt it is gone, and to Range.
-- **`docs/agents/godot-conventions.md`**: a paragraph at the end of "Composition". Step 6 adds one after the section's first paragraph; steps 2, 3, 5 and 7 edit other sections.
+- **`docs/agents/godot-conventions.md`**: a section "Frozen frames" after "Autoloads". Step 6 adds a paragraph to "Composition"; steps 2, 3, 5 and 7 edit other sections.
 - **Other specs**: factions-health rule 3, requirements 3, 4 and 7 and edge case 4 (step 6 took requirements 1 and 7, step 7 requirement 2; this step changes only `snapshot.number` in 7); deepen-skills item 3; `combat/spec.md:101` (step 6 took `:104`; step 10 takes `:89`).
 - **`docs/adr/0004-a-hit-lands-itself.md`**, new.
 
@@ -511,7 +523,7 @@ Godot 4.7 class reference and manual, read on 2026-11-22, and the 4.7-stable sou
 - [ ] Only a landing on an Enemy plays the impact: a Hit on the player's Faction neither freezes nor shakes, and the killing Hit on an Enemy still freezes.
 - [ ] `Hurtbox.around()` finds up to 128, warns when full, and has its `ponytail:` comment.
 - [ ] Every test listed is moved or changed as listed, the new tests pass, and `tools/check.sh` passes.
-- [ ] The docs above say what the code does, and a search for `_land_hits`, `take_hit(direction` and `hit_taken(direction` in code, tests and `docs/` comes back clean.
+- [ ] The docs above say what the code does, and a search for `_land_hits`, `take_hit(direction` and `hit_taken(direction` comes back clean in code and tests, and in `docs/` finds them only in ADR 0004's account of what was replaced.
 - [ ] "Checking by hand" matches the base.
 
 ## Tickets

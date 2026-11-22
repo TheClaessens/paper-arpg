@@ -143,7 +143,7 @@ func test_a_fireball_hit_knocks_back_without_freezing_the_world() -> void:
 	fireball.try_activate(Vector3.RIGHT, [])
 	var ball: Projectile = fireball.get_child(0)
 	var time_scales: Array[float] = []
-	ball.hit.connect(func(_hurtbox: Hurtbox) -> void: time_scales.append(Engine.time_scale)) # after Fireball lands the hit
+	ball.hit.connect(func(_hurtbox: Hurtbox) -> void: time_scales.append(Engine.time_scale)) # after Fireball lands the Hit
 	await wait_physics_frames(20)
 	Engine.time_scale = 1.0 # in case it froze, for the tests after this one
 	assert_eq(time_scales, [1.0] as Array[float], "hit once, and the world kept running")
@@ -188,7 +188,7 @@ func test_a_piercing_ball_passes_through_the_zombie_it_kills_and_stops_at_the_ne
 	fireball.try_activate(Vector3.RIGHT, [load("res://skills/modifiers/pierce.tres")])
 	await wait_physics_frames(40)
 	assert_eq(deaths.size(), 1, "the first is killed")
-	assert_signal_emit_count(second, "hit_taken", 1, "the kill was its pierced hit")
+	assert_signal_emit_count(second, "hit_taken", 1, "the kill was its pierced Hit")
 	assert_signal_not_emitted(third, "hit_taken", "it stopped at the second")
 
 

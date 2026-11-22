@@ -18,7 +18,7 @@ func before_each() -> void:
 
 
 func after_each() -> void:
-	Engine.time_scale = 1.0 # the hitstops the hits started
+	Engine.time_scale = 1.0 # the hitstops the Hits started
 
 
 ## Swings the Attack (10 Damage) at the zombie `times` times, its Cooldown skipped.
