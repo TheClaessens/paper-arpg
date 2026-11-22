@@ -50,7 +50,8 @@ func test_a_skill_without_a_cooldown_warns() -> void:
 
 
 # Activating: try_activate() is the one way to set a Skill off. It makes the activation's
-# Snapshot, starts the Snapshot's Cooldown and then does what the Skill does.
+# Snapshot, starts the Snapshot's Cooldown, never shorter than Skill.SHORTEST_COOLDOWN, and then
+# does what the Skill does.
 
 ## A Skill that only records the Snapshot of each activation.
 class RecordingSkill extends Skill:
@@ -83,6 +84,20 @@ func test_the_cooldown_is_the_snapshots() -> void:
 	assert_eq(recording.snapshots[0].number(Skill.COOLDOWN), 2.0, "the Skill got the same Snapshot")
 
 
+func test_no_cooldown_runs_shorter_than_the_shortest() -> void:
+	var recording := _recording(0.4, [])
+	var change := NumberChange.new()
+	change.number = Skill.COOLDOWN
+	change.kind = NumberChange.Kind.INCREASED
+	change.amount = -100.0
+	var no_cooldown := Modifier.new()
+	no_cooldown.number_changes = [change]
+	assert_true(recording.try_activate(Vector3.RIGHT, [no_cooldown]))
+	assert_eq(recording.snapshots[0].number(Skill.COOLDOWN), 0.0, "the Snapshot keeps what the Modifiers made")
+	assert_eq(recording.cooldown_left, Skill.SHORTEST_COOLDOWN)
+	assert_false(recording.try_activate(Vector3.RIGHT, [no_cooldown]), "still cooling down")
+
+
 func test_it_says_when_it_is_ready_again() -> void:
 	var recording := _recording(1.0, [])
 	watch_signals(recording)
@@ -96,9 +111,9 @@ func test_it_says_when_it_is_ready_again() -> void:
 
 
 func test_it_runs_its_own_cooldown() -> void:
-	var recording := _recording(0.05, [])
+	var recording := _recording(0.2, [])
 	recording.try_activate(Vector3.RIGHT, [])
-	await wait_physics_frames(6) # 0.1 s at 60 Hz
+	await wait_physics_frames(15) # 0.25 s at 60 Hz
 	assert_true(recording.is_ready())
 
 

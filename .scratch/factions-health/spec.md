@@ -9,7 +9,7 @@ Two things Characters get: a **Faction**, the side they fight on, and **Health**
 1. **Two Factions for now**: the player's and the Enemies'. Characters of different Factions are hostile; a Skill hits only Hurtboxes hostile to its Character's Faction.
 2. **Only a Hurtbox can be hit.** A Character without one can't be hit, aimed at by Auto-aim or ringed by the cursor.
 3. **A hit reports where it pushes and the activation's Snapshot**, nothing else. The Character that was hit reads Damage, Knockback and Stagger from the Snapshot. Later effects (a burn, a curse) read their own numbers from the same Snapshot, so the hit never changes shape.
-4. **Health lies between 0 and its maximum.** Damage lowers it, healing raises it, both clamped. A hit with 0 Damage leaves it alone.
+4. **Health lies between 0 and its maximum.** Damage lowers it, healing raises it, both clamped. Damage or healing of 0 or less leaves it alone, so Damage never raises it and healing never lowers it (`.scratch/number-bounds/spec.md`, 2026-11-22).
 5. **At 0 Health a Character dies, once.** After that its Health ignores Damage and healing.
 6. **A dead Enemy is gone**: it stops chasing, can't be hit, aimed at or ringed, doesn't block anyone, and sinks through the floor. The player at 0 Health plays on and stays at 0.
 7. **One Health bar for everyone**: the flat strip over the Standee, shown only while Health is below its maximum.

@@ -1,6 +1,7 @@
 extends GutTest
 ## Health lies between 0 and its maximum: Damage lowers it, healing raises it, both clamped, and
-## a hit of 0 Damage leaves it alone. At 0 it dies, once, and then ignores Damage and healing.
+## Damage or healing of 0 or less leaves it alone. At 0 it dies, once, and then ignores Damage
+## and healing.
 
 var health: Health
 
@@ -52,3 +53,17 @@ func test_once_dead_it_ignores_damage_and_healing() -> void:
 	assert_eq(health.current, 0.0)
 	assert_signal_emit_count(health, "died", 1)
 	assert_signal_emit_count(health, "changed", 1)
+
+
+func test_negative_damage_does_not_heal() -> void:
+	health.damage(10.0)
+	health.damage(-5.0)
+	assert_eq(health.current, 40.0)
+	assert_signal_emit_count(health, "changed", 1)
+
+
+func test_negative_healing_does_not_hurt() -> void:
+	health.damage(10.0)
+	health.heal(-50.0)
+	assert_eq(health.current, 40.0)
+	assert_false(health.is_dead())

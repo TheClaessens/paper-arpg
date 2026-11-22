@@ -3,23 +3,40 @@ extends RefCounted
 ## A Snapshot (see GLOSSARY.md): a Skill with every Modifier that applied when it was
 ## activated. of() makes one; Skill.try_activate() asks for one per activation, and everything
 ## the activation causes reads its numbers from it.
-## Its lists are read-only, so it never changes after it is made.
+## Its fields can't be replaced and its lists are read-only, so it never changes after it is made.
 
 ## The Skill's tags, implied ones included.
-var tags: Array[StringName]
-## Each of the Skill's numbers (see Skill.numbers()), with the Modifiers applied.
-var numbers: Dictionary[StringName, float]
+var tags: Array[StringName]:
+	get:
+		return _tags
+	set(_value):
+		assert(false, "A Snapshot never changes")
+## Each of the Skill's numbers (see Skill.numbers()), with the Modifiers applied. of() makes none
+## of them below 0.
+var numbers: Dictionary[StringName, float]:
+	get:
+		return _numbers
+	set(_value):
+		assert(false, "A Snapshot never changes")
 ## One line per Modifier the Character has: whether it applied, and why not when it missed.
-var why: Array[String]
+var why: Array[String]:
+	get:
+		return _why
+	set(_value):
+		assert(false, "A Snapshot never changes")
+
+var _tags: Array[StringName]
+var _numbers: Dictionary[StringName, float]
+var _why: Array[String]
 
 
 func _init(snapshot_tags: Array[StringName], snapshot_numbers: Dictionary[StringName, float], snapshot_why: Array[String]) -> void:
-	tags = snapshot_tags
-	numbers = snapshot_numbers
-	why = snapshot_why
-	tags.make_read_only()
-	numbers.make_read_only()
-	why.make_read_only()
+	_tags = snapshot_tags
+	_numbers = snapshot_numbers
+	_why = snapshot_why
+	_tags.make_read_only()
+	_numbers.make_read_only()
+	_why.make_read_only()
 
 
 ## The Snapshot of a Skill whose own tags are `own_tags` and own numbers `own_numbers`, with the
@@ -33,6 +50,8 @@ static func of(own_tags: Array[StringName], own_numbers: Dictionary[StringName, 
 	var counted: Array[Modifier] = []
 	var why: Array[String] = []
 	for modifier in modifiers:
+		# ponytail: every Snapshot writes a why line per Modifier, even one made only to aim;
+		# write them only when read, if a profile on the phone points here.
 		why.append(tag_pass.explain(modifier))
 		if modifier not in counted and tag_pass.applies(modifier):
 			counted.append(modifier)
@@ -45,7 +64,8 @@ static func of(own_tags: Array[StringName], own_numbers: Dictionary[StringName, 
 
 ## The number called `name`, `value` at first, with each of `changes` to it: flat additions
 ## first, then the sum of every Increased percentage, then each More percentage on its own.
-## Neither takes a number below 0: Increased stops at -100%, and so does each More.
+## No number comes out below 0: after its flat additions it is at least 0, Increased stops at
+## -100%, and so does each More.
 static func _stack(value: float, name: StringName, changes: Array[NumberChange]) -> float:
 	var increased := 0.0
 	var more := 1.0
@@ -59,7 +79,7 @@ static func _stack(value: float, name: StringName, changes: Array[NumberChange])
 				increased += change.amount
 			NumberChange.Kind.MORE:
 				more *= maxf(0.0, 1.0 + change.amount / 100.0)
-	return value * maxf(0.0, 1.0 + increased / 100.0) * more
+	return maxf(0.0, value) * maxf(0.0, 1.0 + increased / 100.0) * more
 
 
 ## The number called `name`, such as Cooldown or Range. Asking for one the Skill doesn't have

@@ -109,7 +109,7 @@ The list of the player's Skills that opens when they choose a Skill slot to chan
 _Avoid_: Skill picker, spellbook, inventory
 
 **Cooldown**:
-How long after an activation starts before a Skill can be activated again, from any slot it sits in. Every Skill has one, and it is the only thing that limits how often a Skill is activated. Modifiers such as attack speed change it.
+How long after an activation starts before a Skill can be activated again, from any slot it sits in. Every Skill has one, and it is the only thing that limits how often a Skill is activated. Modifiers such as attack speed change it, down to a shortest Cooldown that is the same for every Skill.
 _Avoid_: Recharge, refresh, timer, global cooldown, use time
 
 **Snapshot**:

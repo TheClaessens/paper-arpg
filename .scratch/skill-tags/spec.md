@@ -31,7 +31,7 @@ A framework that later game systems use to change Skills: **Skill tags** say wha
 5. **Each activation builds a Snapshot** from the Skill and the Character's Modifiers, following the rules: tag pass, then the pools for the numbers that exist today.
    - The Skill's own activation receives the Snapshot. Fireball hands it to its projectile; Attack reads it for its swing.
    - The Snapshot never changes after it is made. A projectile in flight keeps its Snapshot when Modifiers change.
-   - The Cooldown that starts on an activation is the Snapshot's.
+   - The Cooldown that starts on an activation is the Snapshot's, but never shorter than the shortest Cooldown (`Skill.SHORTEST_COOLDOWN`; see `.scratch/number-bounds/spec.md`).
 6. **Proof Modifiers**, switched with a console command `modifier <name> on|off` (and listed without arguments):
    - **"Spells have 50% reduced cooldown"**: filter Spell, Increased −50% on Cooldown. Fireball's goes from 4 s to 2 s; Attack's is unchanged.
    - **"Projectiles pierce an Enemy"**: filter Projectile, adds the Pierce tag. Fireball's projectile passes through the first Enemy it hits, landing the hit as usual, and stops at the second. It never pierces a wall, and its Range still ends it. A ball hits each Enemy at most once, so touching one it already hit again (after knocking it ahead) does nothing.
@@ -57,7 +57,7 @@ Settled 2026-11-21 after a call map of the old flow (https://claude.ai/artifact/
 
 ## Deferred decisions
 
-- **A minimum Cooldown.** Stacking stops Increased and each More at -100%, so a number never goes below 0, but a Cooldown of 0 would break "every Skill has one". Decide with attack speed, the first Modifier likely to push a Cooldown that low.
+- **A minimum Cooldown.** Settled in `.scratch/number-bounds/spec.md` (2026-11-22): no number goes below 0, and no Cooldown runs shorter than `Skill.SHORTEST_COOLDOWN`. Whether attack speed is a rate or a shorter Cooldown is deferred there.
 
 - **Where Modifiers come from.** Decide when a second real source exists (say gear next to talents): whether the Character asks each source on every activation, or keeps a combined list. The framework only needs "a list of Modifiers" either way.
 - **A replace of a tag added in the same round.** If one Modifier adds Chain and another replaces Chain with Fork, and both apply in the same round of the tag pass, the replace does nothing, because Chain only arrives at the end of that round. Decide if a real build ever hits this.
