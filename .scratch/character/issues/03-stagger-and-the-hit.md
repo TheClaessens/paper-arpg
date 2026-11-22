@@ -12,8 +12,8 @@
 
 The scene edit is made in text and checked with the spec's scene check. After the commit the developer reloads the project.
 
-- [ ] `Stagger` and `Character` as the spec sketches them, doc comments included.
-- [ ] `enemy.gd` has no `_stagger_left`, `_stagger_time`, `_knockback`, `knockback_left`, `_on_hit_taken`, `_slide` or `_standee`; `player.gd` has no `_standee`.
-- [ ] The zombie has a `Stagger` node with its script and no `unique_id`; the scene check shows only its three lines.
-- [ ] A search for `Enemy.knockback_left`, `_stagger_left` and `_stagger_time` in code and tests comes back clean.
-- [ ] The new tests pass and `tools/check.sh` passes.
+- [x] `Stagger` and `Character` as the spec sketches them, doc comments included.
+- [x] `enemy.gd` has no `_stagger_left`, `_stagger_time`, `_knockback`, `knockback_left`, `_on_hit_taken`, `_slide` or `_standee`; `player.gd` has no `_standee`.
+- [x] The zombie has a `Stagger` node with its script and no `unique_id`; the scene check shows only its three lines.
+- [x] A search for `Enemy.knockback_left`, `_stagger_left` and `_stagger_time` in code and tests comes back clean.
+- [x] The new tests pass and `tools/check.sh` passes.

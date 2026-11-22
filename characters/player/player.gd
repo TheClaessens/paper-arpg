@@ -36,7 +36,6 @@ var _face_aim_left := 0.0 # time left facing the last activation's aim
 
 @onready var _controls: Controls = $Controls
 @onready var _movement: Movement = $Movement
-@onready var _standee: Standee = $Standee
 @onready var _facing_arrow: Node3D = $FacingArrow
 @onready var _aim_marker: AimMarker = $AimMarker
 @onready var _hover_ring: Node3D = $HoverRing
