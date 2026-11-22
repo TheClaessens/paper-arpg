@@ -1,0 +1,17 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://characters/health_bar/health_bar.gd" id="1_health_bar"]
+[ext_resource type="Shader" path="res://characters/health_bar/health_bar.gdshader" id="2_shader"]
+
+[sub_resource type="ShaderMaterial" id="bar_material"]
+shader = ExtResource("2_shader")
+
+[sub_resource type="QuadMesh" id="bar_mesh"]
+size = Vector2(0.926, 0.083)
+
+[node name="HealthBar" type="MeshInstance3D"]
+visible = false
+cast_shadow = 0
+mesh = SubResource("bar_mesh")
+material_override = SubResource("bar_material")
+script = ExtResource("1_health_bar")

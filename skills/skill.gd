@@ -10,13 +10,14 @@ extends Node3D
 ## Its Cooldown has run out: it can be activated again.
 signal ready_again
 
-## How a Skill aims. AROUND: activated where the Character stands. AUTO: toward the nearest Enemy
-## near Facing. AIMED: auto-aimed too, and on touch it can also be aimed by hand.
+## How a Skill aims. AROUND: activated where the Character stands. AUTO: toward the nearest
+## hostile Hurtbox near Facing. AIMED: auto-aimed too, and on touch it can also be aimed by hand.
 enum Aim { AROUND, AUTO, AIMED }
 
 ## The names of the Skill's numbers (see numbers()), as Modifiers and Snapshots know them.
 const COOLDOWN := &"Cooldown"
 const RANGE := &"Range"
+const DAMAGE := &"Damage"
 const KNOCKBACK := &"Knockback"
 const STAGGER := &"Stagger"
 
@@ -42,10 +43,16 @@ const STAGGER := &"Stagger"
 		update_configuration_warnings()
 ## The Skill's Range: how far it reaches from the Character's centre, in world units.
 @export var range := 1.0
+## How much Health a hit takes away (its Damage).
+@export var damage := 0.0
 ## How far a hit pushes an Enemy, in world units.
 @export var knockback := 0.0
 ## How long a hit Enemy slides without chasing (its Stagger), in seconds.
 @export var stagger := 0.0
+
+## The Faction of the Character that has the Skill, given by that Character. The Skill hits
+## only Hurtboxes hostile to it.
+var faction: Faction.Id
 
 ## Seconds until the Skill can be activated again. The Skill runs this clock itself.
 var cooldown_left := 0.0
@@ -91,7 +98,7 @@ func _get_configuration_warnings() -> PackedStringArray:
 ## The Skill's numbers by name, for Modifiers to change. A Skill with numbers of its own adds
 ## them to these.
 func numbers() -> Dictionary[StringName, float]:
-	return {COOLDOWN: cooldown, RANGE: range, KNOCKBACK: knockback, STAGGER: stagger}
+	return {COOLDOWN: cooldown, RANGE: range, DAMAGE: damage, KNOCKBACK: knockback, STAGGER: stagger}
 
 
 ## Activates the Skill aimed at `aim` with the Character's `modifiers`, unless it is cooling
@@ -131,18 +138,20 @@ func target_for(_aim: Vector3) -> Node3D:
 	return null
 
 
-## Every Enemy whose body is within `reach` of the Character, in any direction.
-func _enemies_within(reach: float) -> Array[Enemy]:
-	return Enemy.enemies_around(get_world_3d(), global_position, reach)
+## The layers of every Faction hostile to the Skill's: where its hits look.
+func hostile_mask() -> int:
+	return Faction.hostile_mask(faction)
 
 
-## Lands one activation's hits: each Enemy in `hits` is pushed along its direction (a unit
-## vector on the ground) with the Knockback and Stagger of the activation's `snapshot`. The
-## impact (screen shake, and a hitstop if `freezes`) plays once per call, however many Enemies
-## it hit, so a Skill whose hits come at once lands them in one call. For the Skills themselves.
-func _land_hits(hits: Dictionary[Enemy, Vector3], snapshot: Snapshot, freezes := true) -> void:
-	if hits.is_empty():
-		return
-	for enemy in hits:
-		enemy.take_hit(hits[enemy], snapshot.number(KNOCKBACK), snapshot.number(STAGGER))
-	HitFeedback.shared().play_impact(get_viewport(), freezes)
+## Lands one activation's hits: each Hurtbox in `hits` is hit pushing along its direction (a
+## unit vector on the ground) with the activation's `snapshot`; its Character reads what the hit
+## does from that. The impact (screen shake, and a hitstop if `freezes`) plays once per call,
+## however many it hit, and only if at least one hit landed, so a Skill whose hits come at once
+## lands them in one call. For the Skills themselves.
+func _land_hits(hits: Dictionary[Hurtbox, Vector3], snapshot: Snapshot, freezes := true) -> void:
+	var landed := false
+	for hurtbox in hits:
+		if hurtbox.take_hit(hits[hurtbox], snapshot):
+			landed = true
+	if landed:
+		HitFeedback.shared().play_impact(get_viewport(), freezes)

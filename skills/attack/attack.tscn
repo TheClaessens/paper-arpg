@@ -20,6 +20,7 @@ title = "Attack"
 cooldown = 0.4
 icon = ExtResource("4_icon")
 range = 1.6
+damage = 10.0
 knockback = 0.35
 stagger = 0.05
 

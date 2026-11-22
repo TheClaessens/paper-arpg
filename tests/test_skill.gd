@@ -1,6 +1,7 @@
 extends GutTest
-## Landing a Skill's hits: each Enemy is pushed along its own direction with the Skill's
-## Knockback and Stagger, and the impact plays once per call, not per Enemy.
+## Landing a Skill's hits: each Hurtbox hit tells its Enemy, which is pushed along its own
+## direction with the Snapshot's Knockback and Stagger. The impact plays once per call, not per
+## Hurtbox.
 
 const ZombieScene := preload("res://characters/enemy/zombie.tscn")
 
@@ -28,7 +29,7 @@ func _zombie_at(x: float) -> Enemy:
 func test_each_enemy_is_pushed_its_own_way() -> void:
 	var left := _zombie_at(-5.0)
 	var right := _zombie_at(5.0)
-	skill._land_hits({left: Vector3.LEFT, right: Vector3.RIGHT}, skill.snapshot([]))
+	skill._land_hits({left.hurtbox: Vector3.LEFT, right.hurtbox: Vector3.RIGHT}, skill.snapshot([]))
 	await wait_physics_frames(30) # past the hitstop and the Stagger
 	assert_almost_eq(left.global_position.x, -5.35, 0.05)
 	assert_almost_eq(right.global_position.x, 5.35, 0.05)
@@ -37,16 +38,6 @@ func test_each_enemy_is_pushed_its_own_way() -> void:
 func test_no_hits_no_impact() -> void:
 	skill._land_hits({}, skill.snapshot([]))
 	assert_eq(Engine.time_scale, 1.0)
-
-
-# Reach: an Enemy is within reach when any part of its body is. A zombie's body is 0.25 around
-# its centre.
-
-func test_an_enemy_is_within_reach_when_its_body_is() -> void:
-	var zombie := _zombie_at(1.2) # its near edge at 0.95
-	await wait_physics_frames(2) # the physics world learns where it stands
-	assert_eq(Enemy.enemies_around(skill.get_world_3d(), Vector3.ZERO, 1.0), [zombie] as Array[Enemy])
-	assert_eq(Enemy.enemies_around(skill.get_world_3d(), Vector3.ZERO, 0.9), [] as Array[Enemy], "0.05 short of it")
 
 
 # Every Skill needs a Cooldown: it is the only thing that limits how often a Skill is activated.
@@ -109,3 +100,23 @@ func test_it_runs_its_own_cooldown() -> void:
 	recording.try_activate(Vector3.RIGHT, [])
 	await wait_physics_frames(6) # 0.1 s at 60 Hz
 	assert_true(recording.is_ready())
+
+
+# Damage is one of the Skill's numbers, so the Snapshot holds it after Modifiers.
+
+func test_attack_and_fireball_deal_their_damage() -> void:
+	var attack: Skill = autofree(preload("res://skills/attack/attack.tscn").instantiate())
+	var fireball: Skill = autofree(preload("res://skills/fireball/fireball.tscn").instantiate())
+	assert_eq(attack.snapshot([]).number(Skill.DAMAGE), 10.0)
+	assert_eq(fireball.snapshot([]).number(Skill.DAMAGE), 20.0)
+
+
+func test_a_modifier_on_damage_changes_it() -> void:
+	var attack: Skill = autofree(preload("res://skills/attack/attack.tscn").instantiate())
+	var harder := Modifier.new()
+	var change := NumberChange.new()
+	change.number = Skill.DAMAGE
+	change.kind = NumberChange.Kind.INCREASED
+	change.amount = 50.0
+	harder.number_changes = [change]
+	assert_eq(attack.snapshot([harder]).number(Skill.DAMAGE), 15.0, "10, 50% increased")

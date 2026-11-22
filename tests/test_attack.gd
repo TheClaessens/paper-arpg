@@ -1,6 +1,6 @@
 extends GutTest
-## The Attack's Sweep along Facing: an Enemy counts when its centre lies inside it. Whether the
-## Enemy is within Range is asked of the physics engine first (see test_skill.gd).
+## The Attack's Sweep along Facing: a Hurtbox counts when its centre lies inside it. Whether it
+## is within Range is asked of the physics engine first (see test_hurtbox.gd).
 ## A swing's hit freezes the world, unlike a projectile's (see test_projectile.gd).
 
 const AttackScene := preload("res://skills/attack/attack.tscn")
@@ -47,3 +47,24 @@ func test_a_swing_that_hits_two_enemies_freezes_the_world() -> void:
 	await wait_seconds(0.3, "past the hitstop and the Stagger")
 	for zombie in zombies:
 		assert_gt(zombie.global_position.x, 1.0, "both hit and knocked back")
+
+
+# A swing hits the hostile Hurtboxes inside its Sweep and Range, and never one of its own Faction.
+
+func test_a_swing_hits_a_zombie_and_not_the_players_faction_in_the_same_spot() -> void:
+	var attack: Attack = AttackScene.instantiate()
+	add_child_autofree(attack)
+	var zombie: Enemy = ZombieScene.instantiate()
+	add_child_autofree(zombie)
+	zombie.global_position = Vector3(1.0, 0.0, 0.3)
+	var friend: Hurtbox = preload("res://characters/hurtbox/hurtbox.tscn").instantiate()
+	friend.collision_layer = Faction.layer(Faction.Id.PLAYER)
+	add_child_autofree(friend)
+	friend.global_position = zombie.global_position # in the same spot
+	await wait_physics_frames(2) # the physics world learns where they stand
+	watch_signals(zombie.hurtbox)
+	watch_signals(friend)
+	attack.try_activate(Vector3.RIGHT, [])
+	assert_signal_emit_count(zombie.hurtbox, "hit_taken", 1)
+	assert_signal_not_emitted(friend, "hit_taken")
+	assert_eq(zombie.health.current, 40.0, "50 less the Attack's Damage of 10")

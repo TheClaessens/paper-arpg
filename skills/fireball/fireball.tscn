@@ -11,5 +11,6 @@ tags = Array[StringName]([&"Spell", &"Projectile", &"Fire"])
 title = "Fireball"
 icon = ExtResource("3_icon")
 range = 10.0
+damage = 20.0
 knockback = 0.35
 stagger = 0.05
