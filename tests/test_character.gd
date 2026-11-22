@@ -1,5 +1,5 @@
 extends GutTest
-## A Character: its Faction reaches its Hurtbox and its Skills, a Skill given later joins its Skills,
+## A Character: its Faction reaches its Hurtbox, its Skills know it, a Skill given later joins its Skills,
 ## and only a Character with a Stagger is staggered.
 
 const PlayerScene := preload("res://characters/player/player.tscn")
@@ -11,25 +11,28 @@ func test_an_enemys_hurtbox_is_on_the_enemies_layer() -> void:
 	assert_eq(zombie.hurtbox.collision_layer, Faction.layer(Faction.Id.ENEMIES))
 
 
-func test_the_players_scene_sets_the_players_faction() -> void:
+func test_the_player_is_of_the_players_faction_and_its_skills_know_it() -> void:
 	var player: Player = add_child_autofree(PlayerScene.instantiate())
 	assert_eq(player.faction, Faction.Id.PLAYER)
+	assert_false(player.skills.is_empty())
+	for skill in player.skills:
+		assert_eq(skill.character, player, skill.name)
 
 
-func test_a_skill_it_already_has_takes_its_characters_faction() -> void:
+func test_a_skill_it_already_has_knows_its_character() -> void:
 	var zombie: Enemy = ZombieScene.instantiate()
 	var skill := Skill.new()
 	zombie.get_node("Skills").add_child(skill)
 	add_child_autofree(zombie)
-	assert_eq(skill.faction, Faction.Id.ENEMIES)
+	assert_eq(skill.character, zombie)
 
 
-func test_a_skill_given_later_takes_its_characters_faction() -> void:
+func test_a_skill_given_later_knows_its_character() -> void:
 	var zombie: Enemy = add_child_autofree(ZombieScene.instantiate())
 	var skill := Skill.new()
 	zombie.add_skill(skill)
 	assert_eq(skill.get_parent(), zombie.get_node("Skills"))
-	assert_eq(skill.faction, Faction.Id.ENEMIES)
+	assert_eq(skill.character, zombie)
 
 
 func test_without_a_stagger_a_hit_doesnt_push() -> void:

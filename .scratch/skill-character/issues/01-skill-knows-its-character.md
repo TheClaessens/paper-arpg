@@ -10,7 +10,7 @@
 
 **Status:** ready-for-agent
 
-- [ ] The spec folder and the Skill glossary entry are the branch's first commit.
-- [ ] `skill.gd` has `character` with the spec's doc and no `faction`; its class doc is the spec's, except the clause "and no Skill script can stop it" (ticket 03); `hostile_mask()` reads `character.faction`.
-- [ ] `character.gd` sets `skill.character = self` in `_ready()` and `add_skill()`; a search for `.faction` under `skills/` finds only `character.faction`.
-- [ ] No test adds a second Player; the changed tests and the new one pass; `tools/check.sh` passes.
+- [x] The spec folder and the Skill glossary entry are the branch's first commit.
+- [x] `skill.gd` has `character` with the spec's doc and no `faction`; its class doc is the spec's, except the clause "and no Skill script can stop it" (ticket 03); `hostile_mask()` reads `character.faction`.
+- [x] `character.gd` sets `skill.character = self` in `_ready()` and `add_skill()`; a search for `.faction` under `skills/` finds only `character.faction`.
+- [x] No test adds a second Player; the changed tests and the new one pass; `tools/check.sh` passes.

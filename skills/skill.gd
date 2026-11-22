@@ -1,11 +1,12 @@
 @tool
 class_name Skill
 extends Node3D
-## A Skill (see GLOSSARY.md): something the player activates from a Skill slot. Each Skill is
-## a node on the Character that has it, so it can reach the world from where the Character
-## stands. try_activate() is the one way to set it off, and the Skill runs its own Cooldown.
-## Subclasses do their work in _activate(). Each Skill script is a @tool, as this one is, so the
-## editor shows its configuration warnings.
+## A Skill (see GLOSSARY.md): something a Character activates, the player from a Skill slot.
+## Each Skill is a node under its Character's Skills node and knows that Character (see
+## `character`), so it acts from where the Character stands and hits what is hostile to the
+## Character's Faction. try_activate() is the one way to set it off, and the Skill runs its own
+## Cooldown. Subclasses do their work in _activate(). Each Skill script is a @tool, as this one
+## is, so the editor shows its configuration warnings.
 
 ## Its Cooldown has run out: it can be activated again.
 signal ready_again
@@ -55,9 +56,11 @@ const SHORTEST_COOLDOWN := 0.1
 ## How long a hit Enemy slides without chasing (its Stagger), in seconds.
 @export var stagger := 0.0
 
-## The Faction of the Character that has the Skill, given by that Character. The Skill hits
-## only Hurtboxes hostile to it.
-var faction: Faction.Id
+## The Character that has the Skill, set by that Character when it is ready and by
+## Character.add_skill(). The Skill hits only Hurtboxes hostile to the Character's Faction, as it
+## is at each activation. The Skill's own _ready() can run before it is set (a node's children are
+## ready before it), so a Skill script doesn't read it there. A Skill without one can't be activated.
+var character: Character
 
 ## Seconds until the Skill can be activated again. The Skill runs this clock itself.
 var cooldown_left := 0.0
@@ -144,9 +147,9 @@ func target_for(_aim: Vector3) -> Node3D:
 	return null
 
 
-## The layers of every Faction hostile to the Skill's: where its hits look.
+## The layers of every Faction hostile to its Character's: where its hits look.
 func hostile_mask() -> int:
-	return Faction.hostile_mask(faction)
+	return Faction.hostile_mask(character.faction)
 
 
 ## Lands one activation's hits: each Hurtbox in `hits` is hit pushing along its direction (a

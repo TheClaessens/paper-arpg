@@ -2,13 +2,15 @@ extends GutTest
 ## The Health bar shows only while Health is below its maximum, filled by current over maximum,
 ## and hides when its Enemy dies.
 
+var player: Player
 var attack: Attack
 var zombie: Enemy
 
 
 func before_each() -> void:
-	attack = preload("res://skills/attack/attack.tscn").instantiate()
-	add_child_autofree(attack)
+	player = add_child_autofree(preload("res://characters/player/player.tscn").instantiate())
+	player.set_physics_process(false) # no camera here to read input against, as in test_player.gd
+	attack = player.get_node("Skills/Attack")
 	zombie = preload("res://characters/enemy/zombie.tscn").instantiate()
 	add_child_autoqfree(zombie)
 	zombie.global_position = Vector3(1.0, 0.0, 0.0)
@@ -28,7 +30,6 @@ func _swing(times: int) -> void:
 
 func test_no_bar_at_full_health() -> void:
 	assert_false(zombie.health_bar.visible, "the zombie's")
-	var player: Player = add_child_autofree(preload("res://characters/player/player.tscn").instantiate())
 	assert_false(player.health_bar.visible, "the player's")
 
 
@@ -44,7 +45,6 @@ func test_a_dying_zombie_hides_its_bar() -> void:
 
 
 func test_the_players_bar_shows_while_hurt_and_hides_when_healed_to_full() -> void:
-	var player: Player = add_child_autofree(preload("res://characters/player/player.tscn").instantiate())
 	player.health.damage(10.0)
 	assert_true(player.health_bar.visible, "hurt")
 	assert_almost_eq(player.health_bar.fraction, 0.9, 0.001, "90 of 100")
