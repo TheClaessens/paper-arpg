@@ -10,9 +10,9 @@
 
 **Status:** ready-for-agent
 
-- [ ] Each passage reads as the spec gives it, and the paragraphs around it are not reflowed.
-- [ ] The conventions paragraph names `Stagger.next_velocity()`, which exists since step 6.
-- [ ] `enemy.gd` and `standee.gd` change in doc comments only.
-- [ ] The specs of steps 6 and 7, resolved tickets and ADRs 0001 to 0003 are unchanged.
-- [ ] A search for `_land_hits`, `take_hit(direction` and `hit_taken(direction` in code, tests and `docs/` comes back clean.
-- [ ] `tools/check.sh` passes.
+- [x] Each passage reads as the spec gives it, and the paragraphs around it are not reflowed.
+- [x] The conventions paragraph names `Stagger.next_velocity()`, which exists since step 6.
+- [x] `enemy.gd` and `standee.gd` change in doc comments only.
+- [x] The specs of steps 6 and 7, resolved tickets and ADRs 0001 to 0003 are unchanged.
+- [x] A search for `_land_hits`, `take_hit(direction` and `hit_taken(direction` in code, tests and `docs/` comes back clean.
+- [x] `tools/check.sh` passes.

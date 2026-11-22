@@ -10,6 +10,8 @@ The base scripts are `Character` (`characters/character.gd`, the glossary's Char
 
 Components and anything outside them carry `GLOSSARY.md` names. A component's private child nodes may use plain engine words (Standee's `Card` and `Sprite`), since the glossary names domain concepts, not a component's inner parts.
 
+`HitFeedback` is the only game code that sets `Engine.time_scale`: a hitstop sets it to 0, and the last hitstop to end sets it back to 1. While it is 0, every `delta` is 0, so a component that divides by `delta` returns early on 0, as `Stagger.next_velocity()` does.
+
 ## Call down, signal up
 
 A parent calls methods on its children (`standee.play(&"walk")`). A child reports upward by emitting a signal and lets whoever cares connect to it. A child reaches its parent through signals, never through `get_parent()` or absolute node paths. A parent may hand a child a reference to what the child needs, as a Character hands itself to each of its Skills (`Skill.character`), and the child may use what it was handed. What stays ruled out is a child finding its parent by itself, with `get_parent()` or a path. A Skill reads its Character's Faction through it today, to know what is hostile.
