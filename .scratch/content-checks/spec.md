@@ -191,16 +191,16 @@ func _skills_in(node: Node) -> Array[Skill]
 | `TagChange.kind` = `ADD`, `into` empty | `pierce.tres`: it adds Pierce only because of them |
 | `Modifier.number_changes`, `tag_changes` = empty | `pierce.tres`, `spell_cooldown.tres` |
 | `HitFeedback` (all five) | `hit_feedback.tres` sets none: the defaults are the game's Hit feedback |
-| `Character.faction` | `zombie.tscn` (`player.tscn` sets it since `.scratch/character/spec.md`) |
-| `Character.modifiers` | `player.tscn`, `zombie.tscn` |
-| `Enemy.reach_distance`, `resume_distance` | `zombie.tscn` |
-| `Movement.speed`, `acceleration`, `deceleration` | `player.tscn` all three; `zombie.tscn` the last two (it sets speed 2.5) |
-| `Aggro.radius` | `aggro.tscn`, and so `zombie.tscn` |
-| `Standee.pixel_size`, `wobble_animation`, `wobble_angle`, `wobble_speed` | `standee.tscn`, and so `player.tscn`, `zombie.tscn` |
+| `Character.faction` | `enemy.tscn`, and so `zombie.tscn` (since `.scratch/enemy-base/spec.md`); `player.tscn` sets it (since `.scratch/character/spec.md`) |
+| `Character.modifiers` | `player.tscn`; `enemy.tscn`, and so `zombie.tscn` |
+| `Enemy.reach_distance`, `resume_distance` | `enemy.tscn`, and so `zombie.tscn` |
+| `Movement.speed`, `acceleration`, `deceleration` | `player.tscn` all three; `enemy.tscn` all three, and so `zombie.tscn` the last two (it sets speed 2.5) |
+| `Aggro.radius` | `aggro.tscn`, and so `enemy.tscn` and `zombie.tscn` |
+| `Standee.pixel_size`, `wobble_animation`, `wobble_angle`, `wobble_speed` | `standee.tscn`, and so `player.tscn`, `enemy.tscn` and `zombie.tscn` |
 | `SkillBarHud`'s seven sizes, `PauseMenu.corner_margin`, `TouchStick.radius`, `follow` | their scenes in `ui/` |
 | `PixelatedView.pixel_height` | `sandbox.tscn` |
 
-Through instancing, `player.tscn` and `sandbox.tscn` carry the Skills' defaults too; they override nothing on a Skill. Nothing relies on `Skill.cooldown` (both Skills set it; rule 3 fails one that would) or `Health.max_health` (both Characters set it).
+Through instancing, `player.tscn` and `sandbox.tscn` carry the Skills' defaults too; they override nothing on a Skill. Nothing relies on `Skill.cooldown` (both Skills set it; rule 3 fails one that would), and only `enemy.tscn` on `Health.max_health`: the base leaves the maximum to each kind, and the player and the zombie set theirs.
 
 **What the convention asks of someone changing a default:** find the files above for it (the `.tscn` and `.tres` files that attach the script or a script extending it, without a line for the property, and the scenes that instance those without overriding it). Then write the old value into each that should keep it, in the same commit as the new default. Example: raising `Movement.speed` to 5 speeds up the player, whose scene relies on 4, and not the zombie, which sets 2.5; to keep the player at 4, `player.tscn`'s Movement gets `speed = 4.0` in that commit.
 

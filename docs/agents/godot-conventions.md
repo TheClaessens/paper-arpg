@@ -23,12 +23,28 @@ Build scenes as `.tscn` files and expose tuning values with `@export`, so they c
 A scene or resource file holds only the values written in it, an enum as its number; every other value is the script's default. Both the saved numbers and the script's defaults are content, as much as the code:
 
 - **An exported enum is only added to at the end.** `fireball.tscn` saves `aim = 2` and `spell_cooldown.tres` saves `kind = 1`; inserting, reordering or removing an entry changes what every such file says. Exported today: `Skill.Aim`, `NumberChange.Kind`, `TagChange.Kind`, `Faction.Id`.
-- **A default is part of every file that doesn't set it.** Attack auto-aims only because `Skill.aim` defaults to `AUTO`; `pierce.tres` adds Pierce only because `TagChange.kind` defaults to `ADD`. Before changing a default, find the `.tscn` and `.tres` files that attach the script, or a script extending it, without a line for the property, and the scenes that instance those without overriding it. Write the old value into each one that should keep it, in the same commit as the new default.
+- **A default is part of every file that doesn't set it.** Attack auto-aims only because `Skill.aim` defaults to `AUTO`; `pierce.tres` adds Pierce only because `TagChange.kind` defaults to `ADD`. Before changing a default, find the `.tscn` and `.tres` files that attach the script, or a script extending it, without a line for the property, and the scenes that instance or inherit those without overriding it. Write the old value into each one that should keep it, in the same commit as the new default.
 - **Renaming or removing an export** leaves every file that sets it with a line the script no longer has. Change those files in the same commit.
 - **A Skill tag is declared in `skills/skill_tag.gd`** before a scene or Modifier file writes it, and game code names it by its `SkillTag` constant, never as text.
 - **A number's name means one thing on every Skill that has it**, because a Modifier file names a number without knowing which Skill has it. Name a number for what it is: how fast Fireball's ball flies is `Projectile speed`, so a Modifier on it can't change another Skill's unrelated speed.
 
 `tests/test_content.gd` reads every Skill in every scene and every Modifier file, and fails on, among other faults, a tag that isn't declared, a number no Skill has, an empty effect and a Cooldown of 0 or less. It can't see enums, defaults or a renamed export: keep those by hand. A renamed number or tag it does catch, in a Modifier file that still names the old one.
+
+## Enemy kinds
+
+Every Enemy kind (see GLOSSARY.md) is a scene that inherits `characters/enemy/enemy.tscn`, the base. The base holds what every Enemy needs: the nodes `character.gd` and `enemy.gd` look up by name (`Standee`, `Movement`, `NavigationAgent3D`, `Aggro`, `Hurtbox`, `Health`, `HealthBar`, `Skills`) and the body's `CollisionShape3D`, with the values every Enemy shares. Those names are a contract: renaming or removing one changes the scripts too. A kind can't delete, rename or move a node it inherits, so a node some kind might do without, such as a `Stagger`, is each kind's own, and so are its Skills and its behaviour. A kind sets only its own values: its Standee's frames (the base has none), its Movement's speed and its Health's maximum.
+
+This is the one place a scene inherits, and it stays one level: a kind inherits the base itself, never another kind, and the base has no behaviour of its own. `tests/test_enemy_kinds.gd` fails on any scene but the base whose root is an Enemy and that doesn't inherit the base directly, or whose Standee has no frames.
+
+To add a kind, in the editor:
+
+1. Scene › New Inherited Scene…, and pick `characters/enemy/enemy.tscn`.
+2. Double-click the root and name it after the kind.
+3. Set `Standee`'s Frames, `Movement`'s Speed and `Health`'s Max Health. Each changed value shows a revert arrow back to the base's.
+4. Unless the kind is never staggered, select the root and Add Child Node › `Stagger`. Its Skills go under `Skills`.
+5. Scene › Save Scene As… `characters/enemy/<kind>.tscn`, then place it in a Level.
+
+A value set in the base is part of every kind that doesn't override it, as a script's default is part of every file that doesn't set it (Saved content). Change the base in the editor, after a reload if the files changed on disk ("The open editor"): an editor holding an old copy of the base writes it back, and every kind then inherits the old one. A kind's file lists only the base nodes it changes, each with its `index` and the base node's `unique_id`, and its own nodes in full; written by hand, it must say exactly that, or the editor rewrites it on its next save.
 
 ## Static typing
 

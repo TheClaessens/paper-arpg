@@ -12,11 +12,13 @@
 
 Find each place by its text, not its line number: other steps edit these files.
 
-- [ ] `godot-conventions.md` has the "Enemy kinds" section between "Saved content" and "Static typing", as the spec words it, its five steps included; "Saved content"'s second bullet says "the scenes that instance or inherit those".
-- [ ] `.scratch/enemies/spec.md`: the decision reads as the spec gives it, "every Enemy kind reuses it", and "More Enemy kinds; elites, bosses and rarities."; requirement 6 and the commit list unchanged.
-- [ ] `plan.md` decision 3 and row 8 read as the spec gives them, or are unchanged under open rule 6 b.
-- [ ] The content-checks table's rows and the sentence after it read as the spec gives them.
+- [x] `godot-conventions.md` has the "Enemy kinds" section between "Saved content" and "Static typing", as the spec words it, its five steps included; "Saved content"'s second bullet says "the scenes that instance or inherit those".
+- [x] `.scratch/enemies/spec.md`: the decision reads as the spec gives it, "every Enemy kind reuses it", and "More Enemy kinds; elites, bosses and rarities."; requirement 6 and the commit list unchanged.
+- [x] `plan.md` decision 3 and row 8 read as the spec gives them, or are unchanged under open rule 6 b.
+- [x] The content-checks table's rows and the sentence after it read as the spec gives them.
 - [ ] `grep -rn "Enemy type" GLOSSARY.md docs .scratch/enemies` finds only the glossary's _Avoid_ line; `grep -rn "No inherited enemy base scene" docs .scratch/enemies` finds only the quotation in the reopened decision.
-- [ ] `tools/check.sh` passes.
+- [x] `tools/check.sh` passes.
 
 ## Comments
+
+The `grep -rn "Enemy type"` box is left unticked: besides the glossary's _Avoid_ line it also finds the reopened decision's quotation of the old sentence ("One Enemy type; extract a base…"), which the spec's own wording contains.

@@ -45,8 +45,8 @@ README step 2, movement behaviour of basic Enemies only. Agreed in a grilling se
 - **Navmesh over flow field.** Packs of 3–10, maybe 20–40 on screen; horde scale is not ruled out. A flow field would replace only the "where next" step; `Movement` stays.
 - **Movement abilities for Enemies deferred,** like the player's Blink and Leap.
 - **Hand-placed Enemies, no spawner.** Spawning waits for session and level structure.
-- **`Aggro` is an `Area3D` component.** The physics engine reports the player, so the Enemy never looks it up, and every Enemy type reuses it.
-- **No inherited enemy base scene.** One Enemy type; extract a base when the second one shows what they share.
+- **`Aggro` is an `Area3D` component.** The physics engine reports the player, so the Enemy never looks it up, and every Enemy kind reuses it.
+- **Enemy kinds inherit one base scene** (since `.scratch/enemy-base/spec.md`, which replaced "No inherited enemy base scene. One Enemy type; extract a base when the second one shows what they share"). `characters/enemy/enemy.tscn` holds what every Enemy needs, and each kind, the zombie first, inherits it and sets only its own values and nodes. It didn't wait for a second kind: the nodes every kind needs are the ones the Enemy and Character scripts look up by name, and a base added later means rebuilding every kind made in the meantime.
 - **Editor-baked navmesh.** No code. Upgrade path: runtime baking, chunked per room on a background thread, once levels are generated. Only the level changes; Enemies don't.
 - **Crowding is decided by eye.** Compare both / collision only / avoidance only in the hall and corridor. Outcome below.
 
@@ -96,7 +96,7 @@ Measured in headless runs with the player standing still. Positions after 6 s, d
 - Surrounding: Enemies queueing behind the front row could walk round to free sides of the player.
 - Line of sight and leashing, if aggro through walls feels wrong.
 - Wandering before Aggro.
-- Enemy kinds (elites, bosses) and rarities.
+- More Enemy kinds; elites, bosses and rarities.
 
 ## Open
 
