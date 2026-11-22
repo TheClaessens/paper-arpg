@@ -6,9 +6,10 @@ extends SceneTree
 ##   godot --headless --path . --script res://tools/simulate.gd -- \
 ##       res://scenes/game.tscn 6 "tp 16 7.5"
 ##
-## To compare two runs, use `tools/play_check.sh`: a comparison needs `--fixed-fps 60` (the
-## number of physics steps before the first command otherwise varies with how long the first
-## frames take) and single-threaded navigation avoidance (otherwise positions differ by up to 0.01).
+## To compare two runs, or to add a case of your own, use `tools/play_check.sh`: a comparison needs
+## `--fixed-fps 60` (the number of physics steps before the first command otherwise varies with how
+## long the first frames take) and single-threaded navigation avoidance (otherwise positions differ
+## by up to 0.01).
 ##
 ## The player stands still: nothing presses a key in a headless run.
 ## Keep project class names out of this file: a --script entry point compiles before

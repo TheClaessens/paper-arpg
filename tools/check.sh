@@ -26,7 +26,8 @@ step() {
 }
 
 echo "== no empty file"
-empty=$(git ls-files | grep -vE '(^|/)(\.gdignore|\.gitkeep)$' | while IFS= read -r file; do
+empty=$(git ls-files -z | while IFS= read -r -d '' file; do
+	case ${file##*/} in (.gdignore | .gitkeep) continue ;; esac
 	[[ -f "$file" && ! -s "$file" ]] && echo "$file"
 done)
 if [[ -n "$empty" ]]; then
@@ -36,10 +37,18 @@ if [[ -n "$empty" ]]; then
 fi
 
 echo "== comment lines"
-# A line that is only a comment is at most 110 characters (tabs count as one).
-long=$(git ls-files autoloads characters skills ui scenes props rendering tests tools |
-	grep '\.gd$' | LC_ALL=en_US.UTF-8 xargs awk \
-	'/^[ \t]*#/ && length($0) > 110 { print FILENAME ":" FNR ": " length($0) " characters" }')
+# A line that is only a comment is at most 110 characters (tabs count as one). Characters, not bytes:
+# comments here hold `é`, `›` and `°`, and macOS's awk counts bytes whatever the locale, so perl counts.
+# The inner read needs a newline separator: -0 made NUL the outer one, for the NUL-separated names.
+long=$(git ls-files -z autoloads characters skills ui scenes props rendering tests tools |
+	perl -0ne 'chomp; next unless /\.gd$/; my $file = $_;
+		open(my $in, "<:encoding(UTF-8)", $file) or next;
+		local $/ = "\n";
+		while (my $line = <$in>) {
+			chomp $line;
+			print "$file:$.: ", length($line), " characters\n" if $line =~ /^\s*#/ && length($line) > 110;
+		}
+		close $in')
 if [[ -n "$long" ]]; then
 	echo "$long"
 	echo "!! comment lines over 110 characters (re-wrap them)"
