@@ -77,11 +77,11 @@ The first step of making a Snapshot: Modifiers that add, replace or remove Skill
 _Avoid_: Tag resolution, tag phase
 
 **Damage**:
-How much Health a Skill's hit takes away. A number of the Skill that Modifiers change, separate from its Damage type.
+How much Health a Skill's Hit takes away. A number of the Skill that Modifiers change, separate from its Damage type.
 _Avoid_: Power, attack value
 
 **Damage type**:
-What kind of damage a hit deals, such as fire. It is separate from the Skill's Skill tags: a Fire Skill can deal frost damage, and a tag never sets the damage.
+What kind of damage a Hit deals, such as fire. It is separate from the Skill's Skill tags: a Fire Skill can deal frost damage, and a tag never sets the damage.
 _Avoid_: Element, damage tag
 
 **Increased**:
@@ -136,12 +136,16 @@ _Avoid_: Speed, ball speed, velocity
 The angle a melee swing covers, centred on Facing.
 _Avoid_: Arc, cone, angle
 
+**Hit**:
+What one activation of a Skill does to each Hurtbox it reaches. It carries the activation's Snapshot and the Character that dealt it, and lands unchanged on every Hurtbox the activation reaches: each Character hit works out what it does to them.
+_Avoid_: Strike, damage event, attack (the Attack is a Skill)
+
 **Hit feedback**:
-How the game shows the moment a Skill hits an Enemy so the hit feels solid: the world freezes for an instant, the Enemy flashes and squashes, and the screen shakes. A projectile's hit doesn't freeze the world, so a ball flying on through Enemies doesn't stutter. Otherwise it is the same for every Skill, and no game system changes it. How far the Enemy is knocked back, and its Stagger, belong to the Skill.
+How the game shows the moment a Hit lands so it feels solid: the Character hit flashes and squashes, and if it is an Enemy, the world freezes for an instant and the screen shakes. A projectile's Hit doesn't freeze the world, so a ball flying on through Enemies doesn't stutter, and a Hit on the player shows only on the player's Standee, so the game keeps running however many Enemies hit them. It is the same for every Skill otherwise, and no game system changes it. How far the Character hit is knocked back, and its Stagger, belong to the Skill.
 _Avoid_: Juice, game feel, impact effects
 
 **Stagger**:
-The short time after a hit when a Character slides with the knockback and doesn't walk. Another hit restarts it, but a hit whose Stagger is 0 doesn't stagger at all. The player, for now, isn't staggered.
+The short time after a Hit when a Character slides with the knockback and doesn't walk. Another Hit restarts it, but a Hit whose Stagger is 0 doesn't stagger at all. The player, for now, isn't staggered.
 _Avoid_: Stun, hitstun, flinch
 
 **Health**:
