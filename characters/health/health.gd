@@ -33,7 +33,7 @@ func damage(amount: float) -> void:
 
 
 ## Heals `amount`, no higher than the maximum. An amount of 0 or less does nothing: healing
-## never lowers Health, so it can't bring Health to 0 without dying.
+## never lowers Health, so only Damage brings it to 0.
 func heal(amount: float) -> void:
 	if amount <= 0.0:
 		return

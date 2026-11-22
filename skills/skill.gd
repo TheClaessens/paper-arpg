@@ -108,8 +108,8 @@ func numbers() -> Dictionary[StringName, float]:
 
 
 ## Activates the Skill aimed at `aim` with the Character's `modifiers`, unless it is cooling
-## down: makes the activation's Snapshot, starts the Snapshot's Cooldown, then does what the
-## Skill does. Whether it activated.
+## down: makes the activation's Snapshot, starts its Cooldown (the Snapshot's, never shorter than
+## SHORTEST_COOLDOWN), then does what the Skill does. Whether it activated.
 func try_activate(aim: Vector3, modifiers: Array[Modifier]) -> bool:
 	if not is_ready():
 		return false

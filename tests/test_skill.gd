@@ -50,7 +50,8 @@ func test_a_skill_without_a_cooldown_warns() -> void:
 
 
 # Activating: try_activate() is the one way to set a Skill off. It makes the activation's
-# Snapshot, starts the Snapshot's Cooldown and then does what the Skill does.
+# Snapshot, starts the Snapshot's Cooldown, never shorter than Skill.SHORTEST_COOLDOWN, and then
+# does what the Skill does.
 
 ## A Skill that only records the Snapshot of each activation.
 class RecordingSkill extends Skill:
@@ -89,12 +90,12 @@ func test_no_cooldown_runs_shorter_than_the_shortest() -> void:
 	change.number = Skill.COOLDOWN
 	change.kind = NumberChange.Kind.INCREASED
 	change.amount = -100.0
-	var none := Modifier.new()
-	none.number_changes = [change]
-	assert_true(recording.try_activate(Vector3.RIGHT, [none]))
+	var no_cooldown := Modifier.new()
+	no_cooldown.number_changes = [change]
+	assert_true(recording.try_activate(Vector3.RIGHT, [no_cooldown]))
 	assert_eq(recording.snapshots[0].number(Skill.COOLDOWN), 0.0, "the Snapshot keeps what the Modifiers made")
 	assert_eq(recording.cooldown_left, Skill.SHORTEST_COOLDOWN)
-	assert_false(recording.try_activate(Vector3.RIGHT, [none]), "still cooling down")
+	assert_false(recording.try_activate(Vector3.RIGHT, [no_cooldown]), "still cooling down")
 
 
 func test_it_says_when_it_is_ready_again() -> void:

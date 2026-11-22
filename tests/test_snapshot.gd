@@ -65,8 +65,8 @@ func test_no_modifier_takes_a_number_below_zero() -> void:
 func test_a_flat_cut_stops_at_zero() -> void:
 	var cut := _modifier([], Skill.RANGE, NumberChange.Kind.FLAT, -15.0)
 	assert_eq(_snapshot(SPELL, [cut]).number(Skill.RANGE), 0.0, "10 - 15 stops at 0")
-	var more := _modifier([], Skill.RANGE, NumberChange.Kind.INCREASED, 50.0)
-	assert_eq(_snapshot(SPELL, [cut, more]).number(Skill.RANGE), 0.0, "Increased doesn't bring back -5")
+	var increased := _modifier([], Skill.RANGE, NumberChange.Kind.INCREASED, 50.0)
+	assert_eq(_snapshot(SPELL, [cut, increased]).number(Skill.RANGE), 0.0, "Increased doesn't bring back -5")
 	var back := _modifier([], Skill.RANGE, NumberChange.Kind.FLAT, 10.0)
 	assert_eq(_snapshot(SPELL, [cut, back]).number(Skill.RANGE), 5.0, "flat changes are summed first")
 	assert_eq(_snapshot(SPELL, [back, cut]).number(Skill.RANGE), 5.0, "whichever came first")
