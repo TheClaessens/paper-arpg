@@ -1,6 +1,6 @@
 # Future-proofing: plan and decisions
 
-Status: steps 1 to 10 built and open as stacked PRs (#22 to #31), waiting on the developer; step 11 waits for a design round
+Status: steps 1 to 10 merged into `master` on 2026-11-22 (#22 to #31, then one resave commit); step 11 is `.scratch/aim-modes/`
 
 ## Where it stands (2026-11-22)
 
@@ -33,7 +33,7 @@ The two reviews (`fable-report.md`, `sol-report.md`, reviewed at `8797660`) were
 2. **Each entry in a Character's list of Modifiers counts.** Two rings that give "+2 Range" give +4 however their files were saved. Whatever hands out Modifiers decides what stacks. (Brief 2, option B.)
 3. **Enemy kinds inherit one `enemy.tscn`, built now.** No `character.tscn` above it. The player's scene stays its own. An agent writes `enemy.tscn` and the inherited `zombie.tscn` in text, checked against today's zombie, and the developer resaves them once in the editor (`.scratch/enemy-base/spec.md`). (`analysis/character-enemy.md`, B1, option B.)
 4. **The game gets its own scene now**, with the sandbox as its first Level, and nothing more: no level changing yet. (`analysis/ui-game-root.md`, Brief 1, option A.)
-5. **What an Aim holds: open.** The developer sees the ways of aiming (a direction, a line confirmed on release, a ring that picks an Enemy, the nearest target, later a spot with an area) as logic shared between Skills and separate from them. To be designed with the developer as its own step.
+5. **How a Skill is aimed is an Aim mode** (settled 2026-11-22, step 11). The developer sees the ways of aiming as logic shared between Skills and separate from them. An Aim mode is a saved file a Skill names; it says what the Aim holds, whether on touch the Skill waits for the lift, and whether holding repeats it. Steer, Line, Spot and Around exist. Auto-aim is not one: it is the Aim any Skill gets when the player gives none. (`.scratch/aim-modes/spec.md`)
 6. **`_activate` means what the Skill does happens at that moment.** No begin, land and end phases. An optional wind-up before the effect can be added later without touching existing Skills; whether Enemy Skills use one is decided with the first Enemy Skill. (`analysis/hit-pipeline.md`, Brief A.)
 7. **Only hits on an Enemy freeze and shake the world.** A hit on the player flashes and squashes the player's Standee, and the game keeps running. (Brief C, option B.)
 8. **Steps land as stacked PRs.** Each step is specced, built on its own branch, reviewed with `/code-review` and opened as a PR; the next step is built on top without waiting. The developer reads and merges in order.
@@ -60,7 +60,7 @@ Working answers, used unless the developer objects when reading the spec that ho
 | 8 | `enemy-base` | Decision 3 | step 6; the developer's resave |
 | 9 | `hit` | `Hit` names its dealer and lands itself; decision 7; `Hurtbox.around` past 32 | step 7 |
 | 10 | `ball-in-world` | The ball carries its Hit, lives in the world, measures Range from the Character | step 9 |
-| 11 | (to be named) | How a Skill is aimed, as shared logic (decision 5): the touch gesture, how a drag becomes an Aim, the Aim when the player gives none, and what the marker draws, in one piece per way of aiming that a Skill names; an Aim that can carry a picked Hurtbox. Proposed term: Aim mode | a design round with the developer |
+| 11 | `aim-modes` | How a Skill is aimed, as shared logic (decision 5): an Aim mode, a saved file a Skill names, replaces the three aim settings on the Skill; three touch fixes ride along | built after a design round on 2026-11-22 |
 
 ## At their triggers, not now
 
@@ -77,7 +77,9 @@ Working answers, used unless the developer objects when reading the spec that ho
 | Hit feedback's runtime in a scene-owned piece | Slow motion, or a second camera effect |
 | Standee updates, repathing, idle Skills, why lines | A profile on the phone |
 | Opening the pause menu when the app loses focus | The developer asks for it |
-| The HUD tracks one aiming slot, so a second aiming thumb can leave the first thumb's Aim marker on screen; a touch-aimed Skill lifted exactly where the thumb landed gets an Aim of zero length | Step 11 |
+| A script or a marker scene per Aim mode | The first way of aiming whose drag or drawing isn't one of today's |
+| An Aim that carries a picked Hurtbox | The first Skill that picks one |
+| What a held thumb does on a Skill that waits for the lift and repeats | The first Aim mode with both |
 | Whether the navigation agent's avoidance callback nudges a zombie during its Stagger | The Enemy's behaviour as its own node |
 | A Skill that lists the same Skill tag twice keeps one copy when a Modifier removes or replaces that tag | The first Modifier that removes or replaces a tag |
 | A Range cut to 0 breaks the Attack's query | The first Modifier that can cut a Range to 0 |
