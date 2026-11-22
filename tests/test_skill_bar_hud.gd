@@ -122,7 +122,6 @@ func test_losing_focus_lets_go_of_a_held_thumb() -> void:
 	_elapse(0.016)
 	assert_eq(aims.size(), 1, "control: the press activated it")
 	hud.propagate_notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT) # to the HUD alone, not the Skill bar
-	_push_drag(main.centre() + Vector2(2.0, 0.0)) # a followed thumb would hold the slot again
 	_elapse(0.5)
 	assert_eq(aims.size(), 1)
 
@@ -130,6 +129,7 @@ func test_losing_focus_lets_go_of_a_held_thumb() -> void:
 func test_a_lift_during_a_pause_activates_nothing() -> void:
 	button.touch_started.emit(button.centre())
 	button.touch_moved.emit(button.centre() + Vector2(-120.0, 0.0))
+	assert_true(_aim_marker_shows(), "control: the drag is being aimed")
 	get_tree().paused = true
 	button.touch_ended.emit(button.centre() + Vector2(-120.0, 0.0))
 	get_tree().paused = false
@@ -141,7 +141,28 @@ func test_a_skill_changed_under_an_aim_activates_nothing() -> void:
 	button.touch_started.emit(button.centre())
 	button.touch_moved.emit(button.centre() + Vector2(-120.0, 0.0))
 	player.skill_bar.set_skill(1, player.skill_bar.skill_in(0)) # the Attack, as the Skill drawer would
+	assert_false(_aim_marker_shows(), "hidden as the Skill changes, before the thumb lifts")
 	button.touch_ended.emit(button.centre() + Vector2(-120.0, 0.0))
 	_elapse(0.016)
 	assert_eq(aims, [] as Array[Vector3])
 	assert_false(_aim_marker_shows())
+
+
+func test_a_slot_emptied_under_an_aim_activates_nothing() -> void:
+	button.touch_started.emit(button.centre())
+	button.touch_moved.emit(button.centre() + Vector2(-120.0, 0.0))
+	player.skill_bar.set_skill(1, null)
+	button.touch_moved.emit(button.centre() + Vector2(-130.0, 0.0))
+	button.touch_ended.emit(button.centre() + Vector2(-130.0, 0.0))
+	_elapse(0.016)
+	assert_eq(aims, [] as Array[Vector3])
+
+
+func test_a_skill_changed_under_a_held_thumb_ends_the_hold() -> void:
+	var main: SkillSlotButton = hud.get_node("Slot0") # the Attack: repeats while held
+	main.touch_started.emit(main.centre())
+	_elapse(0.016)
+	assert_eq(aims.size(), 1, "control: the press activated it")
+	player.skill_bar.set_skill(0, player.skill_bar.skill_in(0)) # chosen again in the Skill drawer: still a change
+	_elapse(0.5) # the Attack's Cooldown ends: a hold would repeat it
+	assert_eq(aims.size(), 1, "the hold ended")

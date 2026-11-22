@@ -128,7 +128,8 @@ func _on_touch_moved(at: Vector2, slot: int) -> void:
 	player.show_aim(skill, player.aim_from_drag(skill, drag, drag_full_range), cancelling)
 
 
-## The thumb on `slot` is gone without lifting: its hold and its aim end, and nothing is activated.
+## The thumb on `slot` is gone without lifting, or its Skill changed under it: its hold and its
+## aim end, and nothing is activated. A lift runs it first, then activates the aim it ended.
 func _let_go(slot: int) -> void:
 	if slot == _held_slot:
 		_held_slot = SkillBar.NONE

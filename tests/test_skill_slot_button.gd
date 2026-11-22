@@ -1,6 +1,7 @@
 extends GutTest
 ## A Skill slot's button flashes when the Skill it shows is ready again: any Skill, even one the
-## player gained after the HUD was made, and only the one it shows now.
+## player gained after the HUD was made, and only the one it shows now. It also reports a finger
+## taken away without lifting (a touch the system cancels, or the app losing focus) as lost, not lifted.
 
 const ButtonScene := preload("res://ui/skill_slot_button.tscn")
 
@@ -69,7 +70,7 @@ func _push_drag(to: Vector2) -> void:
 
 
 ## A button clear of the Console's corner button, so a pushed touch can't land on both.
-func _placed_button() -> SkillSlotButton:
+func _placed_watched_button() -> SkillSlotButton:
 	var button := _button()
 	button.place(Vector2(300, 300), 88.0)
 	watch_signals(button)
@@ -77,7 +78,7 @@ func _placed_button() -> SkillSlotButton:
 
 
 func test_a_touch_the_system_cancels_is_not_a_lift() -> void:
-	var button := _placed_button()
+	var button := _placed_watched_button()
 	_push_touch(button.centre(), true)
 	_push_touch(button.centre(), false)
 	assert_signal_emit_count(button, "touch_ended", 1, "a tap lifts")
@@ -86,12 +87,17 @@ func test_a_touch_the_system_cancels_is_not_a_lift() -> void:
 	_push_touch(Vector2(-1, -1), false) # how iOS reports a touch the system cancels
 	assert_signal_emit_count(button, "touch_ended", 1, "the cancel is not a lift")
 	assert_signal_emit_count(button, "touch_lost", 1)
+	for lost_at: Vector2 in [Vector2(-5, 300), Vector2(300, -5), Vector2(-0.54, -0.54)]:
+		_push_touch(button.centre(), true)
+		_push_touch(lost_at, false)
+	assert_signal_emit_count(button, "touch_ended", 1, "a negative x, y or a fraction is no lift either")
+	assert_signal_emit_count(button, "touch_lost", 4)
 	button.notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT) # the focus loss after it
-	assert_signal_emit_count(button, "touch_lost", 1, "one finger is lost once")
+	assert_signal_emit_count(button, "touch_lost", 4, "one finger is lost once")
 
 
 func test_a_release_marked_canceled_is_not_a_lift() -> void:
-	var button := _placed_button()
+	var button := _placed_watched_button()
 	_push_touch(button.centre(), true)
 	_push_touch(button.centre(), false, true)
 	assert_signal_emit_count(button, "touch_lost", 1)
@@ -99,7 +105,7 @@ func test_a_release_marked_canceled_is_not_a_lift() -> void:
 
 
 func test_losing_focus_lets_go_of_the_finger() -> void:
-	var button := _placed_button()
+	var button := _placed_watched_button()
 	button.notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
 	assert_signal_emit_count(button, "touch_lost", 0, "no finger, nothing lost")
 	_push_touch(button.centre(), true)
