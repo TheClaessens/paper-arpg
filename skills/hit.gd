@@ -2,23 +2,40 @@ class_name Hit
 extends RefCounted
 ## A Hit (see GLOSSARY.md): what one activation of a Skill does to each Hurtbox it reaches. The
 ## Skill makes it with Skill._hit() and lands it with land(), the same Hit on every Hurtbox the
-## activation reaches. Each Character hit works out from it what it does to them and writes
-## nothing back.
+## activation reaches. So it never changes: its fields can't be replaced, and each Character hit
+## works out from it what it does to them and writes nothing back.
 
 ## The activation's Snapshot: the Character hit reads Damage, Knockback and Stagger from it.
-var snapshot: Snapshot
-## The Character that dealt it, or null in a Hit made without one.
-var dealer: Character
+var snapshot: Snapshot:
+	get:
+		return _snapshot
+	set(_value):
+		assert(false, "A Hit never changes")
+## The Character that dealt it, or null: none was given, or that Character has been freed since
+## (an Enemy is, once it has sunk). Never a freed Character.
+var dealer: Character:
+	get:
+		return _dealer.get_ref() as Character
+	set(_value):
+		assert(false, "A Hit never changes")
 ## Whether its impact freezes the world. A projectile's doesn't.
-var freezes: bool
+var freezes: bool:
+	get:
+		return _freezes
+	set(_value):
+		assert(false, "A Hit never changes")
+
+var _snapshot: Snapshot
+var _dealer: WeakRef # a freed dealer reads as null: a typed getter can't return a freed one
+var _freezes: bool
 
 
 ## A Hit made as `hit_snapshot`, dealt by `hit_dealer` (or null for none), whose impact freezes
 ## the world if `hit_freezes`. Skills make theirs with Skill._hit().
 func _init(hit_snapshot: Snapshot, hit_dealer: Character, hit_freezes: bool) -> void:
-	snapshot = hit_snapshot
-	dealer = hit_dealer
-	freezes = hit_freezes
+	_snapshot = hit_snapshot
+	_dealer = weakref(hit_dealer) # an empty WeakRef for null
+	_freezes = hit_freezes
 
 
 ## Lands it on each Hurtbox in `pushes`, pushing each along its direction (a unit vector on the

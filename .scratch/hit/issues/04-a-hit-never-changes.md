@@ -10,7 +10,7 @@
 
 **Status:** ready-for-agent
 
-- [ ] Assigning `snapshot`, `dealer` or `freezes` reports "A Hit never changes" and leaves the Hit as it was.
-- [ ] A Hit's dealer is the Character it was made with while that Character exists, and null after it is freed, with no error on reading it.
-- [ ] No other test reports "A Hit never changes": a setter called while a Hit is made would show there. If one does, stop and say so in the PR instead of working around it.
-- [ ] `tools/check.sh` passes.
+- [x] Assigning `snapshot`, `dealer` or `freezes` reports "A Hit never changes" and leaves the Hit as it was.
+- [x] A Hit's dealer is the Character it was made with while that Character exists, and null after it is freed, with no error on reading it.
+- [x] No other test reports "A Hit never changes": a setter called while a Hit is made would show there. If one does, stop and say so in the PR instead of working around it.
+- [x] `tools/check.sh` passes.
