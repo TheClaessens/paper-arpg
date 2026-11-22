@@ -56,8 +56,9 @@ The developer keeps the Godot editor open, and it writes files behind your back:
 - **Pressing Play saves every open scene first** ("Save Before Running", Editor Settings › Run › Auto Save). A scene changed on disk while it was open gets overwritten by the editor's stale copy. Keep that setting off.
 - **It doesn't pick up changes made outside it** until **Project › Reload Current Project**. Ask for a reload after changing scenes or scripts, and after switching branches.
 - **It rewrites `.uid` files** when its uid cache disagrees with them, and reorders `project.godot` when it saves project settings.
+- **It resaves files written outside it in its own format**, even while nobody touches it: it adds a `uid` to a hand-written `.tres` or `.tscn` and to its `ext_resource` lines, a `unique_id` to each node, and puts properties in its own order. Left uncommitted, this comes back after every checkout.
 
-Before committing, read `git diff` for scenes the editor reverted. Stage files by name, and leave `.uid` and reorder churn out unless the change needs it.
+Before committing, read `git diff` for scenes the editor reverted. Stage files by name. When the editor's resave touches a file the branch changed, commit the resave once, on its own, so the file stops churning. Leave churn in files the branch didn't change out of the commit.
 
 ## Input and UI
 
