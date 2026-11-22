@@ -1,9 +1,9 @@
 extends GutTest
-## A ball (Projectile) flies straight from beside the Character that threw it and ends once it has
-## flown its Range. It carries its throw's Hit and lands it itself, so it flies on when its Skill
-## and its Character are gone. It stops at the first hostile Hurtbox it touches, or with Pierce at
-## the second, lands on each once, and stops at any wall. after_each frees every ball a test threw:
-## a ball lives beside its Character, not under it.
+## A ball (Projectile) flies straight from beside the Character that threw it and ends where its
+## front reaches its Range from that Character's centre. It carries its throw's Hit and lands it
+## itself, so it flies on when its Skill and its Character are gone. It stops at the first hostile
+## Hurtbox it touches, or with Pierce at the second, lands on each once, and stops at any wall.
+## after_each frees every ball a test threw: a ball lives beside its Character, not under it.
 
 const ProjectileScene := preload("res://skills/fireball/projectile.tscn")
 const ZombieScene := preload("res://characters/enemy/zombie.tscn")
@@ -259,3 +259,22 @@ func test_a_ball_flies_on_past_a_zombie_its_hit_missed() -> void:
 	_fire([], 15.0, 10.0) # side by side: both touch the first zombie in the same physics step
 	await wait_physics_frames(20)
 	assert_eq(hits, [first, second], "the ball whose Hit missed the dead zombie flew on to the second")
+
+
+func test_a_fireballs_front_reaches_its_range() -> void:
+	var fireball := _players_fireball()
+	var zombie: Enemy = _zombie_at(10.15).get_parent() # its near side is 9.9 from the player's centre
+	await wait_physics_frames(2)
+	fireball.try_activate(Vector3.RIGHT, [])
+	await wait_physics_frames(55)
+	assert_eq(zombie.health.current, 30.0, "the ball's front reaches the Range of 10")
+
+
+func test_a_fireball_never_touches_a_zombie_wholly_beyond_its_range() -> void:
+	var fireball := _players_fireball()
+	var zombie: Enemy = _zombie_at(10.35).get_parent() # its near side is 10.1 from the player's centre
+	await wait_physics_frames(2)
+	fireball.try_activate(Vector3.RIGHT, [])
+	await wait_physics_frames(55)
+	assert_eq(zombie.health.current, 50.0, "untouched")
+	assert_eq(_balls(), [] as Array[Node], "the ball has ended")

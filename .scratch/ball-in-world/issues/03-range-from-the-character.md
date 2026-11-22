@@ -10,6 +10,6 @@
 
 **Status:** ready-for-agent
 
-- [ ] `_physics_process` reads as the spec's sketch: the end check, then one shortened step.
-- [ ] `test_flies_along_its_direction_then_disappears_after_its_range` and the `_fire()` tests still pass with the shorter flight.
-- [ ] The two new tests pass; the far one failed before the change; `tools/check.sh` passes.
+- [x] `_physics_process` reads as the spec's sketch: the end check, then one shortened step.
+- [x] `test_flies_along_its_direction_then_disappears_after_its_range` and the `_fire()` tests still pass with the shorter flight.
+- [x] The two new tests pass; the far one failed before the change; `tools/check.sh` passes.

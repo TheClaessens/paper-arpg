@@ -1,8 +1,8 @@
 class_name Projectile
 extends Area3D
 ## Fireball's ball. Thrown with launch(), it flies straight at its Hit's Projectile speed and lands
-## its Hit on each hostile Hurtbox it touches, until it has flown its Hit's Range, or it touches a
-## wall or a prop. With Pierce among its Hit's Snapshot's tags it passes through the first Hurtbox
+## its Hit on each hostile Hurtbox it touches, until its front reaches its Hit's Range from the
+## centre of the Character that threw it, or it touches a wall or a prop. With Pierce among its Hit's Snapshot's tags it passes through the first Hurtbox
 ## its Hit lands on and stops at the next; a Hurtbox its Hit misses doesn't count. It looks for
 ## walls and props on the `world` layer and for Hurtboxes on the layers launch() adds. It lives in
 ## the world beside that Character (see Skill._add_to_world()) and needs neither the Skill nor the
@@ -29,13 +29,16 @@ func _ready() -> void:
 ## Throws it, once it is in the world (see Skill._add_to_world()), from `centre`, the centre of the
 ## Character that throws it, along `direction` (a unit vector on the ground). It carries `ball_hit`,
 ## which it lands on each Hurtbox it touches on the layers of `mask`. It starts LAUNCH_OFFSET along
-## `direction` and FLIGHT_HEIGHT up, and flies until its centre has flown its Hit's Range.
+## `direction` and FLIGHT_HEIGHT up, and flies until its front is its Hit's Range from `centre` (see
+## GLOSSARY.md, Range). With a Range that ends inside it, it ends where it starts.
 func launch(ball_hit: Hit, centre: Vector3, direction: Vector3, mask: int) -> void:
 	hit = ball_hit
 	_direction = direction
 	collision_mask |= mask
 	global_position = centre + direction * LAUNCH_OFFSET + Vector3.UP * FLIGHT_HEIGHT
-	_flight = hit.snapshot.number(Skill.RANGE)
+	var radius := ((get_node(^"CollisionShape3D") as CollisionShape3D).shape as SphereShape3D).radius
+	# Its front is its radius ahead of its centre, and its centre starts LAUNCH_OFFSET out.
+	_flight = hit.snapshot.number(Skill.RANGE) - LAUNCH_OFFSET - radius
 
 
 # ponytail: moves by setting its position and trusts the physics step's overlaps, so it can skip
@@ -46,11 +49,12 @@ func launch(ball_hit: Hit, centre: Vector3, direction: Vector3, mask: int) -> vo
 # cast_motion along each step for the wall or prop that stops it, and the Hurtboxes the swept ball
 # touches before that point, taken in travel order.
 func _physics_process(delta: float) -> void:
-	var step := hit.snapshot.number(Fireball.PROJECTILE_SPEED) * delta
+	if _flown >= _flight: # at its end, which the last physics step has looked at
+		queue_free()
+		return
+	var step := minf(hit.snapshot.number(Fireball.PROJECTILE_SPEED) * delta, _flight - _flown)
 	global_position += _direction * step
 	_flown += step
-	if _flown >= _flight:
-		queue_free()
 
 
 ## A wall or a prop: it stops the ball.
