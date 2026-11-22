@@ -4,9 +4,9 @@
 
 **Blocked by:** 02 (same file)
 
-**Status:** ready-for-agent
+**Status:** done
 
 **Done when:**
 
-- [ ] Test 7 passes, and fails on the commit before with an engine error.
-- [ ] `tools/check.sh` passes.
+- [x] Test 7 passes, and fails on the commit before with an engine error.
+- [x] `tools/check.sh` passes.

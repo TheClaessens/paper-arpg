@@ -211,3 +211,8 @@ func test_a_second_aiming_thumb_is_ignored() -> void:
 	_elapse(0.016)
 	assert_eq(slots, [1] as Array[int], "the first thumb's lift activates its own slot")
 	assert_true(aims[0].is_finite(), "with the dragged Aim")
+
+
+func test_a_drag_back_to_where_it_began_is_a_tap() -> void:
+	_touch(Vector2.ZERO, [Vector2(30.0, 0.0), Vector2.ZERO] as Array[Vector2])
+	assert_eq(aims, [SkillBar.NO_AIM] as Array[Vector3], "auto-aimed, as a tap is")

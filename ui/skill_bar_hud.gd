@@ -148,10 +148,11 @@ func _on_touch_ended(at: Vector2, slot: int) -> void:
 	var skill := player.skill_bar.skill_in(slot)
 	if not aiming or get_tree().paused or skill == null:
 		return
-	if not _aimed:
-		player.skill_bar.press(slot) # a tap: auto-aimed
+	var drag := at - _landed[slot]
+	if not _aimed or drag.is_zero_approx():
+		player.skill_bar.press(slot) # a tap, or a drag back to where it began: auto-aimed
 	elif not _over_cancel(slot, at):
-		player.skill_bar.press(slot, player.aim_from_drag(skill, at - _landed[slot], drag_full_range))
+		player.skill_bar.press(slot, player.aim_from_drag(skill, drag, drag_full_range))
 
 
 ## Steers a held slot's repeats along the drag, showing where they go; inside the deadzone
