@@ -10,8 +10,8 @@
 
 **Tests:** new `test_negative_damage_does_not_heal` and `test_negative_healing_does_not_hurt`, written first. On `master` Health goes up to 45, and down to 0 without `died`.
 
-- [ ] From 40 of 50, `damage(-5)` leaves 40, and `changed` fired only for the first hit.
-- [ ] From 40 of 50, `heal(-50)` leaves 40, and Health isn't dead.
-- [ ] 0 Damage, and healing at full, still change nothing (`test_nothing_changes_nothing_is_reported`, unchanged).
-- [ ] Factions-health rule 4 reads as the spec gives it.
-- [ ] `tools/check.sh` passes.
+- [x] From 40 of 50, `damage(-5)` leaves 40, and `changed` fired only for the first hit.
+- [x] From 40 of 50, `heal(-50)` leaves 40, and Health isn't dead.
+- [x] 0 Damage, and healing at full, still change nothing (`test_nothing_changes_nothing_is_reported`, unchanged).
+- [x] Factions-health rule 4 reads as the spec gives it.
+- [x] `tools/check.sh` passes.
