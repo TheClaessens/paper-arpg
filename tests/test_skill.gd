@@ -61,6 +61,14 @@ class RecordingSkill extends Skill:
 		snapshots.append(snapshot)
 
 
+## A Skill script with a _physics_process of its own, that doesn't call super().
+class OwnPhysicsSkill extends Skill:
+	var frames := 0
+
+	func _physics_process(_delta: float) -> void:
+		frames += 1
+
+
 func _recording(seconds: float, skill_tags: Array[StringName]) -> RecordingSkill:
 	var recording := RecordingSkill.new()
 	recording.cooldown = seconds
@@ -146,3 +154,23 @@ func test_a_skill_without_a_character_fails_loudly() -> void:
 	assert_engine_error("has no Character")
 	assert_eq(recording.snapshots.size(), 0, "nothing happened")
 	assert_eq(recording.cooldown_left, 0.0, "and no Cooldown started")
+
+
+func test_a_skill_with_its_own_physics_process_still_cools_down() -> void:
+	var own := OwnPhysicsSkill.new()
+	own.cooldown = 0.05
+	own.character = autofree(Character.new()) # a stand-in: this Skill never reaches its Character
+	add_child_autofree(own)
+	own.try_activate(Vector3.RIGHT, [])
+	await wait_physics_frames(8) # the shortest Cooldown, 0.1 s, is 6 frames at 60 Hz
+	assert_gt(own.frames, 0, "its own _physics_process ran")
+	assert_true(own.is_ready())
+
+
+func test_a_cooldown_waits_while_the_game_is_paused() -> void:
+	var recording := _recording(1.0, [])
+	recording.try_activate(Vector3.RIGHT, [])
+	get_tree().paused = true
+	await wait_physics_frames(6) # counts the tree's frames, paused or not
+	get_tree().paused = false
+	assert_eq(recording.cooldown_left, 1.0)

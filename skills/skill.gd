@@ -4,9 +4,9 @@ extends Node3D
 ## A Skill (see GLOSSARY.md): something a Character activates, the player from a Skill slot.
 ## Each Skill is a node under its Character's Skills node and knows that Character (see
 ## `character`), so it acts from where the Character stands and hits what is hostile to the
-## Character's Faction. try_activate() is the one way to set it off, and the Skill runs its own
-## Cooldown. Subclasses do their work in _activate(). Each Skill script is a @tool, as this one
-## is, so the editor shows its configuration warnings.
+## Character's Faction. try_activate() is the one way to set it off. The Skill runs its own
+## Cooldown, and no Skill script can stop it. Subclasses do their work in _activate(). Each Skill
+## script is a @tool, as this one is, so the editor shows its configuration warnings.
 
 ## Its Cooldown has run out: it can be activated again.
 signal ready_again
@@ -89,9 +89,14 @@ func cool_down(delta: float) -> void:
 		ready_again.emit()
 
 
-func _physics_process(delta: float) -> void:
-	if not Engine.is_editor_hint():
-		cool_down(delta)
+# The Cooldown runs on internal physics processing: a Skill script's own _physics_process()
+# replaces a parent script's, but _notification() is called for every script that defines it,
+# so no Skill script can stop the Cooldown, by accident or with set_physics_process(false).
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_READY:
+		set_physics_process_internal(not Engine.is_editor_hint())
+	elif what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS:
+		cool_down(get_physics_process_delta_time())
 
 
 ## How much of the cooldown is left: 1 just activated, 0 ready.
