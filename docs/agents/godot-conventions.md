@@ -4,7 +4,7 @@ How code in this project is shaped. Follow these when writing or reviewing any G
 
 ## Composition
 
-A **component** is a child node with one job and its own `class_name` (e.g. `Standee` draws a character; a future `HealthComponent` tracks health and nothing else). Characters are assembled from components, and the same component serves the player and Enemies alike. Reach for a new component before an inheritance chain.
+A **component** is a child node with one job and its own `class_name` (e.g. `Standee` draws a character; a future `HealthComponent` tracks health and nothing else). Characters are assembled from components, and the same component serves the player and Enemies alike. Reach for a new component before an inheritance chain. A scene inherits another in one case only: an Enemy kind inherits `characters/enemy/enemy.tscn`, so that a change for every Enemy is one edit (see "Enemy kinds"). The chain this section warns against would be a scene between the base and the Enemy kinds, a script per Enemy kind, or anything in the base that only some Enemy kinds want.
 
 The base scripts are `Character` (`characters/character.gd`, the glossary's Character in code) and `Skill` (`Attack` and `Fireball` extend it). A base script is right when it is one level deep, stands for a glossary term that covers what extends it (Character for the player's hero and Enemies, Skill for Attack and Fireball), and holds identity and wiring, while behaviour stays in components and in the scripts that extend it. Anything else is a component. `Player` and `Enemy` extend `Character` and nothing extends them: an Enemy kind is a scene, not a script. A script that extends a base script and defines a function the base script also defines calls `super()` in it, unless it means to replace what the base does: in Godot 4 the subclass's function replaces the base's. `_ready()` is the example: `Player._ready()` and `Enemy._ready()` start with `super()`. The exception is `_notification`: the engine calls it on every script in the inheritance chain, base first, so never call `super()` in it, or the base's runs twice. `Skill` runs its Cooldown from `_notification`, so a Skill script may define `_physics_process()` freely: the Cooldown doesn't run there. A Character's Skills sit under its `Skills` node, a `Node3D` without a transform of its own, ahead of `SkillBar` in the scene so that a Skill's Cooldown runs before the Skill bar asks whether it is ready.
 
@@ -23,12 +23,28 @@ Build scenes as `.tscn` files and expose tuning values with `@export`, so they c
 A scene or resource file holds only the values written in it, an enum as its number; every other value is the script's default. Both the saved numbers and the script's defaults are content, as much as the code:
 
 - **An exported enum is only added to at the end.** `fireball.tscn` saves `aim = 2` and `spell_cooldown.tres` saves `kind = 1`; inserting, reordering or removing an entry changes what every such file says. Exported today: `Skill.Aim`, `NumberChange.Kind`, `TagChange.Kind`, `Faction.Id`.
-- **A default is part of every file that doesn't set it.** Attack auto-aims only because `Skill.aim` defaults to `AUTO`; `pierce.tres` adds Pierce only because `TagChange.kind` defaults to `ADD`. Before changing a default, find the `.tscn` and `.tres` files that attach the script, or a script extending it, without a line for the property, and the scenes that instance those without overriding it. Write the old value into each one that should keep it, in the same commit as the new default.
+- **A default is part of every file that doesn't set it.** Attack auto-aims only because `Skill.aim` defaults to `AUTO`; `pierce.tres` adds Pierce only because `TagChange.kind` defaults to `ADD`. Before changing a default, find the `.tscn` and `.tres` files that attach the script, or a script extending it, without a line for the property, and the scenes that instance or inherit those without overriding it. Write the old value into each one that should keep it, in the same commit as the new default.
 - **Renaming or removing an export** leaves every file that sets it with a line the script no longer has. Change those files in the same commit.
 - **A Skill tag is declared in `skills/skill_tag.gd`** before a scene or Modifier file writes it, and game code names it by its `SkillTag` constant, never as text.
 - **A number's name means one thing on every Skill that has it**, because a Modifier file names a number without knowing which Skill has it. Name a number for what it is: how fast Fireball's ball flies is `Projectile speed`, so a Modifier on it can't change another Skill's unrelated speed.
 
 `tests/test_content.gd` reads every Skill in every scene and every Modifier file, and fails on, among other faults, a tag that isn't declared, a number no Skill has, an empty effect and a Cooldown of 0 or less. It can't see enums, defaults or a renamed export: keep those by hand. A renamed number or tag it does catch, in a Modifier file that still names the old one.
+
+## Enemy kinds
+
+Every Enemy kind (see GLOSSARY.md) is a scene that inherits `characters/enemy/enemy.tscn`, the base. The base holds what every Enemy needs: the nodes `character.gd` and `enemy.gd` look up by name (`Standee`, `Movement`, `NavigationAgent3D`, `Aggro`, `Hurtbox`, `Health`, `HealthBar`, `Skills`) and the body's `CollisionShape3D`, with the values every Enemy shares. Those names are a contract: renaming or removing one changes the scripts too. An Enemy kind can't delete, rename or move a node it inherits, so a node some Enemy kind might do without, such as a `Stagger`, is each Enemy kind's own. `character.gd` looks `Stagger` up by name too, so an Enemy kind that names its Stagger anything else is silently never staggered. An Enemy kind's own behaviour node and Skills will be added to that Enemy kind, not the base, when they exist. An Enemy kind sets any value the base leaves at its default: the zombie sets its Standee's frames (the base has none), its Movement's speed and its Health's maximum, and another could set the Aggro radius or the Health bar's height.
+
+Enemy kinds are the one place a scene inherits, and it stays one level: an Enemy kind inherits the base itself, never another Enemy kind, and the base carries no script but `enemy.gd`. `tests/test_enemy_kinds.gd` fails on any scene but the base whose root is an Enemy and that doesn't inherit the base directly, or whose Standee has no frames.
+
+To add an Enemy kind, in the editor:
+
+1. Scene › New Inherited Scene…, and pick `characters/enemy/enemy.tscn`.
+2. Double-click the root and name it after the Enemy kind.
+3. Set `Standee`'s Frames, `Movement`'s Speed and `Health`'s Max Health. Each changed value shows a revert arrow back to the base's.
+4. Unless the Enemy kind is never staggered, select the root and Add Child Node › `Stagger`. Its Skills go under `Skills`.
+5. Scene › Save Scene As… `characters/enemy/<kind>.tscn`, then place it in a Level.
+
+For Enemy kinds, a value set in the base is part of every one that doesn't override it, as a script's default is part of every file that doesn't set it (Saved content). Change the base after a reload if the files changed on disk ("The open editor"): an editor holding an old copy of the base writes it back, and every Enemy kind then inherits the old one. An Enemy kind's file lists only the base nodes it changes, each with its `index` and the base node's `unique_id`, and its own nodes in full. The base and an Enemy kind can be written as text in a working tree no editor has open; the editor then resaves them in its own format the first time it saves them, and that resave is committed once on its own ("The open editor").
 
 ## Static typing
 
