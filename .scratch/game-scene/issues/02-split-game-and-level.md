@@ -21,6 +21,6 @@
 - [x] "Checking the move" prints exactly the spec's lines; the files hold 11 and 32 nodes; the Level's parents count 10, 2 and 19; the Level holds no `NodePath` and the game scene the three HUD paths; neither file has a `[connection`.
 - [x] `project.godot` names `res://scenes/game.tscn`.
 - [x] `tests/test_game.gd` passes; `tools/check.sh` passes.
-- [ ] `tools/simulate.gd` prints the same lines before and after the split. If two runs before the split already differ, the PR says so and by how much.
+- [x] With `--fixed-fps 60`, three runs on each side list the Characters in the same order and agree up to ±0.01; the PR gives the spread.
 - [x] The three tool comments and the two conventions passages read as in the spec.
 - [x] `git diff --stat` from ticket 01's commit lists only the files above.

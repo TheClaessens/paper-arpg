@@ -80,7 +80,7 @@ Sandbox (Node3D)
 4. **The move loses and changes nothing.** Every node, property, external resource and sub-resource of today's `sandbox.tscn` is in exactly one of the two files, written as it was, but for two things: in the Level, `parent=` paths lose `PixelatedView/SubViewport/World`, and the root is a `Node3D` instead of a `Node`.
 5. **The HUD reaches the game scene's one player's Character, as today.** `PauseMenu.player` and `SkillBarHud.player` stay `../../PixelatedView/SubViewport/World/Player`, and `PauseMenu.hud` stays `../SkillBarHud`. In the running game they are that Character and that Skill bar HUD, never null.
 6. **No node path crosses between the game scene and a Level.** The Level holds no `NodePath`. The game scene's three lead to `Player` and `SkillBarHud`, neither through the Level.
-7. **Play doesn't change.** `tools/simulate.gd` prints the same lines on both sides of the split, and the screenshots, the navmesh bake and the iPhone build show the same game.
+7. **Play doesn't change.** With `--fixed-fps 60`, `tools/simulate.gd` lists the same Characters in the same order on both sides of the split, with the same numbers up to the ±0.01 that repeated runs of one commit show. The screenshots, the navmesh bake and the iPhone build show the same game.
 
 "Checking the move" checks rule 4 line by line, and rules 2, 3 and 6 by count. `tests/test_game.gd` checks rules 1 and 5, and that the one player's Character is the game scene's own. "Checking by hand" checks rule 7.
 
@@ -242,7 +242,9 @@ diff <(git show master:scenes/sandbox.tscn | scene_lines) <(cat scenes/game.tscn
 > [node name="Sandbox" type="Node3D"]
 ```
 
-That is the second header, the Level's line, the new root, the new instance and the root's new type, and nothing lost. Anything else is a lost or changed line: stop and look. The editor route prints these lines too, and more: `game.tscn` is a new file to the editor, which gives its `ext_resource` lines new ids (Engine facts 5), so its five moved `ext_resource` lines and the five lines that name them (`PixelatedView`'s `script`, and the `instance=` of `Player`, `TouchStick`, `PauseMenu` and `SkillBarHud`) show up in pairs that must differ in that id only. Then:
+On its own this can't see a node under the wrong parent, a dropped id or a property line moved to another node, because it drops `parent=`, uids and `unique_id`s and sorts the lines; this build's review also compared the old file with the two new ones block by block, with parents and ids kept, and found only the expected differences.
+
+The diff prints the second header, the Level's line, the new root, the new instance and the root's new type, and nothing lost. Anything else is a lost or changed line: stop and look. The editor route prints these lines too, and more: `game.tscn` is a new file to the editor, which gives its `ext_resource` lines new ids (Engine facts 5), so its five moved `ext_resource` lines and the five lines that name them (`PixelatedView`'s `script`, and the `instance=` of `Player`, `TouchStick`, `PauseMenu` and `SkillBarHud`) show up in pairs that must differ in that id only. Then:
 
 - `grep -c '^\[node' scenes/game.tscn scenes/sandbox.tscn`: 11 and 32.
 - `grep -o 'parent="[^"]*"' scenes/sandbox.tscn | sort | uniq -c`: 10 `parent="."`, 2 `parent="NavigationRegion3D"`, 19 `parent="NavigationRegion3D/Props"`.
@@ -319,17 +321,17 @@ None loads `sandbox.tscn` or assumes its structure. Checked: no test names `sand
 1. **`tools/simulate.gd`** (ticket 02; headless). On the branch, before the scenes change (in a fresh worktree, run `tools/check.sh` first, which imports):
 
    ```bash
-   godot --headless --path . --script res://tools/simulate.gd -- res://scenes/sandbox.tscn 6 "tp 16 7.5" > "$TMPDIR/simulate-before.txt"
+   godot --headless --fixed-fps 60 --path . --script res://tools/simulate.gd -- res://scenes/sandbox.tscn 6 "tp 16 7.5" > "$TMPDIR/simulate-before.txt"
    ```
 
-   Run it once more into `simulate-before-2.txt` and diff the two: if they differ, the run isn't repeatable on this machine, and the comparison below can only be to that spread; say so in the PR. After the split:
+   Run it three times (`simulate-before-1.txt` to `-3.txt`; the headless run isn't repeatable, so the comparison is to that spread). After the split, three times again:
 
    ```bash
-   godot --headless --path . --script res://tools/simulate.gd -- res://scenes/game.tscn 6 "tp 16 7.5" > "$TMPDIR/simulate-after.txt"
+   godot --headless --fixed-fps 60 --path . --script res://tools/simulate.gd -- res://scenes/game.tscn 6 "tp 16 7.5" > "$TMPDIR/simulate-after.txt"
    diff "$TMPDIR/simulate-before.txt" "$TMPDIR/simulate-after.txt"
    ```
 
-   No output. The player's Character stands at (16, 7.5) in the hall for 6 s while the pack chases it, and the lines list the Characters in `World`'s order (open rule 5). One thing in the run does happen in another order than before: the player's body joins the physics world before the Level's walls and props instead of after them. If the lines differ, look there first, and report.
+   Expect the same Characters in the same order, with numbers equal up to ±0.01 (rule 7). This build found: three runs before the split and three after list the same Characters in the same order, and their positions agree up to the ±0.01 that repeated runs of one commit show (one pair of runs is 0.02 apart at one coordinate, each wobbling ±0.01 around the same value; the three-run medians match at 132 of 139 numbers and are 0.01 apart at the other 7). Without the flag, some runs were off by up to 0.05 at the first second, because the number of physics steps before the `tp` command varied. The player's Character stands at (16, 7.5) in the hall for 6 s while the pack chases it, and the lines list the Characters in `World`'s order (open rule 5). One thing in the run does happen in another order than before: the player's body joins the physics world before the Level's walls and props instead of after them. If the lines differ, look there first, and report.
 2. **Screenshots** (ticket 03; needs a window). First on `master`, before taking the branch: `godot --path . --resolution 1280x720 --script res://tools/screenshot.gd -- res://scenes/sandbox.tscn "tp 16 7.5"`, then copy `0_start.png` and `1_tp-16-7.5.png` out of the folder it prints (`user://screenshots/`, the same folder for every checkout, so the next run overwrites them). Then on the branch, the same command with `res://scenes/game.tscn`. Flip between each pair: the start room, the hall, the props, the light and the dark background, the zombies, the player's Character and the HUD look the same. Animation frames and a zombie's first steps may differ.
 3. **The navmesh bake** (ticket 03; needs a window). On the branch: `godot --path . --script res://tools/bake_navmesh.gd -- res://scenes/sandbox.tscn`. It prints `NavigationRegion3D -> res://scenes/sandbox_navmesh.tres: OK` and the walkable area by height, and rewrites that file. `git status` must then show `scenes/sandbox_navmesh.tres` unchanged. If it changed, bake `master`'s `sandbox.tscn` the same way and compare the two printed areas, which must be equal. Either way, `git checkout -- scenes/sandbox_navmesh.tres`: this step commits no navmesh.
 4. **The iPhone** (ticket 03). `tools/deploy_ios.sh` clears `.godot/exported` before it exports: a stale export cache once scrambled scene settings in a device build (2026-11-21, the script's header). To deploy with the editor's Remote Debug instead, delete `.godot/exported` by hand and reload the editor first. On the phone: the game opens in the start room; the world is pixelated and the HUD sharp; the Touch stick walks; dragging Fireball's slot shows its aim line (not a spot ring) and its slot sweeps a 4 s Cooldown; Pause › Skill bar puts a Skill in a slot; in the hall the pack chases, Attacks kill a zombie and its Health bar shows.
@@ -422,10 +424,10 @@ Checked against the Godot 4.7-stable source at `5b4e0cb0f` (the build the analys
 
 ## Done when
 
-- Rules 1 to 7 hold: "Checking the move" prints exactly the lines and counts above, `tests/test_game.gd` passes, and `tools/simulate.gd` prints the same lines on both sides of the split.
+- Rules 1 to 7 hold: "Checking the move" prints exactly the lines and counts above, `tests/test_game.gd` passes, and with `--fixed-fps 60`, `tools/simulate.gd` lists the same Characters in the same order on both sides of the split, with the same numbers up to ±0.01.
 - `tests/test_game.gd` failed once with a broken path, and the PR says how (ticket 01).
 - `tools/check.sh` passes after each ticket.
-- The branch changes only `.scratch/game-scene/`, `GLOSSARY.md`, `tests/test_game.gd`, `scenes/game.tscn`, `scenes/sandbox.tscn`, `project.godot`, `tools/simulate.gd`, `tools/screenshot.gd`, `tools/bake_navmesh.gd` and `docs/agents/godot-conventions.md`, plus a uid line ticket 03 may depend on. No script in the game folders, no other test.
+- The branch changes only `.scratch/game-scene/`, `GLOSSARY.md`, `tests/test_game.gd`, `tests/test_game.gd.uid`, `scenes/game.tscn`, `scenes/sandbox.tscn`, `project.godot`, `tools/simulate.gd`, `tools/screenshot.gd`, `tools/bake_navmesh.gd` and `docs/agents/godot-conventions.md`, plus a uid line ticket 03 may depend on. No script in the game folders, no other test.
 - The docs read as in "Docs this reopens".
 - Ticket 03: the resave is one commit; the screenshots, the bake and the iPhone show the same game.
 - `/code-review` has run on the branch before its PR.
