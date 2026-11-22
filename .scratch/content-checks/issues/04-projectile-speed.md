@@ -1,4 +1,4 @@
-# 04: Fireball's ball speed is named Projectile speed
+# 04: How fast Fireball's ball flies is named Projectile speed
 
 **What to build:** A number's name means one thing on every Skill, because a Modifier file names a number without knowing which Skill has it. Fireball's `&"Speed"` is renamed to the name the developer settled in open rule 1 (recommended: `&"Projectile speed"`), with the constant `Fireball.PROJECTILE_SPEED` and the export `projectile_speed` (no scene sets `speed`; `fireball.tscn` keeps relying on the default 12). The projectile and its tests read the new constant. The glossary gains the Projectile speed entry if open rule 1 agrees. The conventions' "Saved content" gains the number-name bullet. The skill-tags spec's line 49 says the rule, and its line 65 keeps `Damage` meaning all of a hit's Damage once Damage types come. Fireball flies as before. See `.scratch/content-checks/spec.md` (rule 7; The change › `skills/fireball/fireball.gd`; Docs this reopens; open rule 1).
 

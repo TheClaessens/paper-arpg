@@ -13,10 +13,10 @@ A **Modifier** saved as its own `.tres` (a *Modifier file* below) names **Skill 
 After this step:
 
 - Every Skill tag is declared once, in `skills/skill_tag.gd`. Game code names a tag by its constant; scenes and Modifier files keep writing text, and a test checks that text against the list. At run time a tag is still a `StringName`.
-- `tests/test_content.gd` reads every Skill in every scene and every Modifier file, and fails on a tag that isn't declared, a number no Skill has, an effect slot left empty, a tag change that can never act, or a missing Cooldown.
+- `tests/test_content.gd` reads every Skill in every scene and every Modifier file, and fails on, among other faults, a tag that isn't declared, a number no Skill has, an empty effect, a tag change that can never act, or a Cooldown of 0 or less.
 - `tools/load_all.gd` loads `.tres` files too, so a Modifier file nothing refers to yet (as gear and talent files will be) fails the check when it doesn't load.
 - The conventions gain "Saved content": the ways a saved file goes wrong that no test can see (an enum saved as its number, a default a file relies on, a renamed export).
-- A number's name means one thing on every Skill, because a Modifier file names a number without knowing which Skill has it. Fireball's ball speed is called `Speed`, which a later attack speed or dash speed would share; it is renamed while no Modifier file names it (open rule 1).
+- A number's name means one thing on every Skill, because a Modifier file names a number without knowing which Skill has it. How fast Fireball's ball flies is called `Speed`, which a later attack speed or dash speed would share; it is renamed while no Modifier file names it (open rule 1).
 
 Words: "game code" is what CLAUDE.md lists under Where code lives (`autoloads/ characters/ skills/ ui/ scenes/ props/ rendering/`). Tests and tools are not game code, and test files are not content.
 
@@ -25,7 +25,7 @@ Words: "game code" is what CLAUDE.md lists under Where code lives (`autoloads/ c
 1. **Every Skill tag is declared once, in `skills/skill_tag.gd`**: one constant per tag, and `SkillTag.ALL` holding them all. A Skill's own tags, a Modifier file's filter, and each tag a tag change names are in `SkillTag.ALL`. In game code a tag is written as text only in `skill_tag.gd`. Tests may write any tag as text, declared or not.
 2. **A Skill lists no tag that another tag implies.** Fireball lists Fire and gets Elemental from `TagPass.IMPLIED_TAGS`. A Skill that listed Elemental itself could never lose it: no Modifier can change an implied tag (`tag_pass.gd:95-99`). (Open rule 2.)
 3. **Every Skill's own Cooldown is above 0, in every scene it sits in**: its own, and a Character's that instances it and may override it. (Open rule 5.)
-4. **Every effect of a Modifier file is filled in and names something that exists.** No effect slot is empty (a null breaks every activation the Modifier applies to). A number change names a number some Skill in some scene has. A tag change's `tag` is a declared tag that no other tag implies. A tag change that replaces has an `into` that is likewise declared and not implied; one that doesn't replace has no `into`. (Open rules 3 and 4.)
+4. **Every effect of a Modifier file is filled in and names something that exists.** No effect is empty (a null breaks every activation the Modifier applies to). A number change names a number some Skill in some scene has. A tag change's `tag` is a declared tag that no other tag implies. A tag change that replaces has an `into` that is likewise declared and not implied; one that doesn't replace has no `into`. (Open rules 3 and 4.)
 5. **An implied tag implies nothing further.** `TagPass.with_implied()` looks one level deep (`tag_pass.gd:59-67`), so a second level would be dropped without a word.
 6. **Every scene and resource file loads.** `tools/load_all.gd` loads `.gd`, `.tscn` and `.tres` files, leaving out dot folders, `res://addons` and `res://assets`.
 7. **A number's name means one thing on every Skill that has it.** Fireball's `Speed` becomes `Projectile speed` (open rule 1). Checked through rule 4: once renamed, a Modifier file on `Speed` names a number no Skill has.
@@ -60,11 +60,11 @@ Not tags, so left alone: the console names `"pierce"` and `"spell-cooldown"` (`p
 
 - Header (`:2-4`): loads every script, scene and `.tres` resource, outside dot folders, `addons/` and `assets/`. A resource fails on a parse error or a broken reference.
 - `_initialize` (`:12`) walks `find_files("res://", ["gd", "tscn", "tres"])`. A `.tres` is loaded and not instantiated; `null` is a failure, as for the rest.
-- `_find` (`:28-36`) becomes a static function, so the content test walks the same files:
+- `_find` (`:28-36`) becomes a static function, so the content test makes the same walk:
 
 ```gdscript
 ## Every file under `dir` whose extension is in `extensions`, leaving out dot folders and the
-## vendored res://addons and res://assets. tests/test_content.gd walks the same files.
+## vendored res://addons and res://assets. tests/test_content.gd makes the same walk, with its own extensions.
 static func find_files(dir: String, extensions: PackedStringArray) -> PackedStringArray:
 	...
 		var path := dir.path_join(sub)
@@ -90,7 +90,7 @@ const ATTACK := &"Attack"
 const MELEE := &"Melee"
 const PROJECTILE := &"Projectile"
 const FIRE := &"Fire"
-## Only ever implied, by Fire (see TagPass.IMPLIED_TAGS).
+## Only ever implied (see TagPass.IMPLIED_TAGS).
 const ELEMENTAL := &"Elemental"
 ## Also a behaviour: a projectile with it passes through the first Hurtbox it hits.
 const PIERCE := &"Pierce"
@@ -112,7 +112,7 @@ No `extends`, as `characters/faction.gd`. No test of its own: it holds constants
 ### `skills/fireball/fireball.gd` (ticket 04)
 
 ```gdscript
-## The name of the ball's speed among the Skill's numbers (see GLOSSARY.md, Projectile speed).
+## The name of how fast the ball flies among the Skill's numbers (see GLOSSARY.md, Projectile speed).
 const PROJECTILE_SPEED := &"Projectile speed"
 
 ## How fast the ball flies, in world units per second.
@@ -137,7 +137,7 @@ Then `TagPass.IMPLIED_TAGS` is checked.
 Shape, which the implementer writes out:
 
 ```gdscript
-func test_skills_and_modifier_files_name_only_what_exists() -> void:
+func test_every_skill_and_modifier_file_is_well_made() -> void:
 	var problems: Array[String] = []
 	var numbers: Array[StringName] = [] # every number some Skill in some scene has
 	var modifiers: Dictionary[String, Modifier] = {} # by path
@@ -146,7 +146,7 @@ func test_skills_and_modifier_files_name_only_what_exists() -> void:
 		var resource := load(path)
 		if resource == null: ...                      # "doesn't load"
 		elif resource is PackedScene: ...             # instantiate, _skills_in(root), free
-			# each problem: "%s › %s: %s" % [path, root.get_path_to(skill), problem]
+			# each problem: "%s%s: %s" % [path, place, problem], place being " › <path to the Skill>", or empty for the root
 		elif resource is Modifier: ...                # modifiers[path] = resource as Modifier
 	# then _modifier_problems for each Modifier file, and _implied_problems(TagPass.IMPLIED_TAGS)
 	assert_gt(skills_found, 0, "found no Skill in any scene")
@@ -166,7 +166,7 @@ func _skills_in(node: Node) -> Array[Skill]
 
 - Problems are joined with `"; "` on one line: `check.sh` shows only GUT's `[Failed]` lines, and GUT prints an assert's message on that line, so every problem shows in the check's output.
 - The two `assert_gt` lines keep a walk that finds nothing from passing.
-- Each problem names the file, the place and the word: `res://characters/player/player.tscn › Attack: tag 'Meele' is not a Skill tag`.
+- Each problem names the file, the place and the word: `res://characters/player/player.tscn › Attack: tag 'Meele' is not a Skill tag`. A Skill that is its scene's root has no place: `res://skills/fireball/fireball.tscn: tag 'Projectiles' is not a Skill tag`.
 - "Implied" means: in any list of `TagPass.IMPLIED_TAGS.values()`, as `_why_skip` reads it.
 
 **Typing and GUT.** `load()` returns `Resource`: test it with `is`, then cast with `as` before reading a property, so nothing is a Variant. `instantiate()` returns `Node`; the walk tests `is Skill` and casts. A typed dictionary's `keys()` and `values()` return untyped arrays: loop with a typed loop variable, as `tag_pass.gd:96` does. GUT's asserts take untyped arguments, so passing typed values needs no `@warning_ignore`. GUT 9.7.1 fails a test on any engine error or warning logged during it, push errors too (`failure_error_types`, `addons/gut/gut_config.gd:57`; `.gutconfig.json` doesn't change it): a file that doesn't load fails twice over, and so would a scene that logs a warning when instantiated (Needs a run).
@@ -212,11 +212,11 @@ Every check, and a broken file or scene that makes it fail. The implementer trie
 | L1 | Every file loads (6) | Add `skills/modifiers/broken.tres`: `[gd_resource type="Resource" format=3]`, a blank line, `[resource]`, `script = ExtResource("1_missing")`. Delete it after. | `check.sh` at the load step: `FAILED TO LOAD: res://skills/modifiers/broken.tres`. The content test alone: "doesn't load", and GUT's unexpected error. |
 | C1 | A Skill's own tag is declared (1) | `fireball.tscn:10`: `&"Projectile"` → `&"Projectiles"` | Three problems: `fireball.tscn`, `player.tscn › Fireball`, `sandbox.tscn › …/Player/Fireball` |
 | C2 | …as a Character's scene sets it (1) | `player.tscn`, under the Attack node (`:69`): add `tags = Array[StringName]([&"Attack", &"Meele"])` | `player.tscn` and `sandbox.tscn`, not `attack.tscn` |
-| C3 | No implied tag on a Skill (2) | `attack.tscn:18`: add `&"Elemental"` | "lists Elemental, which another tag implies", three times |
+| C3 | No implied tag on a Skill (2) | `attack.tscn:18`: add `&"Elemental"` | "tag 'Elemental' is implied by another tag", three times |
 | C4 | Cooldown above 0 (3) | `fireball.tscn`: delete `cooldown = 4.0` (`:9`); it then relies on the default 0 | Three problems |
 | C5 | Filter tags declared (1) | `pierce.tres:14`: `&"Projectiles"` | `pierce.tres` |
 | C6 | A number some Skill has (4) | `spell_cooldown.tres:9`: `&"Cooldwon"` | `spell_cooldown.tres` |
-| C7 | No empty effect slot (4) | `spell_cooldown.tres:17`: `…([SubResource("halve_cooldown"), null])` | "has an empty effect slot" |
+| C7 | No empty effect (4) | `spell_cooldown.tres:17`: `…([SubResource("halve_cooldown"), null])` | "has an empty effect" |
 | C8 | A tag change's tag declared (1, 4) | `pierce.tres:9`: `&"Peirce"` | `pierce.tres` |
 | C9 | …and not implied (4) | `pierce.tres:9`: `&"Elemental"` | `pierce.tres` |
 | C10 | A replace has an `into` (4) | `pierce.tres`, in the `add_pierce` sub-resource: add `kind = 1` (REPLACE) | "replaces Pierce with nothing" |
@@ -226,10 +226,10 @@ Every check, and a broken file or scene that makes it fail. The implementer trie
 | C14 | The walk finds content | In the test, walk `["tscn"]` only; then `["tres"]` only | "found no Modifier file"; then "found no Skill in any scene" |
 | C15 | Old number names close (7) | After ticket 04: `spell_cooldown.tres:9`: `&"Speed"` | "a number no Skill has" (before ticket 04 it passes) |
 
-**Self-tests**, kept in the file so the problem functions can't quietly stop reporting (CODING_STANDARDS, "A test can fail"). Each builds one hand-made broken object holding one of each fault and asserts that exactly that many problems come back, and none for a well-made one:
+**Self-tests**, kept in the file so the problem functions can't quietly stop reporting (CODING_STANDARDS, "A test can fail"). Each builds one hand-made broken object holding one of each fault and asserts that exactly that many problems come back and that the lines say what is wrong, and none for a well-made one. A fourth builds a small tree with a Skill two nodes below the root and asserts `_skills_in` finds it:
 
 - A Skill with tags `[&"Projectiles", SkillTag.ELEMENTAL]` and a Cooldown of 0: three problems. One with `[SkillTag.SPELL]` and a Cooldown of 1: none.
-- A Modifier, checked against the numbers `[Skill.COOLDOWN]`, with nine problems: a filter on `&"Projectiles"`; number changes on `&"Cooldwon"` and a `null`; and tag changes adding `&"Peirce"`, adding Elemental, replacing Fire with no `into`, replacing Fire into Elemental, adding Pierce with an `into`, and a `null`. A Spell filter halving Cooldown: none.
+- A Modifier, checked against the numbers `[Skill.COOLDOWN]`, with nine problems: a filter on `&"Projectiles"`; number changes on `&"Cooldwon"` and a `null`; and tag changes adding `&"Peirce"`, adding Elemental, replacing Fire with no `into`, replacing Fire into Elemental, adding Pierce with an `into`, and a `null`. A Spell filter halving Cooldown (a More of −50), adding Melee and replacing Fire with Pierce: none.
 - The table `{Fire: [Elemental], Elemental: [Spell]}`: one problem.
 
 Unchanged: `test_skill.gd:43-49` (the editor's Cooldown warning; `@tool` stays) and every test that writes tags as text.
@@ -244,19 +244,19 @@ Unchanged: `test_skill.gd:43-49` (the editor's Cooldown warning; `@tool` stays) 
 
 > ## Saved content
 >
-> A scene or resource file holds only the values written in it, an enum as its number; every other value is the script's default. Both are content, as much as the code:
+> A scene or resource file holds only the values written in it, an enum as its number; every other value is the script's default. Both the saved numbers and the script's defaults are content, as much as the code:
 >
 > - **An exported enum is only added to at the end.** `fireball.tscn` saves `aim = 2` and `spell_cooldown.tres` saves `kind = 1`; inserting, reordering or removing an entry changes what every such file says. Exported today: `Skill.Aim`, `NumberChange.Kind`, `TagChange.Kind`, `Faction.Id`.
 > - **A default is part of every file that doesn't set it.** Attack auto-aims only because `Skill.aim` defaults to `AUTO`; `pierce.tres` adds Pierce only because `TagChange.kind` defaults to `ADD`. Before changing a default, find the `.tscn` and `.tres` files that attach the script, or a script extending it, without a line for the property, and the scenes that instance those without overriding it. Write the old value into each one that should keep it, in the same commit as the new default.
 > - **Renaming or removing an export** leaves every file that sets it with a line the script no longer has. Change those files in the same commit.
 > - **A Skill tag is declared in `skills/skill_tag.gd`** before a scene or Modifier file writes it, and game code names it by its `SkillTag` constant, never as text.
-> - **A number's name means one thing on every Skill that has it**, because a Modifier file names a number without knowing which Skill has it. Name a number for what it is: Fireball's ball speed is `Projectile speed`, so a Modifier on it can't change another Skill's unrelated speed.
+> - **A number's name means one thing on every Skill that has it**, because a Modifier file names a number without knowing which Skill has it. Name a number for what it is: how fast Fireball's ball flies is `Projectile speed`, so a Modifier on it can't change another Skill's unrelated speed.
 >
-> `tests/test_content.gd` reads every Skill in every scene and every Modifier file, and fails on a tag that isn't declared, a number no Skill has, an empty effect slot or a missing Cooldown. It can't see enums, defaults or renames: keep those by hand.
+> `tests/test_content.gd` reads every Skill in every scene and every Modifier file, and fails on, among other faults, a tag that isn't declared, a number no Skill has, an empty effect and a Cooldown of 0 or less, among other faults. It can't see enums, defaults or a renamed export: keep those by hand. A renamed number or tag it does catch, in a Modifier file that still names the old one.
 
 **`.scratch/skill-tags/spec.md:49`** (ticket 04). Was: "**Number names** are constants: `Skill.COOLDOWN`, `RANGE`, `KNOCKBACK`, `STAGGER`, `Fireball.SPEED`, `Attack.SWEEP`. A Modifier's `.tres` names them as text." Becomes (it also gains `DAMAGE`, added by factions-health):
 
-> - **Number names** are constants: `Skill.COOLDOWN`, `RANGE`, `DAMAGE`, `KNOCKBACK`, `STAGGER`, `Fireball.PROJECTILE_SPEED`, `Attack.SWEEP`. A Modifier's `.tres` names them as text, so a number's name means one thing on every Skill that has it: Fireball's ball speed is `Projectile speed`, not `Speed` (reopened by `.scratch/content-checks/spec.md`).
+> - **Number names** are constants: `Skill.COOLDOWN`, `RANGE`, `DAMAGE`, `KNOCKBACK`, `STAGGER`, `Fireball.PROJECTILE_SPEED`, `Attack.SWEEP`. A Modifier's `.tres` names them as text, so a number's name means one thing on every Skill that has it: how fast Fireball's ball flies is `Projectile speed`, not `Speed` (reopened by `.scratch/content-checks/spec.md`).
 
 **`.scratch/skill-tags/spec.md:65`** (ticket 04; rules-engine "Missed by both reports" 7). Was: "What the Damage types are, how many, and their order (with damage)." Becomes:
 
@@ -286,12 +286,12 @@ What the content test assumes of later steps:
 - Skills are nodes in scenes, found at any depth: the `Skills` node of step 6 changes nothing. A Skill a Character made in code at `_ready` would not be seen.
 - It reads Modifier files from disk, never a Character's `modifiers` list: that list moving to `Character` (step 6) changes nothing.
 - It calls `Skill.numbers()` and reads `tags` and `cooldown` on Skills outside the tree with no Character. A step that makes those need the tree or the Character (step 7 gives a Skill its Character) keeps them working there, or changes the test.
-- After this step, game code names Pierce `SkillTag.PIERCE` and the ball's speed `Fireball.PROJECTILE_SPEED`. A spec written beside this one that quotes `&"Pierce"` or `Fireball.SPEED` follows.
+- After this step, game code names Pierce `SkillTag.PIERCE` and how fast the ball flies `Fireball.PROJECTILE_SPEED`. A spec written beside this one that quotes `&"Pierce"` or `Fireball.SPEED` follows.
 - Step 1's shortest Cooldown and rule 3: open rule 5.
 
 ## Open rules for the developer
 
-1. **The ball's speed: its name, and a glossary entry.** plan.md's working answer renames `&"Speed"` so a Modifier on it can't change a later Skill's unrelated speed: an attack speed (the glossary's Cooldown entry names one), a dash's, a Character's walk. No Modifier file names it yet, so the rename is free now.
+1. **How fast the ball flies: its name, and a glossary entry.** plan.md's working answer renames `&"Speed"` so a Modifier on it can't change a later Skill's unrelated speed: an attack speed (the glossary's Cooldown entry names one), a dash's, a Character's walk. No Modifier file names it yet, so the rename is free now.
    - **`Projectile speed`** *(recommended)*: says what moves, and is shared by every Skill that throws or shoots something (the glossary's bow), so one "projectiles fly faster" Modifier serves them all. It matches the Projectile tag and the usual term (Path of Exile's, quoted in `.scratch/skill-tags/research-skill-systems.md:46`).
    - `Flight speed`: shorter, but no glossary word, and it fits a leap or a flying Enemy as well.
    - `Ball speed`: Fireball's alone. An arrow would need its own name, and a Modifier for every projectile would have to name both.

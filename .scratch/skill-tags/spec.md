@@ -46,7 +46,7 @@ Settled 2026-11-21 after a call map of the old flow (https://claude.ai/artifact/
 - **Player** (`characters/player/player.gd`): keeps `modifiers` and answers `activation_requested`: works out the aim when the press had none, calls `skill.try_activate(aim, modifiers)`, and on success turns to the aim, squashes, and emits `skill_activated(slot)`.
 - **SkillBarHud**: presses a button in on the Player's `skill_activated`, and flashes it on its Skill's `ready_again`.
 - **Aiming is not an activation.** The aim (auto-aim, a drag, the aim marker's Range ring) reads the Skill's numbers as they stand now with the Character's Modifiers (`Skill.number()`), so a Range Modifier that comes or goes while aiming shows at once. Only the activation makes a Snapshot.
-- **Number names** are constants: `Skill.COOLDOWN`, `RANGE`, `DAMAGE`, `KNOCKBACK`, `STAGGER`, `Fireball.PROJECTILE_SPEED`, `Attack.SWEEP`. A Modifier's `.tres` names them as text, so a number's name means one thing on every Skill that has it: Fireball's ball speed is `Projectile speed`, not `Speed` (reopened by `.scratch/content-checks/spec.md`).
+- **Number names** are constants: `Skill.COOLDOWN`, `RANGE`, `DAMAGE`, `KNOCKBACK`, `STAGGER`, `Fireball.PROJECTILE_SPEED`, `Attack.SWEEP`. A Modifier's `.tres` names them as text, so a number's name means one thing on every Skill that has it: how fast Fireball's ball flies is `Projectile speed`, not `Speed` (reopened by `.scratch/content-checks/spec.md`).
 - **Words**: "activate" replaces "use" everywhere (GLOSSARY.md › Activate), including the console command `activate <slot> [<x> <z>]` and the input actions `activate_skill_slot_1` to `_5`.
 
 ## Out of scope

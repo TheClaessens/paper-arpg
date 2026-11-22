@@ -37,7 +37,7 @@ Words are the glossary's. A *flat change* is a Modifier's change that adds its a
 | Damage | `enemy.gd:62`, into `Health.damage()` | heals | nothing happens (factions-health rule 4) |
 | Knockback | `enemy.gd:66` | pulls the Enemy toward the player | no push |
 | Stagger | `enemy.gd:64` | raised to 0.02 s there | 0.02 s, as today |
-| The ball's speed (`Fireball.SPEED`, which `content-checks` renames) | `projectile.gd:28` | the ball flies backwards and never ends | the ball never moves and never ends (Out of scope) |
+| How fast the ball flies (`Fireball.SPEED`, which `content-checks` renames) | `projectile.gd:28` | the ball flies backwards and never ends | the ball never moves and never ends (Out of scope) |
 | Sweep | `attack.gd:40`, `in_sweep()` | hits only at point blank | hits only at point blank |
 
 The readers keep only what is about 0 itself (`enemy.gd:64`) or about the clock (`skill.gd:78`, `:90`); none needs a guard against a number below 0. Health gets its own guard (rule 2) because Damage and healing will come from more than Skills: burns, leech, the Console.
@@ -211,7 +211,7 @@ Settle these before code. The tickets follow the recommended answers.
 
 ## Out of scope
 
-- **A ball whose speed is 0** never moves and never ends; only a Hurtbox that walks into it ends it. The ball's own step (`ball-in-world` in plan.md) fixes it. **Trigger,** if that step comes later than such a Modifier: the first Modifier that can cut the ball's speed by 100%.
+- **A ball whose speed is 0** never moves and never ends; only a Hurtbox that walks into it ends it. The ball's own step (`ball-in-world` in plan.md) fixes it. **Trigger,** if that step comes later than such a Modifier: the first Modifier that can cut how fast the ball flies by 100%.
 - **Range 0 breaks Attack.** Its query sphere gets radius 0, which Jolt refuses to build (an engine error, and no hits; `_build()` in `modules/jolt_physics/shapes/jolt_sphere_shape_3d.cpp`). Auto-aimed, its Aim is a zero offset, and `Basis.looking_at` errors on a zero vector. The aim marker's ring gets an inner radius below 0 whenever Range is under its 0.07 line width (`aim_marker.gd:28-29`). Fireball's ball just ends at once. Rule 1 doesn't make this worse: a Range that would have gone below 0 now stops at 0, and below 0 was broken too. `skill-character`'s "an Aim needs a direction" may cover the zero Aim. **Trigger:** the first Modifier that can cut a Range to 0.
 - **Numbers too large for their reader**: a ball fast enough to cross a wall in one physics frame, a Range that finds more than 32 Hurtboxes (`hurtbox.gd:58`). The `hit` step handles the 32; swept ball movement waits for the first speed Modifier (plan.md).
 - **A Stagger of 0** stays 0.02 s here (`enemy.gd:63-64`). The `character` step's Stagger component makes it do nothing (plan.md's working answer).

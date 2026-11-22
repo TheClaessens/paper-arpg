@@ -14,7 +14,7 @@ const FREEZES := false
 const LAUNCH_OFFSET := 0.45
 const FLIGHT_HEIGHT := 0.5
 
-## The name of the ball's speed among the Skill's numbers (see GLOSSARY.md, Projectile speed).
+## The name of how fast the ball flies among the Skill's numbers (see GLOSSARY.md, Projectile speed).
 const PROJECTILE_SPEED := &"Projectile speed"
 
 ## How fast the ball flies, in world units per second.

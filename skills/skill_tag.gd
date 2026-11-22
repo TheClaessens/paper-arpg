@@ -7,7 +7,7 @@ const ATTACK := &"Attack"
 const MELEE := &"Melee"
 const PROJECTILE := &"Projectile"
 const FIRE := &"Fire"
-## Only ever implied, by Fire (see TagPass.IMPLIED_TAGS).
+## Only ever implied (see TagPass.IMPLIED_TAGS).
 const ELEMENTAL := &"Elemental"
 ## Also a behaviour: a projectile with it passes through the first Hurtbox it hits.
 const PIERCE := &"Pierce"

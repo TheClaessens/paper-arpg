@@ -1,13 +1,15 @@
 extends GutTest
-## Content: every Skill in every scene and every Modifier file names only Skill tags and numbers
-## that exist (see .scratch/content-checks/spec.md). The walk uses the check's own files, so a new
-## folder is covered the day it exists. The problem functions are checked on hand-made broken
-## Skills, Modifiers and a table, so they can't quietly stop reporting.
+## Content: every Skill in every scene and every Modifier file is well made: it names only Skill
+## tags and numbers that exist, has a Cooldown above 0 and no empty effect, and TagPass.IMPLIED_TAGS
+## is sound (see .scratch/content-checks/spec.md). The walk is the check's: the same function,
+## LoadAll.find_files, with its own extensions, so a new folder is covered the day it exists. The
+## problem functions are checked on hand-made broken Skills, Modifiers and a table, so they can't
+## quietly stop reporting.
 
 const LoadAll := preload("res://tools/load_all.gd")
 
 
-func test_skills_and_modifier_files_name_only_what_exists() -> void:
+func test_every_skill_and_modifier_file_is_well_made() -> void:
 	var problems: Array[String] = []
 	var numbers: Array[StringName] = [] # every number some Skill in some scene has
 	var modifiers: Dictionary[String, Modifier] = {} # by path
@@ -27,7 +29,8 @@ func test_skills_and_modifier_files_name_only_what_exists() -> void:
 					if number not in numbers:
 						numbers.append(number)
 				for problem in _skill_problems(skill):
-					problems.append("%s › %s: %s" % [path, root.get_path_to(skill), problem])
+					var place := "" if skill == root else " › %s" % root.get_path_to(skill)
+					problems.append("%s%s: %s" % [path, place, problem])
 			root.free()
 		elif resource is Modifier:
 			modifiers[path] = resource as Modifier
@@ -41,11 +44,25 @@ func test_skills_and_modifier_files_name_only_what_exists() -> void:
 	assert_true(problems.is_empty(), "; ".join(problems))
 
 
+func test_a_skill_in_a_scene_is_found_below_the_root() -> void:
+	var root := Node.new()
+	var middle := Node.new()
+	var skill := Skill.new()
+	root.add_child(middle)
+	middle.add_child(skill)
+	assert_eq(_skills_in(root), [skill] as Array[Skill])
+	root.free()
+
+
 func test_a_broken_skill_gives_a_problem_for_each_fault() -> void:
 	var broken := Skill.new()
 	broken.tags = [&"Projectiles", SkillTag.ELEMENTAL]
 	broken.cooldown = 0.0
-	assert_eq(_skill_problems(broken).size(), 3, str(_skill_problems(broken)))
+	var problems := _skill_problems(broken)
+	assert_eq(problems.size(), 3, str(problems))
+	_assert_says(problems, "tag 'Projectiles' is not a Skill tag")
+	_assert_says(problems, "tag 'Elemental' is implied by another tag")
+	_assert_says(problems, "Cooldown is 0")
 	broken.free()
 	var fine := Skill.new()
 	fine.tags = [SkillTag.SPELL]
@@ -68,9 +85,25 @@ func test_a_broken_modifier_gives_a_problem_for_each_fault() -> void:
 	]
 	var problems := _modifier_problems(broken, [Skill.COOLDOWN])
 	assert_eq(problems.size(), 9, str(problems))
+	_assert_says(problems, "filter tag 'Projectiles' is not a Skill tag")
+	_assert_says(problems, "changes number 'Cooldwon', which no Skill has")
+	_assert_says(problems, "has an empty effect")
+	_assert_says(problems, "tag change on 'Peirce' is not a Skill tag")
+	_assert_says(problems, "tag change on 'Elemental' is implied by another tag")
+	_assert_says(problems, "replaces Fire with nothing")
+	_assert_says(problems, "the into 'Elemental' is implied by another tag")
+	_assert_says(problems, "has an into (Fire) without replacing")
+	# A Spell filter halving Cooldown, adding Melee and replacing Fire with Pierce.
 	var fine := Modifier.new()
 	fine.filter = [SkillTag.SPELL]
-	fine.number_changes = [_number_change(Skill.COOLDOWN)]
+	var halve := _number_change(Skill.COOLDOWN)
+	halve.kind = NumberChange.Kind.MORE
+	halve.amount = -50.0
+	fine.number_changes = [halve]
+	fine.tag_changes = [
+		_tag_change(TagChange.Kind.ADD, SkillTag.MELEE),
+		_tag_change(TagChange.Kind.REPLACE, SkillTag.FIRE, SkillTag.PIERCE),
+	]
 	assert_eq(_modifier_problems(fine, [Skill.COOLDOWN]), [] as Array[String])
 
 
@@ -79,18 +112,24 @@ func test_an_implied_tag_that_implies_more_gives_a_problem() -> void:
 		SkillTag.FIRE: [SkillTag.ELEMENTAL],
 		SkillTag.ELEMENTAL: [SkillTag.SPELL],
 	}
-	assert_eq(_implied_problems(table).size(), 1, str(_implied_problems(table)))
+	var problems := _implied_problems(table)
+	assert_eq(problems.size(), 1, str(problems))
+	_assert_says(problems, "Elemental is implied by another tag and implies more")
 	assert_eq(_implied_problems(TagPass.IMPLIED_TAGS), [] as Array[String])
+
+
+func _assert_says(problems: Array[String], wording: String) -> void:
+	var said := problems.any(func(line: String) -> bool: return line.contains(wording))
+	assert_true(said, "no problem says '%s' in %s" % [wording, problems])
 
 
 ## Each problem with `skill` as its scene sets it (rules 1–3), one line each.
 func _skill_problems(skill: Skill) -> Array[String]:
 	var problems: Array[String] = []
 	for tag in skill.tags:
-		if tag not in SkillTag.ALL:
-			problems.append("tag '%s' is not a Skill tag" % tag)
-		elif _is_implied(tag):
-			problems.append("lists %s, which another tag implies" % tag)
+		var tag_problem := _tag_problem(tag)
+		if tag_problem:
+			problems.append("tag '%s' %s" % [tag, tag_problem])
 	if skill.cooldown <= 0.0:
 		problems.append("Cooldown is %s, it needs one above 0" % skill.cooldown)
 	return problems
@@ -104,21 +143,22 @@ func _modifier_problems(modifier: Modifier, numbers: Array[StringName]) -> Array
 			problems.append("filter tag '%s' is not a Skill tag" % tag)
 	for change in modifier.number_changes:
 		if change == null:
-			problems.append("has an empty effect slot")
+			problems.append("has an empty effect")
 		elif change.number not in numbers:
 			problems.append("changes number '%s', which no Skill has" % change.number)
 	for change in modifier.tag_changes:
 		if change == null:
-			problems.append("has an empty effect slot")
+			problems.append("has an empty effect")
 			continue
 		var tag_problem := _tag_problem(change.tag)
 		if tag_problem:
-			problems.append("tag change on %s" % tag_problem)
+			problems.append("tag change on '%s' %s" % [change.tag, tag_problem])
 		if change.kind == TagChange.Kind.REPLACE:
+			var into_problem := _tag_problem(change.into)
 			if change.into.is_empty():
 				problems.append("replaces %s with nothing" % change.tag)
-			elif _tag_problem(change.into):
-				problems.append("replaces %s into %s" % [change.tag, _tag_problem(change.into)])
+			elif into_problem:
+				problems.append("replaces %s; the into '%s' %s" % [change.tag, change.into, into_problem])
 		elif not change.into.is_empty():
 			problems.append("has an into (%s) without replacing" % change.into)
 	return problems
@@ -151,12 +191,13 @@ func _is_implied(tag: StringName, table: Dictionary[StringName, Array] = TagPass
 	return false
 
 
-## What is wrong with `tag` as a tag a tag change names, or empty: not declared, or implied.
+## What is wrong with `tag` as a tag a Skill lists or a tag change names, or empty: not declared,
+## or implied.
 func _tag_problem(tag: StringName) -> String:
 	if tag not in SkillTag.ALL:
-		return "'%s', which is not a Skill tag" % tag
+		return "is not a Skill tag"
 	if _is_implied(tag):
-		return "'%s', which another tag implies" % tag
+		return "is implied by another tag"
 	return ""
 
 

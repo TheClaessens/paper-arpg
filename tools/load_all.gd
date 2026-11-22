@@ -27,7 +27,7 @@ func _initialize() -> void:
 
 
 ## Every file under `dir` whose extension is in `extensions`, leaving out dot folders and the
-## vendored res://addons and res://assets. tests/test_content.gd walks the same files.
+## vendored res://addons and res://assets. tests/test_content.gd makes the same walk, with its own extensions.
 static func find_files(dir: String, extensions: PackedStringArray) -> PackedStringArray:
 	var found := PackedStringArray()
 	for sub in DirAccess.get_directories_at(dir):
