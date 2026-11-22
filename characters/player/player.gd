@@ -1,10 +1,10 @@
 class_name Player
-extends CharacterBody3D
+extends Character
 ## The player's Character (see GLOSSARY.md), of the player's Faction. Its Controls tell it
 ## where to walk, relative to the camera (pushing up walks up the screen), and which Skill
-## slots of its Skill bar the player presses. It has its Skills (child nodes) and its Modifiers, and activates a Skill when its
-## Skill bar asks: aimed at the mouse cursor, along the right stick while it is pushed, or else
-## auto-aimed (see Skill.Aim).
+## slots of its Skill bar the player presses. It activates one of its Skills (see Character) when
+## its Skill bar asks: aimed at the mouse cursor, along the right stick while it is pushed, or
+## else auto-aimed (see Skill.Aim).
 
 ## A Skill in `slot` was activated (the HUD presses its button in).
 signal skill_activated(slot: int)
@@ -32,29 +32,7 @@ var skill_bar: SkillBar:
 	get:
 		return $SkillBar
 
-## The Skills the player has: every Skill under its Skills node.
-var skills: Array[Skill]:
-	get:
-		var found: Array[Skill] = []
-		for child in $Skills.get_children():
-			if child is Skill:
-				found.append(child as Skill)
-		return found
-
-## The player's Faction: the player's, unless its scene says otherwise. Its Skills hit only
-## Hurtboxes hostile to it.
-@export var faction := Faction.Id.PLAYER
-
-## The player's Modifiers: every activation of its Skills is made with them, and aiming reads
-## its Skills' numbers through them.
-@export var modifiers: Array[Modifier] = []
-
 var _face_aim_left := 0.0 # time left facing the last activation's aim
-
-## How much more Damage the player can take.
-@onready var health: Health = $Health
-## Shows the player's Health while it is below the maximum.
-@onready var health_bar: HealthBar = $HealthBar
 
 @onready var _controls: Controls = $Controls
 @onready var _movement: Movement = $Movement
@@ -75,9 +53,7 @@ func _enter_tree() -> void:
 
 
 func _ready() -> void:
-	health.changed.connect(health_bar.show_health)
-	for skill in skills:
-		skill.faction = faction
+	super()
 	facing = _controls.ground_axes()[0] # screen right
 	skill_bar.activation_requested.connect(_on_activation_requested)
 	_controls.slot_pressed.connect(skill_bar.press)

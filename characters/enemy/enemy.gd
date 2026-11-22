@@ -1,14 +1,10 @@
 class_name Enemy
-extends CharacterBody3D
+extends Character
 ## A Character of the Enemies' Faction (see GLOSSARY.md). Stands still until its Aggro notices
 ## the player, then chases them along the navmesh for good, stopping within reach.
 ## A hit on its Hurtbox lowers its Health by the hit's Damage and staggers it: it slides away
 ## with the knockback and doesn't chase until the Stagger ends. At 0 Health it dies: it sinks
 ## through the floor where it stood and is gone.
-
-## The Enemy's Faction: the Enemies', unless its scene says otherwise. It puts its Hurtbox on
-## that Faction's layer.
-@export var faction := Faction.Id.ENEMIES
 
 ## Stops chasing this close to the target, in world units.
 @export var reach_distance := 1.0
@@ -22,21 +18,14 @@ var _stagger_left := 0.0
 var _stagger_time := 0.0 # the full length of the current Stagger
 var _knockback := Vector3.ZERO # direction times distance
 
-## The part of the Enemy that Skills hit.
-@onready var hurtbox: Hurtbox = $Hurtbox
-## How much more Damage it can take.
-@onready var health: Health = $Health
-## Shows its Health while it is below the maximum.
-@onready var health_bar: HealthBar = $HealthBar
 @onready var _movement: Movement = $Movement
 @onready var _standee: Standee = $Standee
 @onready var _agent: NavigationAgent3D = $NavigationAgent3D
 
 
 func _ready() -> void:
-	hurtbox.collision_layer = Faction.layer(faction)
+	super()
 	hurtbox.hit_taken.connect(_on_hit_taken)
-	health.changed.connect(health_bar.show_health)
 	health.died.connect(_die)
 	($Aggro as Aggro).aggroed.connect(func(target: Node3D) -> void: _target = target)
 	_agent.velocity_computed.connect(_on_velocity_computed)

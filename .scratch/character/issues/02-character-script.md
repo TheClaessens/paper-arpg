@@ -12,7 +12,7 @@
 
 The scene edit is made in text and checked with the spec's scene check. After the commit the developer reloads the project.
 
-- [ ] `Character` as the spec sketches it, without `_stagger`, `_standee`, `_slide()`, `_on_hit_taken()` and the `hit_taken` connection (ticket 03).
-- [ ] `player.gd` and `enemy.gd` say `extends Character`, keep only what the spec lists as staying for this ticket, and start `_ready()` with `super()`. The Player's doc no longer says it has its Skills and Modifiers.
-- [ ] `player.tscn` sets `faction = 0` on its root, in the same commit as the default; the scene check shows only that line.
-- [ ] `test_aim_modes.gd` uses `add_skill()`; the three new tests pass; `tools/check.sh` passes.
+- [x] `Character` as the spec sketches it, without `_stagger`, `_standee`, `_slide()`, `_on_hit_taken()` and the `hit_taken` connection (ticket 03).
+- [x] `player.gd` and `enemy.gd` say `extends Character`, keep only what the spec lists as staying for this ticket, and start `_ready()` with `super()`. The Player's doc no longer says it has its Skills and Modifiers.
+- [x] `player.tscn` sets `faction = 0` on its root, in the same commit as the default; the scene check shows only that line.
+- [x] `test_aim_modes.gd` uses `add_skill()`; the three new tests pass; `tools/check.sh` passes.
