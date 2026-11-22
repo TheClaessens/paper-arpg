@@ -4,10 +4,10 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** done
 
 **Done when:**
 
-- [ ] Tests 5 and 6 pass, and each fails on the commit before.
-- [ ] `test_a_second_finger_on_another_slot_leaves_a_hold_alone` and the touch-interruption tests pass unchanged.
-- [ ] `tools/check.sh` passes.
+- [x] Tests 5 and 6 pass, and each fails on the commit before.
+- [x] `test_a_second_finger_on_another_slot_leaves_a_hold_alone` and the touch-interruption tests pass unchanged.
+- [x] `tools/check.sh` passes.

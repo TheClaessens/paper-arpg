@@ -36,7 +36,7 @@ var _buttons: Array[SkillSlotButton] = []
 var _aiming_slot := SkillBar.NONE # the slot whose Skill is being dragged
 var _aimed := false # the drag has left the deadzone, so lifting is no longer a tap
 var _left_slot := false # the thumb has been off the slot, so coming back onto it cancels
-var _held_slot := SkillBar.NONE # the slot held down to repeat its Skill
+var _holding: Array[bool] = [] # per slot: its thumb holds it down to repeat its Skill
 var _landed: Array[Vector2] = [] # where each slot's thumb landed; its drags are measured from here
 
 
@@ -46,6 +46,7 @@ func _enter_tree() -> void:
 
 func _ready() -> void:
 	_landed.resize(SkillBar.SLOTS)
+	_holding.resize(SkillBar.SLOTS)
 	for slot in SkillBar.SLOTS:
 		var button := get_node("Slot%d" % slot) as SkillSlotButton
 		button.chosen.connect(slot_chosen.emit.bind(slot))
@@ -103,18 +104,19 @@ func _on_touch_started(at: Vector2, slot: int) -> void:
 	if skill == null or not skill.is_ready():
 		return
 	if skill.aim_mode.waits_for_lift:
-		_aiming_slot = slot # activated when the thumb lifts
-		_aimed = false
-		_left_slot = false
+		if _aiming_slot == SkillBar.NONE: # one aim at a time: the first thumb keeps it
+			_aiming_slot = slot # activated when the thumb lifts
+			_aimed = false
+			_left_slot = false
 	else:
 		player.skill_bar.press(slot)
 		if skill.aim_mode.repeats_while_held:
-			_held_slot = slot
+			_holding[slot] = true
 			player.skill_bar.set_held(slot, true)
 
 
 func _on_touch_moved(at: Vector2, slot: int) -> void:
-	if slot == _held_slot:
+	if _holding[slot]:
 		_steer(slot, at)
 	if slot != _aiming_slot:
 		return
@@ -131,8 +133,8 @@ func _on_touch_moved(at: Vector2, slot: int) -> void:
 ## The thumb on `slot` is gone without lifting, or its Skill changed under it: its hold and its
 ## aim end, and nothing is activated. A lift runs it first, then activates the aim it ended.
 func _let_go(slot: int) -> void:
-	if slot == _held_slot:
-		_held_slot = SkillBar.NONE
+	if _holding[slot]:
+		_holding[slot] = false
 		player.skill_bar.set_held(slot, false)
 		player.hide_aim()
 	if slot == _aiming_slot:

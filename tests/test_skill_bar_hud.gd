@@ -173,3 +173,41 @@ func test_a_skill_changed_under_a_held_thumb_ends_the_hold() -> void:
 	player.skill_bar.set_skill(0, player.skill_bar.skill_in(0)) # chosen again in the Skill drawer: still a change
 	_elapse(0.5) # the Attack's Cooldown ends: a hold would repeat it
 	assert_eq(aims.size(), 1, "the hold ended")
+
+
+# One thumb per slot: each slot's hold and aim belong to the thumb that landed on it.
+
+func test_a_second_hold_leaves_the_first_its_own() -> void:
+	player.skill_bar.set_skill(2, player.skill_bar.skill_in(0)) # the Attack also in slot 2
+	var slots: Array[int] = []
+	player.skill_bar.activation_requested.connect(func(slot: int, _aim: Vector3) -> void: slots.append(slot))
+	var main: SkillSlotButton = hud.get_node("Slot0")
+	var also: SkillSlotButton = hud.get_node("Slot2")
+	main.touch_started.emit(main.centre())
+	also.touch_started.emit(also.centre()) # a second thumb holds the Attack's other slot
+	_elapse(0.016)
+	main.touch_ended.emit(main.centre())
+	also.touch_ended.emit(also.centre())
+	var before := slots.size()
+	_elapse(0.5)
+	_elapse(0.5)
+	assert_eq(slots.slice(before), [] as Array[int], "no activation after both lifts, from any slot")
+
+
+func test_a_second_aiming_thumb_is_ignored() -> void:
+	player.skill_bar.set_skill(2, player.get_node("Skills/Fireball") as Skill) # Fireball also in slot 2
+	var slots: Array[int] = []
+	player.skill_bar.activation_requested.connect(func(slot: int, _aim: Vector3) -> void: slots.append(slot))
+	var also: SkillSlotButton = hud.get_node("Slot2")
+	var aimed_to := button.centre() + Vector2(60.0, 0.0)
+	button.touch_started.emit(button.centre())
+	button.touch_moved.emit(aimed_to)
+	also.touch_started.emit(also.centre()) # a second thumb taps the other slot
+	also.touch_ended.emit(also.centre())
+	_elapse(0.016)
+	assert_true(_aim_marker_shows(), "the first thumb keeps the aim")
+	assert_eq(slots, [] as Array[int], "nothing activated yet")
+	button.touch_ended.emit(aimed_to)
+	_elapse(0.016)
+	assert_eq(slots, [1] as Array[int], "the first thumb's lift activates its own slot")
+	assert_true(aims[0].is_finite(), "with the dragged Aim")
