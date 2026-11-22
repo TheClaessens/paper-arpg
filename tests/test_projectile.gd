@@ -53,7 +53,7 @@ func _fire(tags: Array[StringName]) -> Projectile:
 	var projectile: Projectile = ProjectileScene.instantiate()
 	projectile.direction = Vector3.RIGHT
 	projectile.snapshot = Snapshot.new(tags, {Fireball.SPEED: 15.0, Skill.RANGE: 12.0}, [])
-	projectile.collision_mask |= Faction.hostile_mask(Faction.Side.PLAYER)
+	projectile.collision_mask |= Faction.hostile_mask(Faction.Id.PLAYER)
 	projectile.hit.connect(hits.append)
 	add_child_autoqfree(projectile)
 	projectile.global_position = Vector3.UP * 0.5
@@ -132,7 +132,7 @@ func test_a_piercing_ball_still_ends_at_its_range() -> void:
 
 func test_it_flies_through_a_hurtbox_of_its_own_faction() -> void:
 	var friend: Hurtbox = preload("res://characters/hurtbox/hurtbox.tscn").instantiate()
-	friend.collision_layer = Faction.layer(Faction.Side.PLAYER)
+	friend.collision_layer = Faction.layer(Faction.Id.PLAYER)
 	add_child_autofree(friend)
 	friend.global_position = Vector3(2.0, 0.0, 0.0)
 	var zombie := _zombie_at(4.0)

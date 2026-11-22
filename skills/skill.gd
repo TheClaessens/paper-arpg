@@ -57,7 +57,7 @@ const STAGGER := &"Stagger"
 
 ## The Faction of the Character that has the Skill, given by that Character. The Skill hits
 ## only Hurtboxes hostile to it.
-var faction: Faction.Side
+var faction: Faction.Id
 
 ## Seconds until the Skill can be activated again. The Skill runs this clock itself.
 var cooldown_left := 0.0

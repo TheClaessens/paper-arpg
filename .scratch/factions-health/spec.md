@@ -16,7 +16,7 @@ Two things Characters get: a **Faction**, the side they fight on, and **Health**
 
 ## Requirements
 
-1. **Faction** (`characters/faction.gd`): a class holding the `Side` enum (`PLAYER`, `ENEMIES`), `layer(side)` (the collision layer bit of that side) and `hostile_mask(side)` (the layers of every other side). Not a node. Each Character has `@export var faction: Faction.Side`, set in its scene: the player `PLAYER`, the zombie `ENEMIES`.
+1. **Faction** (`characters/faction.gd`): a class holding the `Id` enum (`PLAYER`, `ENEMIES`), `layer(faction)` (the collision layer bit of that Faction's Hurtboxes) and `hostile_mask(faction)` (the layers of every other Faction). Not a node. The Hurtbox layers are their own (4 `player_hurtbox`, 5 `enemy_hurtbox`), apart from the body layers, so a projectile never takes a Character's body for a wall. Each Character has `@export var faction: Faction.Id`, defaulting to its own Faction (the player `PLAYER`, an Enemy `ENEMIES`); a scene changes it only to put a Character on another Faction. Named `Id`, not `Side`: "side" is an avoided word for Faction, and it reads as two sides only.
 2. **The Character calls down its Faction**: on `_ready` it puts its Hurtbox on `Faction.layer(faction)` and gives each of its Skills the Faction, so the Skill queries `Faction.hostile_mask()`.
 3. **Hurtbox** (`characters/hurtbox/`): an `Area3D` component with the same capsule as the Character's body, monitorable and not monitoring. `take_hit(direction: Vector3, snapshot: Snapshot)` emits `hit_taken(direction, snapshot)` (call down, signal up). The zombie has one; the player does not in this step.
 4. **Skills target Hurtboxes**:

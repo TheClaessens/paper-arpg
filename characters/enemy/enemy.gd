@@ -5,8 +5,9 @@ extends CharacterBody3D
 ## A hit on its Hurtbox staggers it: it slides away with the knockback and doesn't chase until
 ## the Stagger ends.
 
-## The Enemy's Faction, set in its scene. It puts its Hurtbox on that Faction's layer.
-@export var faction: Faction.Side
+## The Enemy's Faction: the Enemies', unless its scene says otherwise. It puts its Hurtbox on
+## that Faction's layer.
+@export var faction := Faction.Id.ENEMIES
 
 ## Stops chasing this close to the target, in world units.
 @export var reach_distance := 1.0

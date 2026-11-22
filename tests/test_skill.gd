@@ -65,7 +65,7 @@ func test_auto_aim_ignores_height() -> void:
 
 func _player_hurtbox_at(x: float) -> Hurtbox:
 	var hurtbox: Hurtbox = HurtboxScene.instantiate()
-	hurtbox.collision_layer = Faction.layer(Faction.Side.PLAYER)
+	hurtbox.collision_layer = Faction.layer(Faction.Id.PLAYER)
 	add_child_autofree(hurtbox)
 	hurtbox.global_position = Vector3(x, 0.0, 0.0)
 	return hurtbox

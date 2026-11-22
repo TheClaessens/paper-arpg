@@ -39,8 +39,9 @@ var skills: Array[Skill]:
 				found.append(child as Skill)
 		return found
 
-## The player's Faction, set in its scene. Its Skills hit only Hurtboxes hostile to it.
-@export var faction: Faction.Side
+## The player's Faction: the player's, unless its scene says otherwise. Its Skills hit only
+## Hurtboxes hostile to it.
+@export var faction := Faction.Id.PLAYER
 
 ## The player's Modifiers: every activation of its Skills is made with them, and aiming reads
 ## its Skills' numbers through them.

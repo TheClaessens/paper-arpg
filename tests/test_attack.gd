@@ -33,7 +33,7 @@ func test_a_swing_hits_a_zombie_and_not_the_players_faction_in_the_same_spot() -
 	add_child_autofree(zombie)
 	zombie.global_position = Vector3(1.0, 0.0, 0.3)
 	var friend: Hurtbox = preload("res://characters/hurtbox/hurtbox.tscn").instantiate()
-	friend.collision_layer = Faction.layer(Faction.Side.PLAYER)
+	friend.collision_layer = Faction.layer(Faction.Id.PLAYER)
 	add_child_autofree(friend)
 	friend.global_position = zombie.global_position # in the same spot
 	await wait_physics_frames(2) # the physics world learns where they stand
