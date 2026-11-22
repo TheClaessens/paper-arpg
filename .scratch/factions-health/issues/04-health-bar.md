@@ -6,8 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] At full Health no bar shows, for the player or a zombie.
-- [ ] Hitting a zombie shows its bar and drops it by the hit's share.
-- [ ] `damage 10` shows the player's bar; healing back to full hides it.
-- [ ] A dying zombie's bar hides as the sink starts.
-- [ ] GUT tests cover the above; `tools/check.sh` passes; checked once in game and on a screenshot.
+- [x] At full Health no bar shows, for the player or a zombie.
+- [x] Hitting a zombie shows its bar and drops it by the hit's share.
+- [x] `damage 10` shows the player's bar; healing back to full hides it.
+- [x] A dying zombie's bar hides as the sink starts.
+- [x] GUT tests cover the above; `tools/check.sh` passes; checked once in game and on a screenshot.
