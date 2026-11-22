@@ -2,7 +2,7 @@
 
 Status: ready-for-agent
 
-Four refactors from the architecture review on 2026-11-21. Each gives one concept one home. Behaviour doesn't change, except that a projectile's hit no longer freezes the world (item 3). The branch starts from `skill-tags`, because that branch's code isn't on `master` yet. Rebase it onto `master` once `skill-tags` merges.
+Five changes from the architecture review on 2026-11-21. Each gives one concept one home. Behaviour doesn't change, except that a projectile's hit no longer freezes the world (item 3). The branch starts from `skill-tags`, because that branch's code isn't on `master` yet. Rebase it onto `master` once `skill-tags` merges.
 
 ## What moves where
 

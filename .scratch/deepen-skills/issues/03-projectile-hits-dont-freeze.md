@@ -7,4 +7,4 @@
 - [x] A Fireball hit knocks the Enemy back, flashes and squashes it, and shakes the screen, without freezing the world; tested through `Fireball.try_activate`.
 - [x] An Attack hit still freezes the world, once per swing however many Enemies it hits.
 - [x] An impact that doesn't freeze leaves the time scale alone.
-- [ ] `tools/check.sh` passes; checked once in game.
+- [x] `tools/check.sh` passes; checked once in game.
