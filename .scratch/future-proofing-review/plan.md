@@ -1,6 +1,29 @@
 # Future-proofing: plan and decisions
 
-Status: in progress
+Status: steps 1 to 10 built and open as stacked PRs (#22 to #31), waiting on the developer; step 11 waits for a design round
+
+## Where it stands (2026-11-22)
+
+Each PR is stacked on the one before it and is merged in this order, with a merge commit. `tools/check.sh` is green on every branch; the count is the passing tests on that branch (201 on `master`).
+
+| # | Feature | PR | Tests | Left for the developer |
+|---|---|---|---|---|
+| 1 | `number-bounds` | #22 | 206 | Word the glossary's Activate entry; a look in game |
+| 2 | `content-checks` | #23 | 211 | Confirm the name Projectile speed |
+| 3 | `touch-interruptions` | #24 | 221 | Hand test on the iPhone and the Mac (ticket 04); decide ticket 05, a thumb held through a Cooldown |
+| 4 | `modifier-stacking` | #25 | 223 | The glossary's Tag pass wording; one policy for amending ADRs |
+| 5 | `game-scene` | #26 | 224 | Screenshots, the navmesh bake, the iPhone build |
+| 6 | `character` | #27 | 236 | Confirm the slide lives in `Enemy`; a look in game |
+| 7 | `skill-character` | #28 | 241 | The glossary's Aim entry |
+| 8 | `enemy-base` | #29 | 244 | Confirm the Stagger is each Enemy kind's own |
+| 9 | `hit` | #30 | 253 | Read ADR 0004; the glossary's Hit entry |
+| 10 | `ball-in-world` | #31 | 261 | A look in game at a Fireball's new reach (10.0 where it was 10.65) |
+
+**One resave in the editor, for every scene these steps wrote as text.** Steps 5, 6 and 8 each ask for a resave on their own branch. Do it once at the top of the stack: check out `ball-in-world`, **Project › Reload Current Project**, open and save `scenes/game.tscn`, `scenes/sandbox.tscn`, `characters/player/player.tscn`, `characters/enemy/enemy.tscn` (the base first) and `characters/enemy/zombie.tscn`, and commit that resave on its own. What the editor is expected to change, and what would be a warning sign, is in `.scratch/game-scene/issues/03-*.md`, `.scratch/character/issues/05-*.md` and `.scratch/enemy-base/issues/04-*.md`.
+
+**How play was checked.** `tools/simulate.gd` with `--fixed-fps 60` and avoidance on one thread (its header says how) prints the same output run after run. From step 5 to step 10 the player's swing prints one checksum, `fc6af6dbd110508d8e597824a4f40861`, and from step 9 the Fireball's and the Pierce Fireball's are unchanged too. The one change in play is step 10's: how far a ball reaches.
+
+**Changed in code review, against the specs.** Step 6: the slide moved from `Character` to `Enemy`. Step 9: the question "is this Hurtbox an Enemy's" moved into `Hurtbox.is_of()`. Each PR says so.
 
 The two reviews (`fable-report.md`, `sol-report.md`, reviewed at `8797660`) were checked against the code by four analysts. Their findings, corrections and decision briefs are in `analysis/`. This file records what the developer decided on 2026-11-22 and the order of the steps. Each step has its own spec under `.scratch/<feature>/`, its own branch and its own PR.
 
@@ -37,7 +60,7 @@ Working answers, used unless the developer objects when reading the spec that ho
 | 8 | `enemy-base` | Decision 3 | step 6; the developer's resave |
 | 9 | `hit` | `Hit` names its dealer and lands itself; decision 7; `Hurtbox.around` past 32 | step 7 |
 | 10 | `ball-in-world` | The ball carries its Hit, lives in the world, measures Range from the Character | step 9 |
-| 11 | (to be named) | How a Skill is aimed, as shared logic (decision 5) | design with the developer |
+| 11 | (to be named) | How a Skill is aimed, as shared logic (decision 5): the touch gesture, how a drag becomes an Aim, the Aim when the player gives none, and what the marker draws, in one piece per way of aiming that a Skill names; an Aim that can carry a picked Hurtbox. Proposed term: Aim mode | a design round with the developer |
 
 ## At their triggers, not now
 
@@ -54,3 +77,7 @@ Working answers, used unless the developer objects when reading the spec that ho
 | Hit feedback's runtime in a scene-owned piece | Slow motion, or a second camera effect |
 | Standee updates, repathing, idle Skills, why lines | A profile on the phone |
 | Opening the pause menu when the app loses focus | The developer asks for it |
+| The HUD tracks one aiming slot, so a second aiming thumb can leave the first thumb's Aim marker on screen; a touch-aimed Skill lifted exactly where the thumb landed gets an Aim of zero length | Step 11 |
+| Whether the navigation agent's avoidance callback nudges a zombie during its Stagger | The Enemy's behaviour as its own node |
+| A Skill that lists the same Skill tag twice keeps one copy when a Modifier removes or replaces that tag | The first Modifier that removes or replaces a tag |
+| A Range cut to 0 breaks the Attack's query | The first Modifier that can cut a Range to 0 |

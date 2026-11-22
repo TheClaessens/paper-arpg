@@ -174,3 +174,14 @@ func hostile_mask() -> int:
 ## projectile's doesn't. For the Skills themselves.
 func _hit(snapshot: Snapshot, freezes := true) -> Hit:
 	return Hit.new(snapshot, character, freezes)
+
+
+## Puts `node` in the world beside the Skill's Character, where it lives on by itself and outlives
+## the Skill and the Character: a ball in flight. Everything a Skill leaves in the world goes
+## through here. For the Skills themselves.
+# ponytail: beside the Character means the player's things go into the game scene's World, which a
+# Level change doesn't free, and an Enemy's into its Level, which takes them with it. When changing
+# Levels is built (with the second Level), it must free the player's things, or this function must
+# put them under one node of World that the change frees.
+func _add_to_world(node: Node3D) -> void:
+	character.add_sibling(node)

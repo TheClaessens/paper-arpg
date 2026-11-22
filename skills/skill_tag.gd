@@ -9,7 +9,7 @@ const PROJECTILE := &"Projectile"
 const FIRE := &"Fire"
 ## Only ever implied (see TagPass.IMPLIED_TAGS).
 const ELEMENTAL := &"Elemental"
-## Also a behaviour: a projectile with it passes through the first Hurtbox it hits.
+## Also a behaviour: a projectile with it passes through the first Hurtbox its Hit lands on.
 const PIERCE := &"Pierce"
 
 ## Every Skill tag.

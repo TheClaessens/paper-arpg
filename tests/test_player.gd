@@ -14,6 +14,13 @@ func before_each() -> void:
 	player.set_physics_process(false) # no camera here to read input against; after add_child, or _ready turns it back on
 
 
+## The balls a Fireball threw live beside the player, not under it: free them, or they fly on into
+## the next test.
+func after_each() -> void:
+	for ball in find_children("*", "Projectile", false, false):
+		ball.free()
+
+
 func test_tp_moves_the_player() -> void:
 	Console.execute("tp 3 -4.5")
 	assert_eq(player.global_position, Vector3(3.0, 0.0, -4.5))

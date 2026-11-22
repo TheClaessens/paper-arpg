@@ -15,4 +15,5 @@
 
 ## Comments
 
-- 2026-11-22: Left as is, being rare: a Fireball ball that touches a zombie killed earlier in the same physics step counts it as a hit, so it stops there (or spends its Pierce pass-through) though the hit missed.
+- 2026-11-22: Left as is, being rare: a Fireball ball that touches a zombie killed earlier in the same physics step counts it as a Hit, so it stops there (or, with Pierce, counts it as one of the Hurtboxes it passes through) though the Hit missed.
+- 2026-11-22: Fixed by `.scratch/ball-in-world/spec.md`: the ball lands its own Hit and counts a Hurtbox it passes through only if its Hit landed on it, so it flies on past a zombie killed earlier in the same physics step.

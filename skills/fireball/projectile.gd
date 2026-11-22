@@ -1,22 +1,35 @@
 class_name Projectile
 extends Area3D
-## A shot flying straight along `direction` at its Snapshot's Projectile speed until it has flown its
-## Snapshot's Range or touches something. With Pierce among its Snapshot's tags it passes through
-## the first Hurtbox it hits; a wall stops it always.
-## It looks for walls and props on the `world` layer, and for Hurtboxes on the layers the Skill
-## that fired it adds to its mask (the ones hostile to the Faction of the Character that threw it). It reports a Hurtbox it touched with
-## `hit`, and that Skill lands the throw's Hit there.
+## Fireball's ball. Thrown with launch(), it flies straight at its Hit's Projectile speed and lands
+## its Hit on each hostile Hurtbox it touches, until its front reaches its Hit's Range from the
+## centre of the Character that threw it, or it touches a wall or a prop. With Pierce among its
+## Hit's Snapshot's tags it passes through the first Hurtbox its Hit lands on and stops at the next;
+## a Hurtbox its Hit misses doesn't count. It looks for walls and props on the `world` layer and for
+## Hurtboxes on the layers launch() adds. It lives in the world beside that Character (see
+## Skill._add_to_world()) and needs neither the Skill nor the Character once thrown, so it flies on
+## and lands its Hit after they are gone.
+## It is Fireball's ball for now. With the second projectile Skill it becomes a piece Skills share,
+## in a folder of its own and with its own Projectile speed name.
 
-signal hit(hurtbox: Hurtbox)
+## How far in front of its Character's centre it starts, and how high it flies.
+const LAUNCH_OFFSET := 0.45
+const FLIGHT_HEIGHT := 0.5
 
-## A unit direction on the ground.
-var direction := Vector3.FORWARD
-## The Snapshot of the activation that fired it: its Projectile speed (world units per second), Range
-## (world units) and whether it has Pierce. Set before it enters the tree.
-var snapshot: Snapshot
+## The Hit it carries and lands: its throw's Snapshot and the Character that threw it. Set by
+## launch(); it never changes after.
+var hit: Hit:
+	get:
+		return _hit
+	set(_value):
+		assert(false, "A ball's Hit is set by launch() and never changes")
 
+var _hit: Hit
+var _direction := Vector3.FORWARD # a unit vector on the ground
+var _flight := 0.0 # how far its centre flies before it ends
 var _flown := 0.0
-var _hurtboxes_hit: Array[Hurtbox] = []
+var _hurtboxes_hit: Array[Hurtbox] = [] # those its Hit landed on
+
+@onready var _shape: SphereShape3D = ($CollisionShape3D as CollisionShape3D).shape
 
 
 func _ready() -> void:
@@ -24,27 +37,54 @@ func _ready() -> void:
 	area_entered.connect(_on_area_entered)
 
 
+## Throws it, once it is in the world (see Skill._add_to_world(); it sets its position and reads its
+## shape, which need the tree), from `centre`, the centre of the Character that throws it, along
+## `direction` (a unit vector on the ground). It carries `ball_hit`, which it lands on each Hurtbox
+## it touches on the layers of `mask`. It starts LAUNCH_OFFSET along `direction` and FLIGHT_HEIGHT
+## up, and flies until its front is its Hit's Range from `centre` (see GLOSSARY.md, Range). With a
+## Projectile speed of 0, or a Range that ends inside it, it ends where it starts.
+func launch(ball_hit: Hit, centre: Vector3, direction: Vector3, mask: int) -> void:
+	assert(is_inside_tree(), "A ball is launched once it is in the world: Skill._add_to_world() first.")
+	_hit = ball_hit
+	_direction = direction
+	collision_mask |= mask
+	global_position = centre + direction * LAUNCH_OFFSET + Vector3.UP * FLIGHT_HEIGHT
+	var can_fly := hit.snapshot.number(Fireball.PROJECTILE_SPEED) > 0.0
+	# Its front is its radius ahead of its centre, and its centre starts LAUNCH_OFFSET out.
+	_flight = hit.snapshot.number(Skill.RANGE) - LAUNCH_OFFSET - _shape.radius if can_fly else 0.0
+
+
+# ponytail: moves by setting its position and trusts the physics step's overlaps, so it can skip
+# whatever is thinner than one step (Projectile speed / 60). At Fireball's 12 a step is 0.2, and
+# only a graze within 0.011 of a Hurtbox's edge can slip by. Above 24 a Hurtbox passed more than
+# 0.40 from its centre can slip by, above 46 the thinnest prop head-on (a table), above 54 a
+# Hurtbox head-on, above 84 a wall. With the first Modifier on Projectile speed, sweep it instead:
+# cast_motion along each step for the wall or prop that stops it, and the Hurtboxes the swept ball
+# touches before that point, taken in travel order.
 func _physics_process(delta: float) -> void:
-	var step := snapshot.number(Fireball.PROJECTILE_SPEED) * delta
-	global_position += direction * step
-	_flown += step
-	if _flown >= snapshot.number(Skill.RANGE):
+	if _flown >= _flight: # at its end, which the last physics step has looked at
 		queue_free()
+		return
+	var step := minf(hit.snapshot.number(Fireball.PROJECTILE_SPEED) * delta, _flight - _flown)
+	global_position += _direction * step
+	_flown += step
 
 
-## A wall or a prop: it stops the shot.
+## A wall or a prop: it stops the ball.
 func _on_body_entered(_body: Node3D) -> void:
 	queue_free()
 
 
 func _on_area_entered(area: Area3D) -> void:
-	if is_queued_for_deletion(): # touching two things in one frame hits only the first
+	if is_queued_for_deletion(): # it ended earlier in this physics step: nothing else counts
 		return
 	var hurtbox := area as Hurtbox
 	if not hurtbox or hurtbox in _hurtboxes_hit: # touching it again after knocking it ahead
 		return
+	# The Hit missed: the Character of the Hurtbox it touched died earlier in this physics step.
+	if not hit.land({hurtbox: _direction}):
+		return
 	_hurtboxes_hit.append(hurtbox)
-	hit.emit(hurtbox)
-	var passes_through := 1 if SkillTag.PIERCE in snapshot.tags else 0
+	var passes_through := 1 if SkillTag.PIERCE in hit.snapshot.tags else 0
 	if _hurtboxes_hit.size() > passes_through:
 		queue_free()

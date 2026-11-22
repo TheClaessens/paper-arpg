@@ -368,7 +368,7 @@ Their natural parent in `game.tscn` is **`World`** (`PixelatedView/SubViewport/W
 - It is the root of the 3D world inside the pixelated view. A ball under it is drawn pixelated with the Characters and moves in the same physics space as the Hurtboxes, walls and props it must touch (Engine facts 2). Nothing outside the `SubViewport` can hold a 3D node that shows.
 - It belongs to the game scene, so it is there whatever Level is loaded, and nothing in a Level needs a path to it.
 - It is the parent of both the player's Character and the Level. A ball put beside the player's Character, as the hit pipeline's analysis sketches `_add_to_world` (`character.add_sibling(node)`, `.scratch/future-proofing-review/analysis/hit-pipeline.md:198-205`), lands in `World` with no path at all. One put beside an Enemy lands in the Level's root and goes with the Level.
-- Left to that step: whether every ball goes to `World` or each goes beside its Character. Left to the second Level: freeing the player's balls when the Level changes, and with it, if wanted, a named child of `World` that holds them.
+- Settled by `ball-in-world` (`.scratch/ball-in-world/spec.md`): each goes beside its Character, through `Skill._add_to_world()`. Left to the second Level: freeing the player's balls when the Level changes, and with it, if wanted, a named child of `World` that holds them.
 
 ## Seams
 
@@ -395,7 +395,7 @@ Their natural parent in `game.tscn` is **`World`** (`PixelatedView/SubViewport/W
 - **Changing Levels**: freeing the Level and instancing the next, a `level <path>` Console command so the tools can pick one, and freeing things in flight on the way. Trigger: the second Level.
 - **A start marker in each Level.** Today the player's Character starts at the game scene's origin, which is inside the sandbox's start room. Trigger: the second Level.
 - **A script on the game scene.** Trigger: the first job only the game scene can do: changing Levels, or handing the HUD something of a Level's, such as a boss's Health.
-- **A node in `World` for things in flight.** Trigger: `ball-in-world` choosing one place for every ball, or the second Level.
+- **A node in `World` for things in flight.** Trigger: the second Level (`ball-in-world` put each ball beside its Character).
 - **The HUD's root handing the player's Character down**, one script on `HUD` instead of a path in each HUD element. Trigger: the second Level (plan.md), or a player's Character replaced while the game runs.
 - **A camera rig in the game scene** that follows the player's Character and owns the shake. Trigger: a second camera behaviour (look-ahead, zoom) or a second source of shake.
 - **Enemies placed by a spawner** instead of by hand. Trigger: a session with a start and an end, or a Level not laid out by hand (`.scratch/enemies/spec.md:47`).
