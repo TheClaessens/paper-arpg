@@ -10,7 +10,7 @@
 
 **Tests:** new `test_a_snapshots_fields_cannot_be_replaced`, written first. It claims each assert's error with GUT's `assert_engine_error("A Snapshot never changes")`, once per assignment, as `test_console.gd:81` does. On `master` no error comes and each field takes the new value.
 
-- [ ] Assigning a new value to each of `tags`, `numbers` and `why` reports "A Snapshot never changes" and leaves the field the same object as before (`assert_same`).
-- [ ] `test_a_snapshot_never_changes` (the read-only lists) and every reader of `snapshot.tags`, `.numbers` and `.why` pass unchanged.
-- [ ] No other test reports "A Snapshot never changes": a setter called while a Snapshot is made would show there. If one does, stop and say so in the PR instead of working around it.
-- [ ] `tools/check.sh` passes.
+- [x] Assigning a new value to each of `tags`, `numbers` and `why` reports "A Snapshot never changes" and leaves the field the same object as before (`assert_same`).
+- [x] `test_a_snapshot_never_changes` (the read-only lists) and every reader of `snapshot.tags`, `.numbers` and `.why` pass unchanged.
+- [x] No other test reports "A Snapshot never changes": a setter called while a Snapshot is made would show there. If one does, stop and say so in the PR instead of working around it.
+- [x] `tools/check.sh` passes.

@@ -3,24 +3,40 @@ extends RefCounted
 ## A Snapshot (see GLOSSARY.md): a Skill with every Modifier that applied when it was
 ## activated. of() makes one; Skill.try_activate() asks for one per activation, and everything
 ## the activation causes reads its numbers from it.
-## Its lists are read-only, so it never changes after it is made.
+## Its fields can't be replaced and its lists are read-only, so it never changes after it is made.
 
 ## The Skill's tags, implied ones included.
-var tags: Array[StringName]
+var tags: Array[StringName]:
+	get:
+		return _tags
+	set(_value):
+		assert(false, "A Snapshot never changes")
 ## Each of the Skill's numbers (see Skill.numbers()), with the Modifiers applied. of() makes none
 ## of them below 0.
-var numbers: Dictionary[StringName, float]
+var numbers: Dictionary[StringName, float]:
+	get:
+		return _numbers
+	set(_value):
+		assert(false, "A Snapshot never changes")
 ## One line per Modifier the Character has: whether it applied, and why not when it missed.
-var why: Array[String]
+var why: Array[String]:
+	get:
+		return _why
+	set(_value):
+		assert(false, "A Snapshot never changes")
+
+var _tags: Array[StringName]
+var _numbers: Dictionary[StringName, float]
+var _why: Array[String]
 
 
 func _init(snapshot_tags: Array[StringName], snapshot_numbers: Dictionary[StringName, float], snapshot_why: Array[String]) -> void:
-	tags = snapshot_tags
-	numbers = snapshot_numbers
-	why = snapshot_why
-	tags.make_read_only()
-	numbers.make_read_only()
-	why.make_read_only()
+	_tags = snapshot_tags
+	_numbers = snapshot_numbers
+	_why = snapshot_why
+	_tags.make_read_only()
+	_numbers.make_read_only()
+	_why.make_read_only()
 
 
 ## The Snapshot of a Skill whose own tags are `own_tags` and own numbers `own_numbers`, with the

@@ -110,6 +110,22 @@ func test_a_snapshot_never_changes() -> void:
 	assert_true(snapshot.why.is_read_only())
 
 
+func test_a_snapshots_fields_cannot_be_replaced() -> void:
+	var snapshot := _snapshot(SPELL, [])
+	var tags := snapshot.tags
+	var numbers := snapshot.numbers
+	var why := snapshot.why
+	snapshot.tags = [&"Melee"]
+	assert_engine_error("A Snapshot never changes")
+	snapshot.numbers = {Skill.RANGE: 99.0}
+	assert_engine_error("A Snapshot never changes")
+	snapshot.why = ["replaced"]
+	assert_engine_error("A Snapshot never changes")
+	assert_same(snapshot.tags, tags)
+	assert_same(snapshot.numbers, numbers)
+	assert_same(snapshot.why, why)
+
+
 ## A test Modifier with `filter` and one tag change of `kind` on `tag` (into `into` when it replaces).
 func _tagger(title: String, filter: Array[StringName], kind: TagChange.Kind, tag: StringName, into: StringName = &"") -> Modifier:
 	var change := TagChange.new()
