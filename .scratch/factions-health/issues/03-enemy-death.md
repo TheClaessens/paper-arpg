@@ -12,3 +12,7 @@
 - [x] A second hit on it in the same frame misses: no flash, no Hit feedback of its own, no second `died`. Hit feedback plays only when at least one hit landed.
 - [x] A Pierce projectile passes through the zombie it kills and stops at the next Hurtbox.
 - [x] GUT tests cover the above; `tools/check.sh` passes; checked once in game.
+
+## Comments
+
+- 2026-11-22: Left as is, being rare: a Fireball ball that touches a zombie killed earlier in the same physics step counts it as a hit, so it stops there (or spends its Pierce pass-through) though the hit missed.
