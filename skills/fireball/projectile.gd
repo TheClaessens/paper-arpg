@@ -45,6 +45,6 @@ func _on_area_entered(area: Area3D) -> void:
 		return
 	_hurtboxes_hit.append(hurtbox)
 	hit.emit(hurtbox)
-	var passes_through := 1 if &"Pierce" in snapshot.tags else 0
+	var passes_through := 1 if SkillTag.PIERCE in snapshot.tags else 0
 	if _hurtboxes_hit.size() > passes_through:
 		queue_free()

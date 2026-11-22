@@ -11,7 +11,7 @@ extends RefCounted
 
 ## The one table of implied Skill tags: a Skill with the key tag also has each tag it lists.
 const IMPLIED_TAGS: Dictionary[StringName, Array] = {
-	&"Fire": [&"Elemental"],
+	SkillTag.FIRE: [SkillTag.ELEMENTAL],
 }
 
 ## The Skill's tags after the pass, implied ones included.

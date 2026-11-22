@@ -10,7 +10,7 @@
 
 **Status:** ready-for-agent
 
-- [ ] `SkillTag` declares the seven tags, and `ALL` holds exactly them.
-- [ ] `grep -rnE '&"(Spell|Attack|Melee|Projectile|Fire|Elemental|Pierce)"' autoloads characters skills ui scenes props rendering --include='*.gd'` prints only `skills/skill_tag.gd`.
-- [ ] The console names `"pierce"` and `"spell-cooldown"` (`player.gd:21-23`) and every test are left as they are.
-- [ ] `tools/check.sh` passes.
+- [x] `SkillTag` declares the seven tags, and `ALL` holds exactly them.
+- [x] `grep -rnE '&"(Spell|Attack|Melee|Projectile|Fire|Elemental|Pierce)"' autoloads characters skills ui scenes props rendering --include='*.gd'` prints only `skills/skill_tag.gd`.
+- [x] The console names `"pierce"` and `"spell-cooldown"` (`player.gd:21-23`) and every test are left as they are.
+- [x] `tools/check.sh` passes.
