@@ -16,9 +16,9 @@ The conventions gain the rule for the next touch control, and two specs get thei
 
 **Done when:**
 
-- [ ] A release that is `canceled` or at a negative position emits `touch_lost`, not `touch_ended`; a release at a real point still emits `touch_ended`.
-- [ ] Focus loss emits `touch_lost` once for a button that has a finger and nothing for one that hasn't; that finger's later drag and release emit nothing.
-- [ ] Through the real buttons: Fireball dragged and then cancelled at (-1, -1) is not activated and the aim marker hides; a held Attack stops repeating after the HUD's focus loss, even when the thumb moves again.
-- [ ] A lift during a pause still activates nothing, and every existing test in `test_skill_bar_hud.gd` passes unchanged.
-- [ ] The button's and the HUD's class doc comments, the conventions (the "Tests and checks" paragraph on screen touches, and the new last bullet of "Input and UI"; find both by their text, since `content-checks` moves their lines), `.scratch/aiming/spec.md:64` and `.scratch/touch-controls/spec.md:23` carry the spec's wording.
-- [ ] `tools/check.sh` passes.
+- [x] A release that is `canceled` or at a negative position emits `touch_lost`, not `touch_ended`; a release at a real point still emits `touch_ended`.
+- [x] Focus loss emits `touch_lost` once for a button that has a finger and nothing for one that hasn't; that finger's later drag and release emit nothing.
+- [x] Through the real buttons: Fireball dragged and then cancelled at (-1, -1) is not activated and the aim marker hides; a held Attack stops repeating after the HUD's focus loss, even when the thumb moves again.
+- [x] A lift during a pause still activates nothing, and every existing test in `test_skill_bar_hud.gd` passes unchanged.
+- [x] The button's and the HUD's class doc comments, the conventions (the "Tests and checks" paragraph on screen touches, and the new last bullet of "Input and UI"; find both by their text, since `content-checks` moves their lines), `.scratch/aiming/spec.md:64` and `.scratch/touch-controls/spec.md:23` carry the spec's wording.
+- [x] `tools/check.sh` passes.

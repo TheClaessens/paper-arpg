@@ -84,3 +84,54 @@ func test_a_second_finger_on_another_slot_leaves_a_hold_alone() -> void:
 	_elapse(0.016)
 	_elapse(0.4) # the Attack's Cooldown ends: the hold repeats it
 	assert_eq(aims, [SkillBar.NO_AIM, SkillBar.NO_AIM] as Array[Vector3], "still auto-aimed, not steered")
+
+
+func _push_touch(at: Vector2, pressed: bool, canceled := false) -> void:
+	var event := InputEventScreenTouch.new()
+	event.index = 0
+	event.position = at
+	event.pressed = pressed
+	event.canceled = canceled
+	get_viewport().push_input(event, true)
+
+
+func _push_drag(to: Vector2) -> void:
+	var event := InputEventScreenDrag.new()
+	event.index = 0
+	event.position = to
+	get_viewport().push_input(event, true)
+
+
+func _aim_marker_shows() -> bool:
+	return (player.get_node("AimMarker") as Node3D).visible
+
+
+func test_a_touch_the_system_cancels_mid_aim_activates_nothing() -> void:
+	_push_touch(button.centre(), true)
+	_push_drag(button.centre() + Vector2(-120.0, 0.0))
+	assert_true(_aim_marker_shows(), "control: the drag is being aimed")
+	_push_touch(Vector2(-1, -1), false) # how iOS reports a touch the system cancels
+	_elapse(0.016)
+	assert_eq(aims, [] as Array[Vector3])
+	assert_false(_aim_marker_shows())
+
+
+func test_losing_focus_lets_go_of_a_held_thumb() -> void:
+	var main: SkillSlotButton = hud.get_node("Slot0") # the Attack: repeats while held
+	_push_touch(main.centre(), true)
+	_elapse(0.016)
+	assert_eq(aims.size(), 1, "control: the press activated it")
+	hud.propagate_notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT) # to the HUD alone, not the Skill bar
+	_push_drag(main.centre() + Vector2(2.0, 0.0)) # a followed thumb would hold the slot again
+	_elapse(0.5)
+	assert_eq(aims.size(), 1)
+
+
+func test_a_lift_during_a_pause_activates_nothing() -> void:
+	button.touch_started.emit(button.centre())
+	button.touch_moved.emit(button.centre() + Vector2(-120.0, 0.0))
+	get_tree().paused = true
+	button.touch_ended.emit(button.centre() + Vector2(-120.0, 0.0))
+	get_tree().paused = false
+	_elapse(0.016)
+	assert_eq(aims, [] as Array[Vector3])

@@ -50,3 +50,62 @@ func test_a_skill_in_two_slots_flashes_both() -> void:
 	skill.cool_down(1.0)
 	assert_true(_flashing(first))
 	assert_true(_flashing(second))
+
+
+func _push_touch(at: Vector2, pressed: bool, canceled := false) -> void:
+	var event := InputEventScreenTouch.new()
+	event.index = 0
+	event.position = at
+	event.pressed = pressed
+	event.canceled = canceled
+	get_viewport().push_input(event, true)
+
+
+func _push_drag(to: Vector2) -> void:
+	var event := InputEventScreenDrag.new()
+	event.index = 0
+	event.position = to
+	get_viewport().push_input(event, true)
+
+
+## A button clear of the Console's corner button, so a pushed touch can't land on both.
+func _placed_button() -> SkillSlotButton:
+	var button := _button()
+	button.place(Vector2(300, 300), 88.0)
+	watch_signals(button)
+	return button
+
+
+func test_a_touch_the_system_cancels_is_not_a_lift() -> void:
+	var button := _placed_button()
+	_push_touch(button.centre(), true)
+	_push_touch(button.centre(), false)
+	assert_signal_emit_count(button, "touch_ended", 1, "a tap lifts")
+	assert_signal_emit_count(button, "touch_lost", 0)
+	_push_touch(button.centre(), true)
+	_push_touch(Vector2(-1, -1), false) # how iOS reports a touch the system cancels
+	assert_signal_emit_count(button, "touch_ended", 1, "the cancel is not a lift")
+	assert_signal_emit_count(button, "touch_lost", 1)
+	button.notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT) # the focus loss after it
+	assert_signal_emit_count(button, "touch_lost", 1, "one finger is lost once")
+
+
+func test_a_release_marked_canceled_is_not_a_lift() -> void:
+	var button := _placed_button()
+	_push_touch(button.centre(), true)
+	_push_touch(button.centre(), false, true)
+	assert_signal_emit_count(button, "touch_lost", 1)
+	assert_signal_emit_count(button, "touch_ended", 0)
+
+
+func test_losing_focus_lets_go_of_the_finger() -> void:
+	var button := _placed_button()
+	button.notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
+	assert_signal_emit_count(button, "touch_lost", 0, "no finger, nothing lost")
+	_push_touch(button.centre(), true)
+	button.notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
+	assert_signal_emit_count(button, "touch_lost", 1)
+	_push_drag(button.centre() + Vector2(10, 0))
+	_push_touch(button.centre(), false)
+	assert_signal_emit_count(button, "touch_moved", 0, "the lost finger is forgotten")
+	assert_signal_emit_count(button, "touch_ended", 0)

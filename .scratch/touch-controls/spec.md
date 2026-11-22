@@ -20,7 +20,7 @@ Movement on touch: the left thumb drags a **Touch stick** (see GLOSSARY.md). Thi
    - **Origin:** fixed where the thumb lands. The knob clamps at the rim. Exported `radius`, starting at 80 px in the base viewport.
    - **Output:** it presses the `move_*` actions with `Input.action_press(action, strength)`. `Player` stays unchanged, and the 0.2 Input Map deadzone, direction-only movement and camera-relative mapping all apply to touch as they do to the controller.
    - **Visuals:** a base ring and a knob drawn at the touch, from Kenney art, shown only while the thumb is down.
-   - **Lost finger:** on pause (the Console opening) or `NOTIFICATION_APPLICATION_FOCUS_OUT`, it releases the actions and hides.
+   - **Lost finger:** on pause (the Console opening) or `NOTIFICATION_APPLICATION_FOCUS_OUT`, it releases the actions and hides. A touch the system takes away arrives as a release (at (-1, -1) on iOS) and lets go the same way. The Skill slots' buttons follow the same rule, but keep a finger through a pause: `.scratch/touch-interruptions/spec.md`.
    - **Follow toggle (temporary):** the console command `touchstick follow on|off` switches to a following origin, where the base is dragged along so it stays within one radius of the thumb. Default off. Removed once the device test settles the choice.
    - GUT test `tests/test_touch_stick.gd`: thumb offset → stick vector, clamped to length 1 at the rim, and the origin dragged along in follow mode.
 4. **Mac testing.** `input_devices/pointing/emulate_touch_from_mouse` is on, so a mouse drag drives the stick.

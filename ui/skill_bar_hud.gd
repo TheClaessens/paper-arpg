@@ -8,7 +8,9 @@ extends Control
 ## On touch, tapping a slot activates it (auto-aimed). Holding a Skill that repeats while held
 ## (the Attack) keeps activating it, and dragging steers it. An aimed Skill can instead be
 ## dragged off its slot: the Player shows where it would go, and lifting the thumb activates it there. Dragging back
-## onto the slot and lifting there cancels it. Sizes are in viewport units: on an iPhone 17 Pro, 1 pt is about 1.6 of them.
+## onto the slot and lifting there cancels it. A thumb taken away without lifting (the app losing
+## focus, or the system cancelling the touch) ends its hold and its aim, and activates nothing.
+## Sizes are in viewport units: on an iPhone 17 Pro, 1 pt is about 1.6 of them.
 
 signal slot_chosen(slot: int)
 
@@ -49,6 +51,7 @@ func _ready() -> void:
 		button.touch_started.connect(_on_touch_started.bind(slot))
 		button.touch_moved.connect(_on_touch_moved.bind(slot))
 		button.touch_ended.connect(_on_touch_ended.bind(slot))
+		button.touch_lost.connect(_let_go.bind(slot))
 		button.show_skill(player.skill_bar.skill_in(slot))
 		_buttons.append(button)
 	player.skill_bar.changed.connect(_on_slot_changed)
@@ -123,17 +126,22 @@ func _on_touch_moved(at: Vector2, slot: int) -> void:
 	player.show_aim(skill, player.aim_from_drag(skill, drag, drag_full_range), cancelling)
 
 
-func _on_touch_ended(at: Vector2, slot: int) -> void:
+## The thumb on `slot` is gone without lifting: its hold and its aim end, and nothing is activated.
+func _let_go(slot: int) -> void:
 	if slot == _held_slot:
 		_held_slot = SkillBar.NONE
 		player.skill_bar.set_held(slot, false)
 		player.hide_aim()
-	if slot != _aiming_slot:
-		return
-	_aiming_slot = SkillBar.NONE
-	player.hide_aim()
+	if slot == _aiming_slot:
+		_aiming_slot = SkillBar.NONE
+		player.hide_aim()
+
+
+func _on_touch_ended(at: Vector2, slot: int) -> void:
+	var aiming := slot == _aiming_slot
+	_let_go(slot)
 	var skill := player.skill_bar.skill_in(slot)
-	if get_tree().paused or skill == null:
+	if not aiming or get_tree().paused or skill == null:
 		return
 	if not _aimed:
 		player.skill_bar.press(slot) # a tap: auto-aimed
