@@ -6,9 +6,9 @@
 
 **Status:** ready-for-agent
 
-- [ ] Faction is a class with the two sides and their layer and hostile mask, not a node; the player is on the player's Faction and the zombie on the Enemies'.
-- [ ] The zombie's Hurtbox sits on the Enemies' layer and emits `hit_taken(direction, snapshot)` when hit.
-- [ ] Attack, Fireball (with and without Pierce), Auto-aim and the cursor ring behave as before against zombies.
-- [ ] A Hurtbox on the player's layer is never hit, aimed at or ringed by the player's Skills.
-- [ ] A search finds no leftover `enemies_around`, `enemy_nearest` or `hit_enemy` in code, tests or docs.
+- [x] Faction is a class with the two sides and their layer and hostile mask, not a node; the player is on the player's Faction and the zombie on the Enemies'.
+- [x] The zombie's Hurtbox sits on the Enemies' layer and emits `hit_taken(direction, snapshot)` when hit.
+- [x] Attack, Fireball (with and without Pierce), Auto-aim and the cursor ring behave as before against zombies.
+- [x] A Hurtbox on the player's layer is never hit, aimed at or ringed by the player's Skills.
+- [x] A search finds no leftover `enemies_around`, `enemy_nearest` or `hit_enemy` in code, tests or docs.
 - [ ] GUT tests cover the above; `tools/check.sh` passes; checked once in game.

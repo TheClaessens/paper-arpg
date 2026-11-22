@@ -1,8 +1,8 @@
 class_name Player
 extends CharacterBody3D
-## The player's Character (see GLOSSARY.md). Its Controls tell it where to walk, relative to the
-## camera (pushing up walks up the screen), and which Skill slots of its Skill bar the player
-## presses. It has its Skills (child nodes) and its Modifiers, and activates a Skill when its
+## The player's Character (see GLOSSARY.md), of the player's Faction. Its Controls tell it
+## where to walk, relative to the camera (pushing up walks up the screen), and which Skill
+## slots of its Skill bar the player presses. It has its Skills (child nodes) and its Modifiers, and activates a Skill when its
 ## Skill bar asks: aimed at the mouse cursor, along the right stick while it is pushed, or else
 ## auto-aimed (see Skill.Aim).
 
@@ -11,7 +11,7 @@ signal skill_activated(slot: int)
 
 ## How far the card stretches when the player activates a Skill.
 const ACTIVATE_STRETCH := -0.15
-## How near the mouse cursor's spot an Enemy must be to be highlighted.
+## How near the mouse cursor's spot a hostile Hurtbox must be to be highlighted.
 const HOVER_REACH := 1.0
 ## How long the player keeps facing what a Skill was aimed at before the walk takes Facing back.
 const FACE_AIM_TIME := 0.35
@@ -39,6 +39,9 @@ var skills: Array[Skill]:
 				found.append(child as Skill)
 		return found
 
+## The player's Faction, set in its scene. Its Skills hit only Hurtboxes hostile to it.
+@export var faction: Faction.Side
+
 ## The player's Modifiers: every activation of its Skills is made with them, and aiming reads
 ## its Skills' numbers through them.
 @export var modifiers: Array[Modifier] = []
@@ -62,6 +65,8 @@ func _enter_tree() -> void:
 
 
 func _ready() -> void:
+	for skill in skills:
+		skill.faction = faction
 	facing = _controls.ground_axes()[0] # screen right
 	skill_bar.activation_requested.connect(_on_activation_requested)
 	_controls.slot_pressed.connect(skill_bar.press)
@@ -217,11 +222,13 @@ func _facing_toward_cursor() -> Vector3:
 	return facing if point == null else facing_toward(global_position, point as Vector3, facing)
 
 
-## Rings the Enemy nearest the spot under the mouse cursor, while the mouse aims: on PC, the
-## Enemy a Skill that lands on a spot would pick.
+## Rings the hostile Hurtbox nearest the spot under the mouse cursor, while the mouse aims: on
+## PC, the one a Skill that lands on a spot would pick.
 func _highlight_hovered() -> void:
 	var point: Variant = _controls.cursor_on_ground(global_position.y) if _controls.leads_with_mouse() else null
-	var hovered := Skill.enemy_nearest(get_world_3d(), point as Vector3, HOVER_REACH) if point != null else null
+	var hovered: Hurtbox = null
+	if point != null:
+		hovered = Skill.hurtbox_nearest(get_world_3d(), point as Vector3, HOVER_REACH, Faction.hostile_mask(faction))
 	_hover_ring.visible = hovered != null
 	if hovered:
 		_hover_ring.global_position = hovered.global_position + Vector3.UP * 0.05

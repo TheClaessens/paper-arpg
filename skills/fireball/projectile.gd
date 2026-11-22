@@ -2,11 +2,12 @@ class_name Projectile
 extends Area3D
 ## A shot flying straight along `direction` at its Snapshot's Speed until it has flown its
 ## Snapshot's Range or touches something. With Pierce among its Snapshot's tags it passes through
-## the first Enemy it hits; a wall stops it always.
-## It looks for walls and props (`world` layer) and Enemies (`enemy` layer), and reports an
-## Enemy it touched with `hit_enemy`; the Skill that fired it decides what the hit does.
+## the first Hurtbox it hits; a wall stops it always.
+## It looks for walls and props on the `world` layer, and for Hurtboxes on the layers the Skill
+## that fired it adds to its mask (the ones hostile to it). It reports a Hurtbox it touched with
+## `hit`; that Skill decides what the hit does.
 
-signal hit_enemy(enemy: Enemy)
+signal hit(hurtbox: Hurtbox)
 
 ## A unit direction on the ground.
 var direction := Vector3.FORWARD
@@ -15,11 +16,12 @@ var direction := Vector3.FORWARD
 var snapshot: Snapshot
 
 var _flown := 0.0
-var _enemies_hit: Array[Enemy] = []
+var _hurtboxes_hit: Array[Hurtbox] = []
 
 
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
+	area_entered.connect(_on_area_entered)
 
 
 func _physics_process(delta: float) -> void:
@@ -30,17 +32,19 @@ func _physics_process(delta: float) -> void:
 		queue_free()
 
 
-func _on_body_entered(body: Node3D) -> void:
+## A wall or a prop: it stops the shot.
+func _on_body_entered(_body: Node3D) -> void:
+	queue_free()
+
+
+func _on_area_entered(area: Area3D) -> void:
 	if is_queued_for_deletion(): # touching two things in one frame hits only the first
 		return
-	var enemy := body as Enemy
-	if not enemy: # a wall or a prop
-		queue_free()
+	var hurtbox := area as Hurtbox
+	if not hurtbox or hurtbox in _hurtboxes_hit: # touching it again after knocking it ahead
 		return
-	if enemy in _enemies_hit: # touching it again after knocking it ahead
-		return
-	_enemies_hit.append(enemy)
-	hit_enemy.emit(enemy)
+	_hurtboxes_hit.append(hurtbox)
+	hit.emit(hurtbox)
 	var passes_through := 1 if &"Pierce" in snapshot.tags else 0
-	if _enemies_hit.size() > passes_through:
+	if _hurtboxes_hit.size() > passes_through:
 		queue_free()

@@ -1,8 +1,12 @@
 class_name Enemy
 extends CharacterBody3D
-## A Character hostile to the player (see GLOSSARY.md). Stands still until its Aggro notices
+## A Character of the Enemies' Faction (see GLOSSARY.md). Stands still until its Aggro notices
 ## the player, then chases them along the navmesh for good, stopping within reach.
-## A hit staggers it: it slides away with the knockback and doesn't chase until the Stagger ends.
+## A hit on its Hurtbox staggers it: it slides away with the knockback and doesn't chase until
+## the Stagger ends.
+
+## The Enemy's Faction, set in its scene. It puts its Hurtbox on that Faction's layer.
+@export var faction: Faction.Side
 
 ## Stops chasing this close to the target, in world units.
 @export var reach_distance := 1.0
@@ -16,12 +20,16 @@ var _stagger_left := 0.0
 var _stagger_time := 0.0 # the full length of the current Stagger
 var _knockback := Vector3.ZERO # direction times distance
 
+## The part of the Enemy that Skills hit.
+@onready var hurtbox: Hurtbox = $Hurtbox
 @onready var _movement: Movement = $Movement
 @onready var _standee: Standee = $Standee
 @onready var _agent: NavigationAgent3D = $NavigationAgent3D
 
 
 func _ready() -> void:
+	hurtbox.collision_layer = Faction.layer(faction)
+	hurtbox.hit_taken.connect(_on_hit_taken)
 	($Aggro as Aggro).aggroed.connect(func(target: Node3D) -> void: _target = target)
 	_agent.velocity_computed.connect(_on_velocity_computed)
 	_agent.max_speed = _movement.speed # avoidance never speeds an Enemy past its own top speed
@@ -39,13 +47,13 @@ static func knockback_left(distance: float, stagger: float, left: float) -> floa
 	return distance * (left / stagger) ** 2
 
 
-## Hit by a Skill: pushed `knockback` world units along `direction` (a unit vector on the
-## ground), sliding without chasing for `stagger` seconds. The Skill decides both.
-func take_hit(direction: Vector3, knockback: float, stagger: float) -> void:
+## Hit on its Hurtbox: pushed the `snapshot`'s Knockback in world units along `direction` (a
+## unit vector on the ground), sliding without chasing for its Stagger in seconds.
+func _on_hit_taken(direction: Vector3, snapshot: Snapshot) -> void:
 	# ponytail: a Stagger of 0 would need an instant push; the shortest slide stands in for it.
-	_stagger_time = maxf(stagger, 0.02)
+	_stagger_time = maxf(snapshot.number(Skill.STAGGER), 0.02)
 	_stagger_left = _stagger_time
-	_knockback = direction * knockback
+	_knockback = direction * snapshot.number(Skill.KNOCKBACK)
 	var feedback := HitFeedback.shared()
 	_standee.flash(feedback.flash)
 	_standee.squash(feedback.squash)

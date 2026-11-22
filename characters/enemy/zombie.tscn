@@ -5,6 +5,7 @@
 [ext_resource type="SpriteFrames" path="res://characters/standee/frames/zombie.tres" id="3_frames"]
 [ext_resource type="Script" path="res://characters/movement.gd" id="4_movement"]
 [ext_resource type="PackedScene" path="res://characters/aggro/aggro.tscn" id="5_aggro"]
+[ext_resource type="PackedScene" path="res://characters/hurtbox/hurtbox.tscn" id="6_hurtbox"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 radius = 0.25
@@ -16,6 +17,7 @@ collision_mask = 7
 motion_mode = 1
 safe_margin = 0.02
 script = ExtResource("1_enemy")
+faction = 1
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1938276002]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
@@ -38,3 +40,5 @@ radius = 0.3
 neighbor_distance = 3.0
 
 [node name="Aggro" parent="." unique_id=1938276006 instance=ExtResource("5_aggro")]
+
+[node name="Hurtbox" parent="." unique_id=1938276007 instance=ExtResource("6_hurtbox")]
