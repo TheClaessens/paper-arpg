@@ -10,11 +10,11 @@
 
 **Status:** ready-for-agent
 
-- [ ] The content test passes on today's content and finds Attack and Fireball in `attack.tscn`, `fireball.tscn`, `player.tscn` and `sandbox.tscn`, and both Modifier files.
-- [ ] Each of C1–C14 fails it with a problem naming the file, the place and the word; C2 fails for `player.tscn` and `sandbox.tscn` and not for `attack.tscn`.
-- [ ] L1 fails it too: "doesn't load", not skipped.
-- [ ] The self-tests give three problems for the broken Skill, nine for the broken Modifier, one for the broken table, and none for the well-made ones.
-- [ ] Every problem shows in `tools/check.sh`'s output (one `[Failed]` line, joined with `"; "`).
-- [ ] "Saved content" in the conventions reads as the spec gives it, without the number-name bullet.
-- [ ] No `@warning_ignore` is needed; if instancing a scene logs a warning that fails the test (spec, Needs a run 1), stop and report it.
-- [ ] `tools/check.sh` passes.
+- [x] The content test passes on today's content and finds Attack and Fireball in `attack.tscn`, `fireball.tscn`, `player.tscn` and `sandbox.tscn`, and both Modifier files.
+- [x] Each of C1–C14 fails it with a problem naming the file, the place and the word; C2 fails for `player.tscn` and `sandbox.tscn` and not for `attack.tscn`.
+- [x] L1 fails it too: "doesn't load", not skipped.
+- [x] The self-tests give three problems for the broken Skill, nine for the broken Modifier, one for the broken table, and none for the well-made ones.
+- [x] Every problem shows in `tools/check.sh`'s output (one `[Failed]` line, joined with `"; "`).
+- [x] "Saved content" in the conventions reads as the spec gives it, without the number-name bullet.
+- [x] No `@warning_ignore` is needed; if instancing a scene logs a warning that fails the test (spec, Needs a run 1), stop and report it.
+- [x] `tools/check.sh` passes.
