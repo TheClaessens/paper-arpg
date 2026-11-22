@@ -1,15 +1,17 @@
 extends GutTest
-## The Player: its Facing, aiming, and the console commands it registers while in the tree.
+## The Player: its Facing, aiming and Auto-aim, and the console commands it registers while
+## in the tree.
 
 const PlayerScene := preload("res://characters/player/player.tscn")
+const ZombieScene := preload("res://characters/enemy/zombie.tscn")
 
 var player: Player
 
 
 func before_each() -> void:
 	player = PlayerScene.instantiate()
-	player.set_physics_process(false) # no camera here to read input against
 	add_child_autofree(player)
+	player.set_physics_process(false) # no camera here to read input against; after add_child, or _ready turns it back on
 
 
 func test_tp_moves_the_player() -> void:
@@ -225,6 +227,48 @@ func test_modifier_needs_a_known_name_and_on_or_off() -> void:
 	assert_eq(Console.execute("modifier chain on"), "Usage: modifier [<spell-cooldown|pierce> on|off]")
 	assert_eq(Console.execute("modifier spell-cooldown maybe"), "Usage: modifier [<spell-cooldown|pierce> on|off]")
 	assert_eq(player.modifiers.size(), 0)
+
+
+# Auto-aim: the nearest hostile Hurtbox within 60° of Facing, no farther than the Range; with none, along
+# Facing. Its caller hands it the hostile Hurtboxes within Range.
+
+func test_auto_aim_picks_the_nearest_hurtbox_near_facing() -> void:
+	var near := Vector3(2.0, 0.0, 0.5)
+	var far := Vector3(4.0, 0.0, 0.0)
+	assert_eq(Player.auto_aim(Vector3.RIGHT, 5.0, [far, near]), near)
+
+
+func test_auto_aim_ignores_hurtboxes_behind_or_wide_of_facing() -> void:
+	var behind := Vector3(-1.0, 0.0, 0.0)
+	var wide := Vector3(1.0, 0.0, 2.0) # 63° off Facing
+	assert_eq(Player.auto_aim(Vector3.RIGHT, 5.0, [behind, wide]), Vector3.RIGHT * 5.0, "along Facing, as far as the Range")
+
+
+func test_auto_aim_ignores_height() -> void:
+	assert_eq(Player.auto_aim(Vector3.RIGHT, 5.0, [Vector3(2.0, 0.5, 0.0)]), Vector3(2.0, 0.0, 0.0))
+
+
+func test_auto_aim_at_a_body_in_range_goes_as_far_as_the_range() -> void:
+	var attack: Skill = player.get_node("Attack") # Range 1.6, which a 32-bit length can't hold exactly
+	player.facing = Vector3.RIGHT
+	var zombie: Enemy = ZombieScene.instantiate()
+	add_child_autofree(zombie)
+	zombie.global_position = Vector3(1.5, 0.0, 0.7) # 25° off Facing, centre 1.66 away, body inside the Range
+	await wait_physics_frames(2)
+	var aim := player._aim_for(attack)
+	assert_almost_eq(aim, Vector3(1.5, 0.0, 0.7).normalized() * 1.6, Vector3.ONE * 0.001, "at the Enemy, not along Facing")
+
+
+func test_the_players_skills_never_aim_at_the_players_faction() -> void:
+	var attack: Skill = player.get_node("Attack")
+	player.facing = Vector3.RIGHT
+	var friend: Hurtbox = preload("res://characters/hurtbox/hurtbox.tscn").instantiate()
+	friend.collision_layer = Faction.layer(Faction.Id.PLAYER)
+	add_child_autofree(friend)
+	friend.global_position = Vector3(1.0, 0.0, 0.0)
+	await wait_physics_frames(2)
+	assert_eq(player._aim_for(attack), Vector3.RIGHT * 1.6, "along Facing, as far as the Range")
+	assert_null(Hurtbox.nearest(player.get_world_3d(), friend.global_position, 1.0, Faction.hostile_mask(player.faction)), "nothing to ring")
 
 
 # `damage` and `heal` change the player's Health, which stays between 0 and 100 and doesn't

@@ -12,16 +12,6 @@
 [ext_resource type="Script" path="res://characters/health/health.gd" id="12_health"]
 [ext_resource type="PackedScene" path="res://characters/health_bar/health_bar.tscn" id="13_health_bar"]
 
-[sub_resource type="StandardMaterial3D" id="hover_material"]
-transparency = 1
-shading_mode = 0
-albedo_color = Color(1, 0.82, 0.48, 0.9)
-
-[sub_resource type="TorusMesh" id="hover_ring"]
-inner_radius = 0.42
-outer_radius = 0.52
-rings = 32
-
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 radius = 0.25
 height = 1.0
@@ -33,6 +23,16 @@ albedo_color = Color(0.94, 0.65, 0.23, 1)
 [sub_resource type="PrismMesh" id="arrow_mesh"]
 material = SubResource("arrow_material")
 size = Vector3(0.22, 0.22, 0.02)
+
+[sub_resource type="StandardMaterial3D" id="hover_material"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(1, 0.82, 0.48, 0.9)
+
+[sub_resource type="TorusMesh" id="hover_ring"]
+inner_radius = 0.42
+outer_radius = 0.52
+rings = 32
 
 [node name="Player" type="CharacterBody3D" unique_id=656968988]
 collision_layer = 2
@@ -76,11 +76,11 @@ main_skill = NodePath("../Attack")
 
 [node name="AimMarker" parent="." unique_id=359261295 instance=ExtResource("8_aim_marker")]
 
-[node name="HoverRing" type="MeshInstance3D" parent="."]
-visible = false
+[node name="HoverRing" type="MeshInstance3D" parent="." unique_id=2038515134]
 top_level = true
-cast_shadow = 0
+visible = false
 material_override = SubResource("hover_material")
+cast_shadow = 0
 mesh = SubResource("hover_ring")
 
 [node name="HealthBar" parent="." unique_id=1427705114 instance=ExtResource("13_health_bar")]

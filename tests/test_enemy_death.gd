@@ -39,8 +39,8 @@ func test_five_attacks_kill_a_zombie() -> void:
 func test_a_dead_zombie_cant_be_hit_aimed_at_or_ringed_and_blocks_no_one() -> void:
 	_swing(5)
 	var mask := Faction.hostile_mask(Faction.Id.PLAYER)
-	assert_eq(Skill.hurtboxes_around(get_tree().root.world_3d, Vector3.ZERO, 3.0, mask), [] as Array[Hurtbox], "no Skill finds it")
-	assert_null(Skill.hurtbox_nearest(get_tree().root.world_3d, zombie.global_position, 1.0, mask), "no Auto-aim or ring")
+	assert_eq(Hurtbox.around(get_tree().root.world_3d, Vector3.ZERO, 3.0, mask), [] as Array[Hurtbox], "no Skill finds it")
+	assert_null(Hurtbox.nearest(get_tree().root.world_3d, zombie.global_position, 1.0, mask), "no Auto-aim or ring")
 	assert_eq(zombie.collision_layer, 0, "its body blocks no one")
 
 

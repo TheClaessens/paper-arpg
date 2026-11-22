@@ -130,6 +130,20 @@ func test_a_piercing_ball_still_ends_at_its_range() -> void:
 	assert_freed(ball)
 
 
+func test_a_fireball_hit_knocks_back_without_freezing_the_world() -> void:
+	var fireball: Fireball = preload("res://skills/fireball/fireball.tscn").instantiate()
+	add_child_autoqfree(fireball)
+	var zombie := _zombie_at(2.0)
+	fireball.try_activate(Vector3.RIGHT, [])
+	var ball: Projectile = fireball.get_child(0)
+	var time_scales: Array[float] = []
+	ball.hit.connect(func(_hurtbox: Hurtbox) -> void: time_scales.append(Engine.time_scale)) # after Fireball lands the hit
+	await wait_physics_frames(20)
+	Engine.time_scale = 1.0 # in case it froze, for the tests after this one
+	assert_eq(time_scales, [1.0] as Array[float], "hit once, and the world kept running")
+	assert_gt(zombie.global_position.x, 2.0, "knocked back")
+
+
 func test_it_flies_through_a_hurtbox_of_its_own_faction() -> void:
 	var friend: Hurtbox = preload("res://characters/hurtbox/hurtbox.tscn").instantiate()
 	friend.collision_layer = Faction.layer(Faction.Id.PLAYER)
@@ -153,7 +167,6 @@ func test_a_fireball_lowers_a_zombies_health_by_its_damage() -> void:
 	fireball.try_activate(Vector3.RIGHT, [])
 	await wait_physics_frames(30)
 	assert_eq(zombie.health.current, 30.0, "50 less the Fireball's Damage of 20")
-	Engine.time_scale = 1.0 # the hitstop the hit started
 
 
 func test_a_piercing_ball_passes_through_the_zombie_it_kills_and_stops_at_the_next() -> void:
@@ -169,9 +182,7 @@ func test_a_piercing_ball_passes_through_the_zombie_it_kills_and_stops_at_the_ne
 	watch_signals(second)
 	watch_signals(third)
 	fireball.try_activate(Vector3.RIGHT, [load("res://skills/modifiers/pierce.tres")])
-	Engine.time_scale = 1.0
 	await wait_physics_frames(40)
 	assert_eq(deaths.size(), 1, "the first is killed")
 	assert_signal_emit_count(second, "hit_taken", 1, "the kill was its pierced hit")
 	assert_signal_not_emitted(third, "hit_taken", "it stopped at the second")
-	Engine.time_scale = 1.0

@@ -14,14 +14,6 @@ signal ready_again
 ## hostile Hurtbox near Facing. AIMED: auto-aimed too, and on touch it can also be aimed by hand.
 enum Aim { AROUND, AUTO, AIMED }
 
-## Auto-aim takes a Hurtbox at most this far either side of Facing.
-const AUTO_AIM_ANGLE := 60.0
-
-## The one table of implied Skill tags: a Skill with the key tag also has each tag it lists.
-const IMPLIED_TAGS: Dictionary[StringName, Array] = {
-	&"Fire": [&"Elemental"],
-}
-
 ## The names of the Skill's numbers (see numbers()), as Modifiers and Snapshots know them.
 const COOLDOWN := &"Cooldown"
 const RANGE := &"Range"
@@ -30,7 +22,7 @@ const KNOCKBACK := &"Knockback"
 const STAGGER := &"Stagger"
 
 ## The Skill's Skill tags, as set in its scene: what kind of Skill it is. Implied tags are
-## left out here; with_implied() works them out.
+## left out here; the tag pass works them out (see TagPass.with_implied()).
 @export var tags: Array[StringName] = []
 ## The Skill's name, as the player sees it.
 @export var title := ""
@@ -103,17 +95,6 @@ func _get_configuration_warnings() -> PackedStringArray:
 	return ["Every Skill needs a Cooldown above 0."] if cooldown <= 0.0 else []
 
 
-## `given` plus every tag IMPLIED_TAGS says they imply. Worked out from the tags given, so a
-## set without Fire has no Elemental. One level deep: an implied tag implies nothing further.
-static func with_implied(given: Array[StringName]) -> Array[StringName]:
-	var all := given.duplicate()
-	for tag in given:
-		for implied: StringName in IMPLIED_TAGS.get(tag, []):
-			if implied not in all:
-				all.append(implied)
-	return all
-
-
 ## The Skill's numbers by name, for Modifiers to change. A Skill with numbers of its own adds
 ## them to these.
 func numbers() -> Dictionary[StringName, float]:
@@ -132,122 +113,16 @@ func try_activate(aim: Vector3, modifiers: Array[Modifier]) -> bool:
 	return true
 
 
-## The Skill as one activation sees it: a Snapshot made by the tag pass (see TagPass) with every
-## one of `modifiers` that applies.
+## The Skill as one activation sees it: a Snapshot of its tags and numbers with every one of
+## `modifiers` that applies (see Snapshot.of()).
 func snapshot(modifiers: Array[Modifier]) -> Snapshot:
-	var tag_pass := TagPass.new(tags, modifiers)
-	var why: Array[String] = []
-	for modifier in modifiers:
-		why.append(tag_pass.explain(modifier))
-	return Snapshot.new(tag_pass.tags, _numbers_with(tag_pass, modifiers), why)
+	return Snapshot.of(tags, numbers(), modifiers)
 
 
 ## The number called `name` as it stands now with `modifiers`, outside any activation: for
 ## aiming, which follows the Modifiers as they come and go.
 func number(name: StringName, modifiers: Array[Modifier]) -> float:
-	return _numbers_with(TagPass.new(tags, modifiers), modifiers)[name]
-
-
-## Each of the Skill's numbers with every one of `modifiers` that applies after `tag_pass`, in
-## two pools: the number changes of Modifiers that change tags, then every other's.
-func _numbers_with(tag_pass: TagPass, modifiers: Array[Modifier]) -> Dictionary[StringName, float]:
-	var tag_pool: Array[NumberChange] = []
-	var number_pool: Array[NumberChange] = []
-	var counted: Array[Modifier] = [] # each Modifier applies at most once, even if listed twice
-	for modifier in modifiers:
-		if modifier not in counted and tag_pass.applies(modifier):
-			counted.append(modifier)
-			(number_pool if modifier.tag_changes.is_empty() else tag_pool).append_array(modifier.number_changes)
-	var result := numbers()
-	for name in result:
-		result[name] = stack(stack(result[name], name, tag_pool), name, number_pool)
-	return result
-
-
-## The number called `name`, `value` at first, with each of `changes` to it: flat additions
-## first, then the sum of every Increased percentage, then each More percentage on its own.
-## Neither takes a number below 0: Increased stops at -100%, and so does each More.
-static func stack(value: float, name: StringName, changes: Array[NumberChange]) -> float:
-	var increased := 0.0
-	var more := 1.0
-	for change in changes:
-		if change.number != name:
-			continue
-		match change.kind:
-			NumberChange.Kind.FLAT:
-				value += change.amount
-			NumberChange.Kind.INCREASED:
-				increased += change.amount
-			NumberChange.Kind.MORE:
-				more *= maxf(0.0, 1.0 + change.amount / 100.0)
-	return value * maxf(0.0, 1.0 + increased / 100.0) * more
-
-
-## Where auto-aim points, as an offset on the ground from the Character: the nearest of
-## `target_offsets` within AUTO_AIM_ANGLE of `facing`, or else along `facing`. Never farther
-## than `skill_range`. Which Hurtboxes are within Range is the caller's to ask (see aim_toward()).
-static func auto_aim(facing: Vector3, skill_range: float, target_offsets: Array[Vector3]) -> Vector3:
-	var best := facing * skill_range
-	var best_distance := INF
-	for offset in target_offsets:
-		var flat := Vector3(offset.x, 0.0, offset.z)
-		var distance := flat.length()
-		if distance < best_distance and rad_to_deg(flat.angle_to(facing)) <= AUTO_AIM_ANGLE:
-			best = flat.limit_length(skill_range)
-			best_distance = distance
-	return best
-
-
-## The Hurtbox on the layers in `mask` nearest `spot` on the ground within `reach` of it, or
-## null (see nearest_to()).
-static func hurtbox_nearest(world: World3D, spot: Vector3, reach: float, mask: int) -> Hurtbox:
-	var hurtboxes := hurtboxes_around(world, spot, reach, mask)
-	var positions: Array[Vector3] = []
-	for hurtbox in hurtboxes:
-		positions.append(hurtbox.global_position)
-	var i := nearest_to(spot, positions, reach)
-	return hurtboxes[i] if i >= 0 else null
-
-
-## Which of `positions` is nearest `spot` on the ground and within `reach` of it, or -1.
-static func nearest_to(spot: Vector3, positions: Array[Vector3], reach: float) -> int:
-	var best := -1
-	var best_distance := reach
-	for i in positions.size():
-		var distance := Vector2(positions[i].x - spot.x, positions[i].z - spot.z).length()
-		if distance <= best_distance:
-			best = i
-			best_distance = distance
-	return best
-
-
-## Every Hurtbox in `world` on the layers in `mask` with any part of it within `reach` of
-## `centre`. The physics engine finds them: the sphere looks for areas only, on `mask` only.
-static func hurtboxes_around(world: World3D, centre: Vector3, reach: float, mask: int) -> Array[Hurtbox]:
-	var sphere := SphereShape3D.new()
-	sphere.radius = reach
-	var query := PhysicsShapeQueryParameters3D.new()
-	query.shape = sphere
-	query.transform = Transform3D(Basis.IDENTITY, centre + Vector3.UP * 0.5) # body height
-	query.collision_mask = mask
-	query.collide_with_areas = true
-	query.collide_with_bodies = false
-	var hurtboxes: Array[Hurtbox] = []
-	for result in world.direct_space_state.intersect_shape(query, 32):
-		var hurtbox := result.collider as Hurtbox
-		if hurtbox:
-			hurtboxes.append(hurtbox)
-	return hurtboxes
-
-
-## Auto-aim from where the Character stands (see auto_aim()), as far as `reach`: the Skill's
-## Range as it stands now. A hostile Hurtbox within reach whose centre is past it is aimed at
-## as far as the reach.
-func aim_toward(facing: Vector3, reach: float) -> Vector3:
-	var offsets: Array[Vector3] = []
-	for hurtbox in _hurtboxes_within(reach):
-		offsets.append(hurtbox.global_position - global_position)
-	return auto_aim(facing, reach, offsets)
+	return snapshot(modifiers).number(name)
 
 
 ## What the Skill does when activated, as `snapshot` says, aimed at `aim`: an offset on the
@@ -263,24 +138,20 @@ func target_for(_aim: Vector3) -> Node3D:
 	return null
 
 
-## The layers of every Faction hostile to the Skill's: where its hits and Auto-aim look.
+## The layers of every Faction hostile to the Skill's: where its hits look.
 func hostile_mask() -> int:
 	return Faction.hostile_mask(faction)
 
 
-## Every hostile Hurtbox within `reach` of the Character, in any direction.
-func _hurtboxes_within(reach: float) -> Array[Hurtbox]:
-	return hurtboxes_around(get_world_3d(), global_position, reach, hostile_mask())
-
-
 ## Lands one activation's hits: each Hurtbox in `hits` is hit pushing along its direction (a
 ## unit vector on the ground) with the activation's `snapshot`; its Character reads what the hit
-## does from that. The impact (hitstop, screen shake) plays once for the whole activation,
-## however many it hit, and only if at least one hit landed. For the Skills themselves.
-func _land_hits(hits: Dictionary[Hurtbox, Vector3], snapshot: Snapshot) -> void:
+## does from that. The impact (screen shake, and a hitstop if `freezes`) plays once per call,
+## however many it hit, and only if at least one hit landed, so a Skill whose hits come at once
+## lands them in one call. For the Skills themselves.
+func _land_hits(hits: Dictionary[Hurtbox, Vector3], snapshot: Snapshot, freezes := true) -> void:
 	var landed := false
 	for hurtbox in hits:
 		if hurtbox.take_hit(hits[hurtbox], snapshot):
 			landed = true
 	if landed:
-		HitFeedback.shared().play_impact(get_viewport())
+		HitFeedback.shared().play_impact(get_viewport(), freezes)

@@ -15,6 +15,8 @@ const ACTIVATE_STRETCH := -0.15
 const HOVER_REACH := 1.0
 ## How long the player keeps facing what a Skill was aimed at before the walk takes Facing back.
 const FACE_AIM_TIME := 0.35
+## Auto-aim takes a Hurtbox at most this far either side of Facing.
+const AUTO_AIM_ANGLE := 60.0
 ## The proof Modifiers the `modifier` console command switches, by the name it takes.
 const PROOF_MODIFIERS: Dictionary[String, Modifier] = {
 	"spell-cooldown": preload("res://skills/modifiers/spell_cooldown.tres"),
@@ -156,7 +158,32 @@ func _aim_for(skill: Skill) -> Vector3:
 				return offset
 	if not _controls.aim_direction().is_zero_approx():
 		return facing * reach
-	return skill.aim_toward(facing, reach)
+	return _auto_aim(reach)
+
+
+## Where Auto-aim points, as an offset on the ground from the Character: the nearest of
+## `target_offsets` within AUTO_AIM_ANGLE of `facing`, or else along `facing`. Never farther
+## than `skill_range`. Which Hurtboxes are within Range is the caller's to ask (see _auto_aim()).
+static func auto_aim(facing: Vector3, skill_range: float, target_offsets: Array[Vector3]) -> Vector3:
+	var best := facing * skill_range
+	var best_distance := INF
+	for offset in target_offsets:
+		var flat := Vector3(offset.x, 0.0, offset.z)
+		var distance := flat.length()
+		if distance < best_distance and rad_to_deg(flat.angle_to(facing)) <= AUTO_AIM_ANGLE:
+			best = flat.limit_length(skill_range)
+			best_distance = distance
+	return best
+
+
+## Auto-aim from where the player stands along its Facing (see auto_aim()), as far as `reach`:
+## a Skill's Range as it stands now. A hostile Hurtbox within reach whose centre is past it is
+## aimed at as far as the reach.
+func _auto_aim(reach: float) -> Vector3:
+	var offsets: Array[Vector3] = []
+	for hurtbox in Hurtbox.around(get_world_3d(), global_position, reach, Faction.hostile_mask(faction)):
+		offsets.append(hurtbox.global_position - global_position)
+	return auto_aim(facing, reach, offsets)
 
 
 ## `skill`'s Range as it stands now, with the player's Modifiers: aiming isn't an activation,
@@ -254,7 +281,7 @@ func _highlight_hovered() -> void:
 	var point: Variant = _controls.cursor_on_ground(global_position.y) if _controls.leads_with_mouse() else null
 	var hovered: Hurtbox = null
 	if point != null:
-		hovered = Skill.hurtbox_nearest(get_world_3d(), point as Vector3, HOVER_REACH, Faction.hostile_mask(faction))
+		hovered = Hurtbox.nearest(get_world_3d(), point as Vector3, HOVER_REACH, Faction.hostile_mask(faction))
 	_hover_ring.visible = hovered != null
 	if hovered:
 		_hover_ring.global_position = hovered.global_position + Vector3.UP * 0.05

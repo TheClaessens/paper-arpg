@@ -40,7 +40,7 @@ func _activate(snapshot: Snapshot, aim: Vector3) -> void:
 	var swing_sweep := snapshot.number(SWEEP)
 	_show_swing(facing, swing_range, swing_sweep)
 	var hits: Dictionary[Hurtbox, Vector3] = {}
-	for hurtbox in _hurtboxes_within(swing_range):
+	for hurtbox in Hurtbox.around(get_world_3d(), global_position, swing_range, hostile_mask()):
 		var offset := hurtbox.global_position - global_position
 		if in_sweep(offset, facing, swing_sweep):
 			# Pushed straight away from the player; one right on top goes along Facing.

@@ -1,7 +1,8 @@
-[gd_resource type="Resource" script_class="Modifier" format=3]
+[gd_resource type="Resource" script_class="Modifier" format=3 uid="uid://d4gkpbttf2ueb"]
 
-[ext_resource type="Script" path="res://skills/modifier.gd" id="1_modifier"]
-[ext_resource type="Script" path="res://skills/number_change.gd" id="2_number_change"]
+[ext_resource type="Script" uid="uid://brnq0qich80b1" path="res://skills/modifier.gd" id="1_modifier"]
+[ext_resource type="Script" uid="uid://uk6sofwedw7w" path="res://skills/number_change.gd" id="2_number_change"]
+[ext_resource type="Script" uid="uid://c5d1544p2bau3" path="res://skills/tag_change.gd" id="3_4do5e"]
 
 [sub_resource type="Resource" id="halve_cooldown"]
 script = ExtResource("2_number_change")

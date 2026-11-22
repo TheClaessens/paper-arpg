@@ -22,14 +22,14 @@ func test_attack_is_a_melee_attack() -> void:
 
 
 func test_fireball_is_also_elemental() -> void:
-	assert_has(Skill.with_implied(_tags_of(FireballScene)), &"Elemental")
+	assert_has(TagPass.with_implied(_tags_of(FireballScene)), &"Elemental")
 
 
 func test_attack_is_not_elemental() -> void:
-	assert_does_not_have(Skill.with_implied(_tags_of(AttackScene)), &"Elemental")
+	assert_does_not_have(TagPass.with_implied(_tags_of(AttackScene)), &"Elemental")
 
 
 func test_replacing_fire_drops_elemental() -> void:
 	var tags := _tags_of(FireballScene)
 	tags[tags.find(&"Fire")] = &"Cold"
-	assert_eq(Skill.with_implied(tags), [&"Spell", &"Projectile", &"Cold"] as Array[StringName])
+	assert_eq(TagPass.with_implied(tags), [&"Spell", &"Projectile", &"Cold"] as Array[StringName])

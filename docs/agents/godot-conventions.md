@@ -45,7 +45,9 @@ To check a change visually, `tools/screenshot.gd` opens a scene, runs console co
 
 Reach for these before writing a one-off check script.
 
-A test that simulates a screen touch sends it with `get_viewport().push_input(event, true)`. Without `true` the position is read as window coordinates and lands somewhere else. Touch on the Skill bar's buttons is tested by emitting a `SkillSlotButton`'s `touch_started`/`touch_moved`/`touch_ended` signals: under GUT, pushed touch and mouse events don't reach them.
+A test that keeps a node's `_physics_process` from running calls `set_physics_process(false)` after `add_child`: a node whose script has `_physics_process` turns it back on when it becomes ready.
+
+A test that simulates a screen touch sends it with `get_viewport().push_input(event, true)`. Without `true` the position is read as window coordinates and lands somewhere else. Pushed that way, a touch reaches a `SkillSlotButton` too; emitting its `touch_started`/`touch_moved`/`touch_ended` signals tests the HUD without one.
 
 To try a change on the iPhone, `tools/deploy_ios.sh` exports, installs and launches the debug build. Its header lists the known failures and their fixes.
 
@@ -56,8 +58,9 @@ The developer keeps the Godot editor open, and it writes files behind your back:
 - **Pressing Play saves every open scene first** ("Save Before Running", Editor Settings › Run › Auto Save). A scene changed on disk while it was open gets overwritten by the editor's stale copy. Keep that setting off.
 - **It doesn't pick up changes made outside it** until **Project › Reload Current Project**. Ask for a reload after changing scenes or scripts, and after switching branches.
 - **It rewrites `.uid` files** when its uid cache disagrees with them, and reorders `project.godot` when it saves project settings.
+- **It resaves files written outside it in its own format**, even while nobody touches it: it adds a `uid` to a hand-written `.tres` or `.tscn` and to its `ext_resource` lines, a `unique_id` to each node, and puts properties in its own order. Left uncommitted, this comes back after every checkout.
 
-Before committing, read `git diff` for scenes the editor reverted. Stage files by name, and leave `.uid` and reorder churn out unless the change needs it.
+Before committing, read `git diff` for scenes the editor reverted. Stage files by name. When the editor's resave touches a file the branch changed, commit the resave once, on its own, so the file stops churning. Leave churn in files the branch didn't change out of the commit.
 
 ## Input and UI
 

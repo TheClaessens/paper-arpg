@@ -53,8 +53,6 @@ func _ready() -> void:
 		_buttons.append(button)
 	player.skill_bar.changed.connect(_on_slot_changed)
 	player.skill_activated.connect(func(slot: int) -> void: _buttons[slot].press_in())
-	for skill in player.skills:
-		skill.ready_again.connect(_on_ready_again.bind(skill))
 	get_viewport().size_changed.connect(_layout)
 	_layout()
 
@@ -77,13 +75,6 @@ func focus_slot(slot: int) -> void:
 
 func _on_slot_changed(slot: int, skill: Skill) -> void:
 	_buttons[slot].show_skill(skill)
-
-
-## Flashes every slot holding `skill`.
-func _on_ready_again(skill: Skill) -> void:
-	for slot in _buttons.size():
-		if player.skill_bar.skill_in(slot) == skill:
-			_buttons[slot].flash()
 
 
 func _cmd_touch(args: PackedStringArray) -> String:

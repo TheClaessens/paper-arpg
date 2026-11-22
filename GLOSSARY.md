@@ -125,7 +125,7 @@ The angle a melee swing covers, centred on Facing.
 _Avoid_: Arc, cone, angle
 
 **Hit feedback**:
-How the game shows the moment a Skill hits an Enemy so the hit feels solid: the world freezes for an instant, the Enemy flashes and squashes, and the screen shakes. It is the same for every Skill, and no game system changes it. How far the Enemy is knocked back, and its Stagger, belong to the Skill.
+How the game shows the moment a Skill hits an Enemy so the hit feels solid: the world freezes for an instant, the Enemy flashes and squashes, and the screen shakes. A projectile's hit doesn't freeze the world, so a ball flying on through Enemies doesn't stutter. Otherwise it is the same for every Skill, and no game system changes it. How far the Enemy is knocked back, and its Stagger, belong to the Skill.
 _Avoid_: Juice, game feel, impact effects
 
 **Stagger**:
@@ -149,5 +149,5 @@ Where an activation of a Skill is sent: a direction on the ground, and for a Ski
 _Avoid_: Target, heading, direction
 
 **Auto-aim**:
-Aim chosen for the player: the nearest Enemy within the Skill's Range and near Facing, or straight along Facing when there is none.
+Aim chosen for the player: the nearest hostile Hurtbox within the Skill's Range and near Facing, or straight along Facing when there is none.
 _Avoid_: Aim assist, lock-on, soft target

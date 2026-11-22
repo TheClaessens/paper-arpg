@@ -57,9 +57,13 @@ func covers(at: Vector2) -> bool:
 	return at.distance_to(centre()) <= size.x / 2.0
 
 
-## Shows `skill`, or an empty slot when it is null.
+## Shows `skill`, or an empty slot when it is null, and flashes whenever that Skill is ready again.
 func show_skill(skill: Skill) -> void:
+	if _skill:
+		_skill.ready_again.disconnect(_flash)
 	_skill = skill
+	if skill:
+		skill.ready_again.connect(_flash)
 	_icon.texture = skill.icon if skill else null
 	_face.modulate.a = 1.0 if skill else EMPTY_OPACITY
 
@@ -84,8 +88,8 @@ func press_in() -> void:
 	create_tween().set_ignore_time_scale().tween_property(_face, ^"scale", Vector2.ONE, PRESS_TIME)
 
 
-## A short flash for a Skill that is ready again.
-func flash() -> void:
+# A short flash for a Skill that is ready again.
+func _flash() -> void:
 	_face.modulate = Color(FLASH, _face.modulate.a)
 	create_tween().set_ignore_time_scale().tween_property(_face, ^"modulate", Color(Color.WHITE, _face.modulate.a), FLASH_TIME)
 
