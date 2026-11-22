@@ -32,6 +32,10 @@ _Avoid_: Alert, agitated, hostile
 The distance from an Enemy within which the player draws its Aggro.
 _Avoid_: Detection range, sight radius
 
+**Level**:
+One place the player plays through, with its own ground, walls, props, light and Enemies. The player's Character, the camera and the HUD are not part of a Level: they carry over from one Level to the next.
+_Avoid_: Map, stage, zone, scene
+
 **Controls**:
 How the player tells their Character what to do: where to walk, where to aim and which Skill slot to activate, by keys and mouse, a controller or touch.
 _Avoid_: Input, player input, input handler

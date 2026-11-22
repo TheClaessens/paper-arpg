@@ -3,9 +3,9 @@ extends SceneTree
 ## Used to check a change visually without clicking through the game.
 ##
 ##   godot --path . --resolution 1280x720 --script res://tools/screenshot.gd -- \
-##       res://scenes/sandbox.tscn "anim walk" "set pixelated 0"
+##       res://scenes/game.tscn "tp 16 7.5" "set pixelated 0"
 ##
-## Writes 0_start.png, 1_anim-walk.png, ... to user://screenshots/ and prints each path.
+## Writes 0_start.png, 1_tp-16-7.5.png, ... to user://screenshots/ and prints each path.
 ## Needs a window (no --headless): headless runs render nothing.
 ## Keep project class names out of this file: a --script entry point compiles before
 ## autoloads exist, so naming them (DevConsole, Standee, ...) breaks compilation.

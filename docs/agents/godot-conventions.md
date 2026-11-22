@@ -48,7 +48,7 @@ One test file: `godot --headless --path . -s addons/gut/gut_cmdln.gd -gselect=te
 
 `tools/check.sh` loads every script, scene and `.tres` resource (outside `addons/` and `assets/`), then runs all tests; it exits non-zero on any failure. The pre-commit hook runs it once enabled per clone with `git config core.hooksPath .githooks`.
 
-To check a change visually, `tools/screenshot.gd` opens a scene, runs console commands, and saves a screenshot after each one (usage in its header). To check behaviour without playing, `tools/simulate.gd` runs a scene headless after console commands and prints every Character's position once per second. Commands that set the scene up:
+To check a change visually, `tools/screenshot.gd` opens a scene, runs console commands, and saves a screenshot after each one (usage in its header). To check behaviour without playing, `tools/simulate.gd` runs a scene headless after console commands and prints every Character's position once per second. To compare two runs, add Godot's `--fixed-fps 60`; positions still differ by up to 0.01 between runs. Give both the game scene, `res://scenes/game.tscn`: a Level's scene on its own has no player's Character and no HUD, so the commands below don't exist there. Commands that set the scene up:
 
 - `tp <x> <z>` puts the player where the test needs them.
 - `bar <slot> <skill|empty>` fills or empties a Skill slot.
@@ -87,8 +87,11 @@ Art comes from Kenney packs in `assets/kenney/<pack>/`. kenney.nl refuses script
 
 ## Levels and navigation
 
+- Each Level (see GLOSSARY.md) has a scene of its own, with a `Node3D` root holding its ground, walls, props, navmesh, light and Enemies. `scenes/sandbox.tscn` is the first.
+- The game scene, `scenes/game.tscn`, is the main scene: the pixelated view, `World` with the player's Character and its camera, and the HUD. It instances the Level under `World`, after the player's Character, so the Characters take their physics steps in tree order and the player's Character steps before the Enemies, as it did before the split. The player's Character, the camera and the HUD belong to the game scene, never to a Level.
+- No node path crosses between the two. Nothing in a Level holds a path or a reference to the game scene's nodes: what it needs from them it gets from physics (an Enemy learns where the player is through Aggro) or from its viewport (a Standee reads the camera with `get_viewport().get_camera_3d()`). No HUD element points into a Level.
 - A GridMap cell (x, z) covers [x, x+1] × [z, z+1]; its centre is (x + 0.5, z + 0.5). Place props and Characters by that, not by the cell index.
-- After editing a level, re-bake its navmesh with `tools/bake_navmesh.gd` (usage in its header). It needs a window: a `--headless` bake reads no floor meshes and bakes no floor.
+- After editing a Level, re-bake its navmesh with `tools/bake_navmesh.gd` (usage in its header). It needs a window: a `--headless` bake reads no floor meshes and bakes no floor.
 - Navigation cell size and height are 0.1, in each NavigationMesh and in project settings, which must match. At 0.25 an agent radius of 0.3 rounds up to 0.5 and closes one-tile corridors.
 - The floor bakes at y 0.2 (heights round up to the cell height), so each NavigationAgent3D has `path_height_offset` 0.2. Change one, change the other.
 
