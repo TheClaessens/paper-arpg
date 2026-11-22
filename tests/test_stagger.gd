@@ -2,6 +2,9 @@ extends GutTest
 ## A Stagger slides its Character exactly its knockback, fastest at first; a frozen frame moves
 ## nothing; another hit restarts it; a Stagger of 0 does nothing.
 
+## Far more steps than any Stagger here needs (at most about 4).
+const MAX_STEPS := 100
+
 var stagger: Stagger
 
 
@@ -9,11 +12,15 @@ func before_each() -> void:
 	stagger = autofree(Stagger.new())
 
 
-## Steps the Stagger by `delta` until it is over and returns how far it slid in all.
+## Steps the Stagger by `delta` until it is over and returns how far it slid in all. Bounded, so a
+## clock that doesn't run fails the test and doesn't hang it.
 func _slide_it_out(delta: float) -> Vector3:
 	var slid := Vector3.ZERO
-	while stagger.is_active():
+	var steps := 0
+	while stagger.is_active() and steps < MAX_STEPS:
 		slid += stagger.next_velocity(delta) * delta
+		steps += 1
+	assert_false(stagger.is_active(), "it ended")
 	return slid
 
 
@@ -46,13 +53,16 @@ func test_another_hit_restarts_it() -> void:
 	stagger.next_velocity(1.0 / 60.0)
 	stagger.next_velocity(1.0 / 60.0)
 	stagger.start(Vector3(0.0, 0.0, 0.35), 0.05)
-	var elapsed := 0.0
+	var steps := 0
 	var slid := Vector3.ZERO
-	while stagger.is_active():
+	while stagger.is_active() and steps < MAX_STEPS:
 		slid += stagger.next_velocity(1.0 / 60.0) / 60.0
-		elapsed += 1.0 / 60.0
+		steps += 1
+	assert_false(stagger.is_active(), "it ended")
 	assert_almost_eq(slid, Vector3(0.0, 0.0, 0.35), Vector3.ONE * 0.0001, "the first knockback's rest is dropped")
-	assert_lte(elapsed, 0.05 + 1.0 / 60.0, "over within the new Stagger")
+	# 0.05 s is three steps at 60 a second, but a rounding crumb leaves the clock a hair above 0
+	# after the third, so it ends on the fourth.
+	assert_lte(steps, 4, "over within the new Stagger")
 
 
 func test_a_stagger_of_0_does_nothing() -> void:

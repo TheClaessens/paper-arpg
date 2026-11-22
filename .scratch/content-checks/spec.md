@@ -177,7 +177,7 @@ func _skills_in(node: Node) -> Array[Skill]
 
 ## Saved content today
 
-**Enums saved as numbers.** `fireball.tscn:8` saves `aim = 2` (`Skill.Aim.AIMED`); `spell_cooldown.tres:10` saves `kind = 1` (`NumberChange.Kind.INCREASED`). `TagChange.Kind` and `Faction.Id` are exported but saved by no file today. All four fall under "only added to at the end".
+**Enums saved as numbers.** `fireball.tscn:8` saves `aim = 2` (`Skill.Aim.AIMED`); `spell_cooldown.tres:10` saves `kind = 1` (`NumberChange.Kind.INCREASED`). `player.tscn` saves `faction = 0` (`Faction.Id.PLAYER`); `TagChange.Kind` is exported but saved by no file today. All four fall under "only added to at the end".
 
 **Defaults files rely on.** A file holds only the values written in it. Every other value is the script's default, so changing that default changes the file. `player.tscn:56` writes `max_health = 100.0`, equal to the default, so a file can hold one; but the files the editor has saved never do (`pierce.tres` has no `kind = 0`), which suggests it drops such a line when it resaves (unverified). Hence "in the same commit" in the convention below.
 

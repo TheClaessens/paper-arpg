@@ -29,7 +29,8 @@ func is_active() -> bool:
 
 ## This frame's share of the slide, as a velocity, with the Stagger's clock run on by `delta`:
 ## over the whole Stagger it covers exactly the knockback, at any frame rate and however few
-## frames it lasts. Zero, and the clock held, in a frame the world is frozen in (delta 0).
+## frames it lasts. Zero when it isn't active, and zero with the clock held in a frame the world
+## is frozen in (delta 0).
 func next_velocity(delta: float) -> Vector3:
 	if delta == 0.0 or not is_active(): # frozen by a hitstop, or not staggered
 		return Vector3.ZERO
@@ -41,7 +42,7 @@ func next_velocity(delta: float) -> Vector3:
 
 
 ## How much of a `distance`-long knockback slide is still to go with `left` seconds of a
-## `stagger`-long Stagger remaining. The slide's speed falls linearly to zero, so the distance
+## `length`-long Stagger remaining. The slide's speed falls linearly to zero, so the distance
 ## still to go shrinks with the square of the time left.
-static func knockback_left(distance: float, stagger: float, left: float) -> float:
-	return distance * (left / stagger) ** 2
+static func knockback_left(distance: float, length: float, left: float) -> float:
+	return distance * (left / length) ** 2

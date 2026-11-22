@@ -21,7 +21,7 @@ The player's Character and the zombie each carry their own copy of what every Ch
 | Health shown on the Health bar | `player.gd:78`, `enemy.gd:39` | `Character._ready()` |
 | Its Hurtbox on its Faction's layer | `enemy.gd:37` | `Character._ready()`, when it has a Hurtbox |
 | A hit: Damage, Stagger, flash, squash | `enemy.gd:38`, `:58-69` | `Character._on_hit_taken()` |
-| The slide with the knockback | `enemy.gd:21-23`, `:51-55`, `:73-75`, `:123-137` | a `Stagger` component; `Character._slide()` |
+| The slide with the knockback | `enemy.gd:21-23`, `:51-55`, `:73-75`, `:123-137` | a `Stagger` component; `Enemy._slide()` |
 | Dying | `enemy.gd:40`, `:109-120` | unchanged, the Enemy's |
 | Facing, Controls, aiming, the Skill bar, the Console commands | `player.gd` | unchanged, the Player's |
 | Chasing, navigation, avoidance | `enemy.gd` | unchanged, the Enemy's |
@@ -102,9 +102,10 @@ extends CharacterBody3D
 ## Modifiers and its Skills, and wires its components: its Health shows on its Health bar, and
 ## a hit on its Hurtbox lowers its Health, starts its Stagger and flashes and squashes its
 ## Standee. Wiring and identity only: Player and Enemy decide where it walks and what it
-## activates. Without a Hurtbox it can't be hit; without a Stagger it is never staggered. Its
-## Faction moves its Hurtbox and its Skills; its body's collision layers and its Aggro are its
-## scene's.
+## activates, and the script driving the body (the Enemy) slides with the Stagger. Without a
+## Hurtbox it can't be hit; without a Stagger it is never staggered. It puts its Hurtbox on its
+## Faction's layer and hands its Faction to its Skills; its body's collision layers and its
+## Aggro are its scene's.
 ## A script that extends it and has _ready() calls super() first: a subclass's _ready()
 ## replaces this one.
 
@@ -134,28 +135,14 @@ func _ready() -> void:
 		hurtbox.collision_layer = Faction.layer(faction)
 		hurtbox.hit_taken.connect(_on_hit_taken) # ticket 03
 	for skill in skills:
-		skill.faction = faction # step 7 makes it skill.character = self
+		skill.faction = faction
 
 
 ## Gives it `skill`: puts it under its Skills node, which stands where it stands and comes before
 ## whatever activates its Skills, and hands it its Faction. Before or after it enters the tree.
 func add_skill(skill: Skill) -> void:
 	$Skills.add_child(skill)
-	skill.faction = faction # step 7 makes it skill.character = self
-
-
-## Slides with its Stagger while it is staggered, and says whether it is: a staggered Character
-## doesn't walk that frame. A frame the world is frozen in moves nothing, and the slide ends at
-## rest. Enemy calls it first in _physics_process(); the player has no Stagger. (ticket 03)
-func _slide(delta: float) -> bool:
-	if _stagger == null or not _stagger.is_active():
-		return false
-	velocity = _stagger.next_velocity(delta)
-	if delta > 0.0: # not in a frozen frame, where move_and_slide() would only push it out of what presses on it
-		move_and_slide()
-	if not _stagger.is_active():
-		velocity = Vector3.ZERO
-	return true
+	skill.faction = faction
 
 
 # A hit on its Hurtbox, pushing along `direction` (a unit vector on the ground): the one place a
@@ -170,9 +157,9 @@ func _on_hit_taken(direction: Vector3, snapshot: Snapshot) -> void:
 ```
 
 - **What it connects in `_ready`:** Health's `changed` to the Health bar's `show_health`; the Hurtbox's `hit_taken` to `_on_hit_taken` (ticket 03; until then `Enemy._ready()` keeps connecting its own); nothing to `died`.
-- **Public:** `faction`, `modifiers`, `skills`, `health`, `health_bar`, `hurtbox`, `add_skill()`. `_slide()` is for `Player` and `Enemy` only, as `Skill._land_hits()` is for the Skills.
+- **Public:** `faction`, `modifiers`, `skills`, `health`, `health_bar`, `hurtbox`, `add_skill()`. `_slide()` lives in `Enemy`, not here: `Character` is wiring and identity only.
 - **Not here:** Movement (`Player` and `Enemy` each keep their own `_movement` lookup: `Character` doesn't use it), Facing, a `died` signal of its own (`health.died` is public and nothing would connect a second one).
-- **`_slide` in a frozen frame:** `next_velocity(0.0)` returns zero, so `velocity` reads zero for that frame where today it kept its last value (`enemy.gd:126-127` returned before touching it). Nothing reads a staggered Character's `velocity` before the next frame sets it again, so nothing shows.
+- **`Enemy._slide` in a frozen frame:** `next_velocity(0.0)` returns zero, so `velocity` reads zero for that frame where today it kept its last value (`enemy.gd:126-127` returned before touching it). Nothing reads a staggered Character's `velocity` before the next frame sets it again, so nothing shows.
 
 ### `characters/stagger/stagger.gd`, new (ticket 03)
 
@@ -233,8 +220,8 @@ By today's line numbers.
 
 By today's line numbers.
 
-- **Leaves:** `:9-11` `faction` and `:25-30` `hurtbox`, `health`, `health_bar` (to `Character`, ticket 02); `:37` the Hurtbox's layer and `:39` the Health bar line (to `Character._ready()`, ticket 02); `:21-23` the Stagger fields, `:51-55` `knockback_left`, `:123-137` `_slide` (to `Stagger` and `Character._slide()`, ticket 03); `:58-69` `_on_hit_taken` and `:38` its connection (to `Character`, ticket 03); `:32` `_standee` (to `Character`, ticket 03).
-- **Changes:** `:2` `extends Character`. `_ready()` (`:36`) starts with `super()`. `:73-75` become `if _slide(delta): return`.
+- **Leaves:** `:9-11` `faction` and `:25-30` `hurtbox`, `health`, `health_bar` (to `Character`, ticket 02); `:37` the Hurtbox's layer and `:39` the Health bar line (to `Character._ready()`, ticket 02); `:21-23` the Stagger fields, `:51-55` `knockback_left`, `:123-137` `_slide` (to `Stagger`, and `_slide` itself stays in `Enemy`, ticket 03); `:58-69` `_on_hit_taken` and `:38` its connection (to `Character`, ticket 03); `:32` `_standee` (to `Character`, ticket 03).
+- **Changes:** `:2` `extends Character`. `_ready()` (`:36`) starts with `super()` and then asserts it has a Hurtbox. `:73-75` become `if _slide(delta): return`, and `_slide()` stays next to `_physics_process`, reading `Character`'s `_stagger`.
 - **Stays:** the doc comment `:3-7` (it describes what an Enemy does, and still does), `reach_distance`, `resume_distance`, `_target`, `_chasing`, `_movement`, `_agent`, `:40-43` of `_ready` (`died` to `_die`, Aggro, avoidance, `max_speed`), `should_chase`, the rest of `_physics_process`, `_on_velocity_computed`, `_die()` whole, `_flat`.
 
 ### `characters/player/player.tscn`
@@ -316,13 +303,14 @@ Run one file with `godot --headless --path . -s addons/gut/gut_cmdln.gd -gselect
 | `test_its_skills_come_before_its_skill_bar` | `test_player.gd`, 01 | Rule 4: `Skills`' index is below `SkillBar`'s. | Fails: no `Skills` node. |
 | `test_bar_finds_a_skill_by_its_node_name` | `test_player.gd`, 01 | Rule 12: with Fireball's title set to "Ball of fire", `bar 2 fireball` puts the `Fireball` node in slot 2. | Fails: "Unknown Skill". |
 | `test_an_enemys_hurtbox_is_on_the_enemies_layer` | `test_character.gd`, 02 | Rule 2, and that `Enemy._ready()` calls `super()`: a ready zombie's Hurtbox is on `Faction.layer(ENEMIES)`. | Passes: a guard for the move. |
-| `test_the_player_and_its_skills_are_of_the_players_faction` | `test_character.gd`, 02 | Rule 2: `player.faction` is the player's, and so is each Skill's. It fails if `player.tscn` lacks `faction = 0`. (It can't catch a missing `super()`: a Skill's Faction defaults to the player's; `test_health_bar.gd:46-52` catches that.) | Passes: a guard. |
+| `test_the_players_scene_sets_the_players_faction` | `test_character.gd`, 02 | Rule 2: `player.faction` is the player's. It fails if `player.tscn` lacks `faction = 0`. (It can't catch a missing `super()`: `test_health_bar.gd:46-52` catches that.) | Passes: a guard. |
+| `test_a_skill_it_already_has_takes_its_characters_faction` | `test_character.gd`, 02 | Rule 2: a bare `Skill` added under a zombie's `Skills` node before the zombie enters the tree has the Enemies' Faction once it is ready. A zombie, because the player's Faction is also a Skill's default. | Fails if the hand-over loop in `Character._ready()` is deleted. |
 | `test_a_skill_given_later_takes_its_characters_faction` | `test_character.gd`, 02 | Rules 2 and 3: a bare `Skill` given to a ready zombie with `add_skill()` sits under the zombie's `Skills` node and has the Enemies' Faction. A zombie, because the player's Faction is also a Skill's default. | Fails: no `add_skill()`; `add_child()` would leave the player's Faction. |
 | `test_without_a_stagger_a_hit_doesnt_push` | `test_character.gd`, 03 | Rule 10: a zombie whose `Stagger` node is freed before it enters the tree, hit through `zombie.hurtbox.take_hit()` with a Snapshot of Damage 10, Knockback 0.35 and Stagger 0.05 (made as `test_enemy_death.gd:63` makes one), loses 10 Health and is where it stood 10 physics frames later. | Fails: no `Stagger` node, and the zombie slides. |
 | `test_knockback_left_over_the_stagger` | `test_stagger.gd`, 03 | Moved, as above. | Passes as `Enemy.knockback_left`. |
 | `test_a_whole_stagger_slides_exactly_its_knockback` | `test_stagger.gd`, 03 | Rule 8: not active before `start()`; `start(Vector3(0.35, 0, 0), 0.05)` stepped at 1/60 s until inactive slides (0.35, 0, 0) in all (sum of `next_velocity(delta) * delta`), and again at 1/45 s. | New class; today's slide is checked only end to end, by `test_skill.gd:29-35`. |
 | `test_a_frozen_frame_moves_nothing` | `test_stagger.gd`, 03 | Rule 8: `next_velocity(0.0)` is zero and leaves it active; the slide after it still totals the knockback. | New class. |
-| `test_another_hit_restarts_it` | `test_stagger.gd`, 03 | Rule 8: two frames into `start(Vector3(1, 0, 0), 0.5)`, `start(Vector3(0, 0, 0.35), 0.05)` slides (0, 0, 0.35) from there, the first knockback's rest dropped, and is over within 0.05 s. | New class. |
+| `test_another_hit_restarts_it` | `test_stagger.gd`, 03 | Rule 8: two frames into `start(Vector3(1, 0, 0), 0.5)`, `start(Vector3(0, 0, 0.35), 0.05)` slides (0, 0, 0.35) from there, the first knockback's rest dropped, and is over after 4 steps at 1/60 s: 0.05 s is three, and a rounding crumb leaves the clock a hair above 0 after the third. | New class. |
 | `test_a_stagger_of_0_does_nothing` | `test_stagger.gd`, 03 | Rule 9: `start(Vector3(0.35, 0, 0), 0.0)` leaves it inactive, with a zero velocity; started at 0 during a running Stagger, the running one goes on along its own knockback. If open rule 1 goes to option c, this test says a Stagger of 0 lasts 0.02 s instead. | Today a 0 is raised to 0.02 s (`enemy.gd:64`). |
 
 `tests/test_character.gd` starts with the doc comment "A Character: its Faction reaches its Hurtbox and its Skills, a Skill given later joins its Skills, and only a Character with a Stagger is staggered." `tests/test_stagger.gd` with "A Stagger slides its Character exactly its knockback, fastest at first; a frozen frame moves nothing; another hit restarts it; a Stagger of 0 does nothing."
@@ -360,7 +348,7 @@ The tools run the game scene, `res://scenes/game.tscn`, since step 5 (on a base 
 
 **`docs/agents/godot-conventions.md`**, "Composition": a new paragraph after the first one (find it by its text; other steps add lines elsewhere in this file):
 
-> The one base script is `Character` (`characters/character.gd`), the glossary's Character in code. `Player` and `Enemy` extend it and nothing extends them: an Enemy kind is a scene, not a script. It holds what makes something a Character (its Faction, its Modifiers, its Skills) and wires its components; behaviour stays in the components and in `Player` and `Enemy`. A script that extends another and has its own `_ready()` calls `super()` first: a subclass's `_ready()` replaces its parent's. A Character's Skills sit under its `Skills` node, a `Node3D` without a transform of its own, ahead of whatever activates them.
+> The base scripts are `Character` (`characters/character.gd`, the glossary's Character in code) and `Skill` (`Attack` and `Fireball` extend it). A base script is right when it is one level deep, stands for a glossary term that covers what extends it (Character for the player's hero and Enemies, Skill for Attack and Fireball), and holds identity and wiring, while behaviour stays in components and in the scripts that extend it. Anything else is a component. `Player` and `Enemy` extend `Character` and nothing extends them: an Enemy kind is a scene, not a script. A script that extends a base script and defines a function the base script also defines calls `super()` in it, unless it means to replace what the base does: in Godot 4 the subclass's function replaces the base's. `_ready()` is the example: `Player._ready()` and `Enemy._ready()` start with `super()`. A Character's Skills sit under its `Skills` node, a `Node3D` without a transform of its own, ahead of `SkillBar` in the scene so that a Skill's Cooldown runs before the Skill bar asks whether it is ready.
 
 **`.scratch/factions-health/spec.md`:**
 
@@ -410,7 +398,7 @@ Settled by the plan or the brief, not open: one level of inheritance and no base
 
 | What | Trigger that brings it back |
 |---|---|
-| The player's Hurtbox and Stagger; what a hit does to the player; the player at 0 Health (the analysis's B2, B4) | The first Enemy Skill. A Stagger in `player.tscn` then also needs `if _slide(delta): return` in `Player._physics_process`. |
+| The player's Hurtbox and Stagger; what a hit does to the player; the player at 0 Health (the analysis's B2, B4) | The first Enemy Skill. A Stagger in `player.tscn` then also needs `_slide()` moved up from `Enemy` to `Character` and `if _slide(delta): return` in `Player._physics_process`. |
 | Whether a staggered Character can activate Skills (B3, part 3) | The first Enemy Skill |
 | A hit during a Stagger: the later end wins, instead of a restart (B3, part 2) | The first Skill whose Stagger is several times another's |
 | A slide with no knockback still calls `move_and_slide()` each frame, which pushes the Character out of whatever presses on it: the shove the enemies spec stops for a standing Enemy | The first Skill or Modifier whose Knockback can be 0 while its Stagger isn't. Then `_slide()` skips `move_and_slide()` for a zero velocity. |
@@ -432,11 +420,15 @@ Settled by the plan or the brief, not open: one level of inheritance and no base
 - `_movement` stays in `Player` and `Enemy`: `Character` doesn't use it.
 - `knockback_left` keeps its name; the analysis renamed it `slide_left`.
 - A Stagger of 0 does nothing (the plan's working answer), where the analysis pinned 0.02 s. The case of a 0 arriving during a running Stagger is new here.
-- The analysis's test "the player's Skills carry the player's Faction, which fails if `Player._ready()` forgets it" can't fail that way: `Skill.faction` already defaults to the player's. It guards `faction = 0` instead, and `add_skill()` is tested on a zombie.
+- The analysis's test "the player's Skills carry the player's Faction, which fails if `Player._ready()` forgets it" can't fail that way: `Skill.faction` already defaults to the player's. It guards `faction = 0` instead, and the hand-over and `add_skill()` are tested on a zombie.
 - That the `Skills` node passes its position on is a test (`test_its_skills_stand_where_it_stands`), not a run.
 - `test_aim_modes.gd:32` doesn't pass "only because the enum's first value is PLAYER": its test Skill never asks for a hostile mask. It moves to `add_skill()` all the same.
 - Not here: Health's guard (step 1), the `ponytail:` comments, `standee.gd`.
 - The branch is stacked on step 5, and the checks run `game.tscn`.
+
+## Changed in review
+
+The slide was built in `Character` and moved to `Enemy` in code review, because `Character` is wiring and identity only, only the Enemy slides, and walking is already each script's own; if the player is ever staggered, it moves up then.
 
 ## Engine facts
 
@@ -451,8 +443,8 @@ Godot 4.7 class reference and manual, read on 2026-11-22, and the 4.7-stable sou
 
 ## Done when
 
-- [ ] `characters/character.gd` holds the Faction, the Modifiers, the Skills (`skills`, `add_skill()`), the Health bar line, the Hurtbox's layer, the hit and `_slide()`; `characters/stagger/stagger.gd` holds the slide.
-- [ ] `enemy.gd` has no Faction, no hit, no Stagger fields and no slide; `player.gd` has no Faction, Modifiers, Skills list, Health lookups or Health line. Both `_ready()`s start with `super()`.
+- [ ] `characters/character.gd` holds the Faction, the Modifiers, the Skills (`skills`, `add_skill()`), the Health bar line, the Hurtbox's layer, the hit; `characters/stagger/stagger.gd` holds the slide's clock and speed, and `Enemy._slide()` moves the body with them.
+- [ ] `enemy.gd` has no Faction, no hit and no Stagger fields, and `_slide()` is its own; `player.gd` has no Faction, Modifiers, Skills list, Health lookups or Health line. Both `_ready()`s start with `super()`.
 - [ ] Both scenes have a `Skills` `Node3D`; the player's Attack and Fireball sit under it, ahead of `SkillBar`, with their `unique_id`s; the zombie has a Stagger; `player.tscn` sets `faction = 0`.
 - [ ] Every existing test passes, changed only as listed under Tests; the new tests pass; `tools/check.sh` passes.
 - [ ] The docs above say what the code does; a search for `Enemy.knockback_left`, `_stagger_left` and `get_node("Fireball")` / `get_node("Attack")` in code and tests comes back clean.

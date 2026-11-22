@@ -156,8 +156,8 @@ static func auto_aim(facing: Vector3, skill_range: float, target_offsets: Array[
 ## aimed at as far as the reach.
 func _auto_aim(reach: float) -> Vector3:
 	var offsets: Array[Vector3] = []
-	for hurtbox in Hurtbox.around(get_world_3d(), global_position, reach, Faction.hostile_mask(faction)):
-		offsets.append(hurtbox.global_position - global_position)
+	for hostile in Hurtbox.around(get_world_3d(), global_position, reach, Faction.hostile_mask(faction)):
+		offsets.append(hostile.global_position - global_position)
 	return auto_aim(facing, reach, offsets)
 
 

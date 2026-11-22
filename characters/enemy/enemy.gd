@@ -2,9 +2,8 @@ class_name Enemy
 extends Character
 ## A Character of the Enemies' Faction (see GLOSSARY.md). Stands still until its Aggro notices
 ## the player, then chases them along the navmesh for good, stopping within reach.
-## A hit on its Hurtbox lowers its Health by the hit's Damage and staggers it: it slides away
-## with the knockback and doesn't chase until the Stagger ends. At 0 Health it dies: it sinks
-## through the floor where it stood and is gone.
+## Staggered, it slides with the knockback and doesn't chase until the Stagger ends. At 0
+## Health it dies: it sinks through the floor where it stood and is gone.
 
 ## Stops chasing this close to the target, in world units.
 @export var reach_distance := 1.0
@@ -21,6 +20,7 @@ var _chasing := false
 
 func _ready() -> void:
 	super()
+	assert(hurtbox, "An Enemy needs a Hurtbox")
 	health.died.connect(_die)
 	($Aggro as Aggro).aggroed.connect(func(target: Node3D) -> void: _target = target)
 	_agent.velocity_computed.connect(_on_velocity_computed)
@@ -51,6 +51,20 @@ func _physics_process(delta: float) -> void:
 		_agent.velocity = next_velocity
 	else:
 		_on_velocity_computed(next_velocity)
+
+
+## Staggered, it slides with the knockback and doesn't chase: it skips the navigation agent.
+## Says whether it is staggered. A frame the world is frozen in moves nothing, and the slide
+## ends at rest.
+func _slide(delta: float) -> bool:
+	if _stagger == null or not _stagger.is_active():
+		return false
+	velocity = _stagger.next_velocity(delta)
+	if delta > 0.0: # not in a frozen frame, where move_and_slide() would only push it out of what presses on it
+		move_and_slide()
+	if not _stagger.is_active():
+		velocity = Vector3.ZERO
+	return true
 
 
 func _on_velocity_computed(safe_velocity: Vector3) -> void:
