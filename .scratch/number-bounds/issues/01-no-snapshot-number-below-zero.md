@@ -10,8 +10,8 @@
 
 **Tests:** new `test_a_flat_cut_stops_at_zero`, written first. On `master` it gets −5, −7.5 and −1 where it wants 0.
 
-- [ ] Range 10 with a flat −15 gives 0; with 50% increased on top, 0; with a flat −15 and a flat +10, 5.
-- [ ] `Snapshot.of` with a Skill's own Knockback of −1 and no Modifier gives 0.
-- [ ] `_stack` returns `maxf(0.0, value) * maxf(0.0, 1.0 + increased / 100.0) * more`, and its doc says no number comes out below 0.
-- [ ] Both `ponytail:` comments are in place, worded as in the spec.
-- [ ] Every other test passes unchanged; `tools/check.sh` passes.
+- [x] Range 10 with a flat −15 gives 0; with 50% increased on top, 0; with a flat −15 and a flat +10, 5.
+- [x] `Snapshot.of` with a Skill's own Knockback of −1 and no Modifier gives 0.
+- [x] `_stack` returns `maxf(0.0, value) * maxf(0.0, 1.0 + increased / 100.0) * more`, and its doc says no number comes out below 0.
+- [x] Both `ponytail:` comments are in place, worded as in the spec.
+- [x] Every other test passes unchanged; `tools/check.sh` passes.

@@ -30,6 +30,8 @@ func _init(own_tags: Array[StringName], modifiers: Array[Modifier]) -> void:
 	var working: Array[StringName] = own_tags.duplicate() # the tags so far, without implied ones
 	while true:
 		tags = with_implied(working)
+		# ponytail: `in` scans over the Modifiers, here and in applies(), grow with the square of
+		# their number; use a Dictionary as a set if a profile on the phone points here.
 		var matching := changers.filter(func(m: Modifier) -> bool:
 			return m not in _applied and m.missing(tags).is_empty())
 		if matching.is_empty():

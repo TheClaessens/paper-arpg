@@ -2,7 +2,8 @@ extends GutTest
 ## Snapshots: each activation of a Skill is built from the Skill's own tags and numbers and its
 ## Character's Modifiers. A Modifier applies when its filter matches the Skill's tags (implied
 ## ones included), or always with no filter. Numbers stack flat, then Increased summed, then each
-## More on its own. The rules are checked on plain data; Skill.number() is checked on Fireball.
+## More on its own, and none comes out below 0. The rules are checked on plain data;
+## Skill.number() is checked on Fireball.
 
 const FireballScene := preload("res://skills/fireball/fireball.tscn")
 
@@ -59,6 +60,18 @@ func test_no_modifier_takes_a_number_below_zero() -> void:
 	])
 	assert_eq(snapshot.number(Skill.COOLDOWN), 0.0, "Increased stops at -100%")
 	assert_eq(snapshot.number(Skill.RANGE), 0.0, "so does each More")
+
+
+func test_a_flat_cut_stops_at_zero() -> void:
+	var cut := _modifier([], Skill.RANGE, NumberChange.Kind.FLAT, -15.0)
+	assert_eq(_snapshot(SPELL, [cut]).number(Skill.RANGE), 0.0, "10 - 15 stops at 0")
+	var more := _modifier([], Skill.RANGE, NumberChange.Kind.INCREASED, 50.0)
+	assert_eq(_snapshot(SPELL, [cut, more]).number(Skill.RANGE), 0.0, "Increased doesn't bring back -5")
+	var back := _modifier([], Skill.RANGE, NumberChange.Kind.FLAT, 10.0)
+	assert_eq(_snapshot(SPELL, [cut, back]).number(Skill.RANGE), 5.0, "flat changes are summed first")
+	assert_eq(_snapshot(SPELL, [back, cut]).number(Skill.RANGE), 5.0, "whichever came first")
+	var pulling: Dictionary[StringName, float] = {Skill.COOLDOWN: 4.0, Skill.KNOCKBACK: -1.0}
+	assert_eq(Snapshot.of(SPELL, pulling, []).number(Skill.KNOCKBACK), 0.0, "a Skill's own number too")
 
 
 func test_a_number_as_it_stands_now_follows_the_modifiers() -> void:

@@ -7,7 +7,8 @@ extends RefCounted
 
 ## The Skill's tags, implied ones included.
 var tags: Array[StringName]
-## Each of the Skill's numbers (see Skill.numbers()), with the Modifiers applied.
+## Each of the Skill's numbers (see Skill.numbers()), with the Modifiers applied. of() makes none
+## of them below 0.
 var numbers: Dictionary[StringName, float]
 ## One line per Modifier the Character has: whether it applied, and why not when it missed.
 var why: Array[String]
@@ -33,6 +34,8 @@ static func of(own_tags: Array[StringName], own_numbers: Dictionary[StringName, 
 	var counted: Array[Modifier] = []
 	var why: Array[String] = []
 	for modifier in modifiers:
+		# ponytail: every Snapshot writes a why line per Modifier, even one made only to aim;
+		# write them only when read, if a profile on the phone points here.
 		why.append(tag_pass.explain(modifier))
 		if modifier not in counted and tag_pass.applies(modifier):
 			counted.append(modifier)
@@ -45,7 +48,8 @@ static func of(own_tags: Array[StringName], own_numbers: Dictionary[StringName, 
 
 ## The number called `name`, `value` at first, with each of `changes` to it: flat additions
 ## first, then the sum of every Increased percentage, then each More percentage on its own.
-## Neither takes a number below 0: Increased stops at -100%, and so does each More.
+## No number comes out below 0: after its flat additions it is at least 0, Increased stops at
+## -100%, and so does each More.
 static func _stack(value: float, name: StringName, changes: Array[NumberChange]) -> float:
 	var increased := 0.0
 	var more := 1.0
@@ -59,7 +63,7 @@ static func _stack(value: float, name: StringName, changes: Array[NumberChange])
 				increased += change.amount
 			NumberChange.Kind.MORE:
 				more *= maxf(0.0, 1.0 + change.amount / 100.0)
-	return value * maxf(0.0, 1.0 + increased / 100.0) * more
+	return maxf(0.0, value) * maxf(0.0, 1.0 + increased / 100.0) * more
 
 
 ## The number called `name`, such as Cooldown or Range. Asking for one the Skill doesn't have
