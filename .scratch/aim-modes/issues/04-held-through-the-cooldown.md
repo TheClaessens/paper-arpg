@@ -4,10 +4,12 @@
 
 **Blocked by:** 03 (same file)
 
-**Status:** ready-for-human
+**Status:** done
 
 **Done when:**
 
 - [x] Both tests pass; the first fails on the commit before.
 - [x] `tools/check.sh` passes.
-- [ ] On the iPhone, the developer taps the main slot, lands again at once and keeps holding: the Attack repeats as soon as its Cooldown ends. The developer keeps it, or reverts this commit.
+- [x] On the iPhone, the developer taps the main slot, lands again at once and keeps holding: the Attack repeats as soon as its Cooldown ends. The developer keeps it, or reverts this commit.
+
+Merged with PR #32 on 2026-11-22: the developer tested what could be tested on the phone and kept it.

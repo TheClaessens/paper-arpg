@@ -3,8 +3,8 @@ extends Control
 ## One Skill slot's button on the Skill bar HUD (see GLOSSARY.md). It shows the slot's Skill, or
 ## a faded empty button. In play it follows the finger that lands on it, like the Touch stick
 ## does, and reports where it goes and where it lifts, or that the finger was lost without lifting;
-## it takes a second finger while the thumb holds the stick. While the Skill bar is being changed it shows a focusable Button instead,
-## which emits `chosen`.
+## it takes a second finger while the thumb holds the stick. While the Skill bar is being changed it
+## shows a focusable Button instead, which emits `chosen`.
 ## It also shows the Skill's cooldown, presses in when activated and flashes when ready again.
 
 signal chosen

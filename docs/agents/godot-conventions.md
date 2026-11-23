@@ -71,7 +71,7 @@ One test file: `godot --headless --path . -s addons/gut/gut_cmdln.gd -gselect=te
 
 `tools/check.sh` loads every script, scene and `.tres` resource (outside `addons/` and `assets/`), then runs all tests; it exits non-zero on any failure. The pre-commit hook runs it once enabled per clone with `git config core.hooksPath .githooks`.
 
-To check a change visually, `tools/screenshot.gd` opens a scene, runs console commands, and saves a screenshot after each one (usage in its header). To check behaviour without playing, `tools/simulate.gd` runs a scene headless after console commands and prints every Character's position once per second. To compare two runs, add Godot's `--fixed-fps 60` and turn off multi-threaded avoidance for the run (the `override.cfg` in `tools/simulate.gd`'s header); without it positions still differ by up to 0.01 between runs. Give both the game scene, `res://scenes/game.tscn`: a Level's scene on its own has no player's Character and no HUD, so the commands below don't exist there. Commands that set the scene up:
+To check a change visually, `tools/screenshot.gd` opens a scene, runs console commands, and saves a screenshot after each one (usage in its header). To check behaviour without playing, `tools/simulate.gd` runs a scene headless after console commands and prints every Character's position once per second. To compare play before and after a change, run `tools/play_check.sh` on the branch and on `master`: it prints one checksum per case (swing, ball, pierce) with the settings that make a run repeat, and the lines match when play does not differ. For a case of your own, add a case to that script. Give both the game scene, `res://scenes/game.tscn`: a Level's scene on its own has no player's Character and no HUD, so the commands below don't exist there. Commands that set the scene up:
 
 - `tp <x> <z>` puts the player where the test needs them.
 - `bar <slot> <skill|empty>` fills or empties a Skill slot.
@@ -96,6 +96,8 @@ The developer keeps the Godot editor open, and it writes files behind your back:
 - **It doesn't pick up changes made outside it** until **Project › Reload Current Project**. Ask for a reload after changing scenes or scripts, and after switching branches.
 - **It rewrites `.uid` files** when its uid cache disagrees with them, and reorders `project.godot` when it saves project settings.
 - **It resaves files written outside it in its own format**, even while nobody touches it: it adds a `uid` to a hand-written `.tres` or `.tscn` and to its `ext_resource` lines, a `unique_id` to each node, and puts properties in its own order. Left uncommitted, this comes back after every checkout.
+
+To give a hand-written `.tres` or `.tscn` its `uid` yourself, run `godot --headless --path . --script res://tools/give_uid.gd -- <res:// path>...`: it writes one into each file's header that has none and leaves the rest alone. A scene's nodes still get their `unique_id` from the editor, so the editor's first resave of a scene still changes it. It writes the `uid` into the file's own header only: the `ext_resource` line of a file that refers to it keeps loading by path until that line is given the same `uid` by hand or by the editor's next save of that file.
 
 Before committing, read `git diff` for scenes the editor reverted. Stage files by name. When the editor's resave touches a file the branch changed, commit the resave once, on its own, so the file stops churning. Leave churn in files the branch didn't change out of the commit.
 
